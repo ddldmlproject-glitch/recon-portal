@@ -96,7 +96,7 @@ interface RequestRecord {
       <div class="drawer-actions"><button class="secondary-button" (click)="toggleStar(record)">{{ record.starred ? '★ Starred' : '☆ Add star' }}</button><button class="primary-button" (click)="approve(record)" [disabled]="record.requestStatus === 'APPROVED'">Approve request</button><button class="danger-button" (click)="moveToTrash(record)">Move to trash</button></div>
     </aside>
   `,
-  styleUrls: ['./inbox.component.css']
+  styleUrls: ['./inbox.component.scss']
 })
 export class InboxComponent {
   readonly folders: {name: Mailbox; icon: string}[] = [
