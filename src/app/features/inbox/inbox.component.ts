@@ -1,4 +1,6 @@
-import { Component, computed, signal } from '@angular/core';
+import { Component, computed, signal, OnDestroy, OnInit, inject } from '@angular/core';
+import { Subscription } from 'rxjs';
+import { InboxLiveUpdatesService, LiveReportEvent } from './inbox-live-updates.service';
 import { CommonModule } from '@angular/common';
 import { AgGridAngular } from 'ag-grid-angular';
 import { ColDef, GridReadyEvent, ModuleRegistry, ClientSideRowModelModule } from 'ag-grid-community';
@@ -82,7 +84,7 @@ interface RequestRecord {
             </div>
             <div class="table-tools"><label class="grid-search"><span>⌕</span><input placeholder="Filter requests" [value]="gridSearch()" (input)="gridSearch.set($any($event.target).value)"></label><button class="square-button" title="Refresh sample data" (click)="refreshGrid()">↻</button></div>
           </div>
-          <div class="grid-meta"><span><strong>{{ visibleRows().length }}</strong> requests <span class="meta-divider">·</span> Updated just now</span><span class="demo-note"><span class="status-dot"></span> Sample data</span></div>
+          <div class="grid-meta"><span><strong>{{ visibleRows().length }}</strong> requests <span class="meta-divider">·</span> {{ liveConnectionState() === 'connected' ? 'Live updates enabled' : 'Waiting for live API' }}</span><span class="demo-note"><span class="status-dot" [class.live-dot]="liveConnectionState() === 'connected'"></span> {{ liveConnectionState() === 'connected' ? 'LIVE' : 'DEMO DATA' }}</span></div>
           <div class="grid-wrap">
             <ag-grid-angular
               class="ag-theme-quartz recon-grid"
@@ -138,7 +140,12 @@ interface RequestRecord {
   `,
   styleUrls: ['./inbox.component.scss']
 })
-export class InboxComponent {
+export class InboxComponent implements OnInit, OnDestroy {
+  private readonly liveUpdates = inject(InboxLiveUpdatesService);
+  private liveUpdatesSubscription?: Subscription;
+  // Replace with the confirmed backend SSE route when the API contract is finalized.
+  private readonly liveEventsEndpoint = '/api/reports/events';
+  readonly liveConnectionState = signal<'connecting' | 'connected' | 'offline'>('offline');
   readonly folders: {name: Mailbox; icon: string}[] = [
     {name:'Inbox',icon:'▣'},{name:'Starred',icon:'☆'},{name:'Snoozed',icon:'◷'},{name:'Important',icon:'⚑'},
     {name:'Sent',icon:'➤'},{name:'Drafts',icon:'▱'},{name:'Spam',icon:'⊘'},{name:'Trash',icon:'♲'}
@@ -216,6 +223,81 @@ export class InboxComponent {
   ];
   readonly rowSelection = 'single' as const;
   private gridApi: any;
+
+  ngOnInit(): void {
+    this.liveUpdatesSubscription = this.liveUpdates.events$.subscribe(event => this.handleLiveEvent(event));
+    this.liveConnectionState.set('connecting');
+    this.liveUpdates.connect(this.liveEventsEndpoint);
+  }
+
+  ngOnDestroy(): void {
+    this.liveUpdatesSubscription?.unsubscribe();
+    this.liveUpdates.disconnect();
+  }
+
+  private handleLiveEvent(event: LiveReportEvent): void {
+    if (event.type === 'reports-refresh') {
+      // Backend signals that the report list changed; the live API integration
+      // can call the report-list endpoint here once it is available.
+      this.refreshGrid();
+      return;
+    }
+
+    if (event.type === 'report-created' || event.type === 'report-updated') {
+      const report = event.report;
+      if (report) {
+        const mapped = this.mapLiveReport(report);
+        if (mapped) {
+          this.records.update(rows => {
+            const exists = rows.some(row => row.id === mapped.id);
+            return exists
+              ? rows.map(row => row.id === mapped.id ? {...row, ...mapped, unread: event.type === 'report-created' ? true : row.unread} : row)
+              : [{...mapped, unread: true}, ...rows];
+          });
+          if (event.type === 'report-created') {
+            this.showToast('info', 'New report available', event.message || `Report ${mapped.id} is available for review.`);
+          } else {
+            this.showToast('info', 'Report updated', event.message || `Report ${mapped.id} has been updated.`);
+          }
+        } else {
+          this.showToast('info', 'Reports updated', event.message || 'New report activity is available. Refresh the report list.');
+          this.refreshGrid();
+        }
+      }
+      return;
+    }
+
+    if (event.type === 'notification') {
+      this.showToast('info', 'New notification', event.message || 'There is new report activity.');
+    }
+  }
+
+  private mapLiveReport(raw: Record<string, unknown>): RequestRecord | null {
+    const id = String(raw['id'] ?? raw['_id'] ?? raw['reportId'] ?? '');
+    if (!id) return null;
+    const actionType = String(raw['actionType'] ?? raw['action_type'] ?? raw['type'] ?? 'REPORT');
+    const category = this.categoryForAction(actionType);
+    const folderValue = String(raw['folder'] ?? 'Inbox');
+    const validFolders: Mailbox[] = ['Inbox','Starred','Snoozed','Important','Sent','Drafts','Spam','Trash'];
+    return {
+      id,
+      actionTool: String(raw['actionTool'] ?? raw['action_tool'] ?? actionType),
+      actionType,
+      requestStatus: String(raw['requestStatus'] ?? raw['status'] ?? 'PENDING_APPROVAL'),
+      sourceStatus: String(raw['sourceStatus'] ?? raw['source_status'] ?? 'SUBMITTED'),
+      createdBy: String(raw['createdBy'] ?? raw['created_by'] ?? '—'),
+      details: String(raw['details'] ?? raw['description'] ?? ''),
+      comments: String(raw['comments'] ?? ''),
+      createdDate: String(raw['createdDate'] ?? raw['created_at'] ?? new Date().toLocaleString()),
+      actionedBy: String(raw['actionedBy'] ?? raw['actioned_by'] ?? '—'),
+      actionComments: String(raw['actionComments'] ?? raw['action_comments'] ?? '—'),
+      folder: validFolders.includes(folderValue as Mailbox) ? folderValue as Mailbox : 'Inbox',
+      unread: true,
+      starred: Boolean(raw['starred']),
+      important: Boolean(raw['important']),
+      category: category === 'ALL' ? 'ALL' : category
+    };
+  }
 
   openCreateRequest() {
     this.newActionType.set('SUBMIT_NET');
