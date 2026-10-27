@@ -226,6 +226,7 @@ export class InboxComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.liveUpdatesSubscription = this.liveUpdates.events$.subscribe(event => this.handleLiveEvent(event));
+    this.liveUpdates.connectionState$.subscribe(state => this.liveConnectionState.set(state));
     this.liveConnectionState.set('connecting');
     this.liveUpdates.connect(this.liveEventsEndpoint);
   }
@@ -273,7 +274,8 @@ export class InboxComponent implements OnInit, OnDestroy {
   }
 
   private mapLiveReport(raw: Record<string, unknown>): RequestRecord | null {
-    const id = String(raw['id'] ?? raw['_id'] ?? raw['reportId'] ?? '');
+    const mongoId = raw['_id'];
+    const id = String(raw['id'] ?? (mongoId && typeof mongoId === 'object' ? (mongoId as Record<string, unknown>)['$oid'] ?? '' : mongoId) ?? raw['reportId'] ?? '');
     if (!id) return null;
     const actionType = String(raw['actionType'] ?? raw['action_type'] ?? raw['type'] ?? 'REPORT');
     const category = this.categoryForAction(actionType);
