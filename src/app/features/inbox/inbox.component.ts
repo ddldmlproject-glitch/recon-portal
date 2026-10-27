@@ -40,7 +40,7 @@ interface RequestRecord {
       <nav class="mailbox-nav" aria-label="Mailbox folders">
         <div class="mailbox-nav-label">MAILBOX</div>
         <div class="mailbox-nav-items">
-          <button class="compose" (click)="selectFolder('Drafts')"><span>＋</span> New request</button>
+          <button class="compose" (click)="openCreateRequest()"><span>＋</span> New request</button>
           <button *ngFor="let item of folders" class="nav-item" [class.active]="activeFolder() === item.name" (click)="selectFolder(item.name)">
             <span class="nav-icon">{{ item.icon }}</span><span class="nav-name">{{ item.name }}</span>
             <span class="nav-count" *ngIf="item.name === 'Inbox' && unreadCount()">{{ unreadCount() }}</span>
@@ -54,7 +54,7 @@ interface RequestRecord {
         <div class="breadcrumb"><span>WORKSPACE</span><span class="crumb-slash">/</span><span>MAILBOX</span></div>
         <section class="page-heading">
           <div><div class="eyebrow">REQUEST MANAGEMENT</div><h1>{{ activeFolder() }}</h1><p>Review and manage operational requests in one place.</p></div>
-          <div class="heading-actions"><button class="secondary-button" (click)="markAllRead()">✓ Mark all read</button><button class="primary-button" (click)="selectFolder('Drafts')">＋ Create request</button></div>
+          <div class="heading-actions"><button class="secondary-button" (click)="markAllRead()">✓ Mark all read</button><button class="primary-button" (click)="openCreateRequest()">＋ Create request</button></div>
         </section>
         <section class="summary-strip">
           <div class="summary-card"><div class="summary-icon blue">▤</div><div><span>Total requests</span><strong>{{ visibleRows().length }}</strong></div></div>
@@ -89,6 +89,21 @@ interface RequestRecord {
       </main>
     </div>
 
+    <div class="modal-backdrop" *ngIf="createRequestOpen()" (click)="closeCreateRequest()">
+      <section class="create-modal" role="dialog" aria-modal="true" aria-labelledby="create-request-title" (click)="$event.stopPropagation()">
+        <div class="drawer-head"><div><span class="eyebrow">REQUEST MANAGEMENT</span><h2 id="create-request-title">Create request</h2></div><button type="button" class="square-button" aria-label="Close form" (click)="closeCreateRequest()">×</button></div>
+        <p class="form-intro">Enter the request details below. This demo saves the request locally in the inbox.</p>
+        <form class="request-form" (submit)="submitCreateRequest($event)">
+          <label>Action type <span>*</span><select required [value]="newActionType()" (change)="newActionType.set($any($event.target).value)"><option value="SUBMIT_NET">SUBMIT_NET</option><option value="EDIT">EDIT</option><option value="SPLIT_UNSPLIT">SPLIT_UNSPLIT</option><option value="CATEGORY_REASON">CATEGORY_REASON</option><option value="DELETE">DELETE</option></select></label>
+          <label>Action tool <span>*</span><input required [value]="newActionTool()" (input)="newActionTool.set($any($event.target).value)" placeholder="e.g. SUBMIT_NET"></label>
+          <label>Created by <span>*</span><input required [value]="newCreatedBy()" (input)="newCreatedBy.set($any($event.target).value)" placeholder="Enter user ID"></label>
+          <label>Details <span>*</span><textarea required rows="3" [value]="newDetails()" (input)="newDetails.set($any($event.target).value)" placeholder="Describe the request"></textarea></label>
+          <label>Comments <textarea rows="2" [value]="newComments()" (input)="newComments.set($any($event.target).value)" placeholder="Add optional comments"></textarea></label>
+          <div class="form-actions"><button type="button" class="secondary-button" (click)="closeCreateRequest()">Cancel</button><button type="submit" class="primary-button">Create request</button></div>
+        </form>
+      </section>
+    </div>
+
     <div class="drawer-backdrop" *ngIf="selectedRecord()" (click)="selectedRecord.set(null)"></div>
     <aside class="detail-drawer" *ngIf="selectedRecord() as record">
       <div class="drawer-head"><div><span class="eyebrow">REQUEST DETAILS</span><h2>{{ record.id }}</h2></div><button class="square-button" (click)="selectedRecord.set(null)">×</button></div>
@@ -110,6 +125,12 @@ export class InboxComponent {
   readonly gridSearch = signal('');
   readonly globalSearch = signal('');
   readonly showNotifications = signal(false);
+  readonly createRequestOpen = signal(false);
+  readonly newActionType = signal('SUBMIT_NET');
+  readonly newActionTool = signal('SUBMIT_NET');
+  readonly newCreatedBy = signal('');
+  readonly newDetails = signal('');
+  readonly newComments = signal('');
   readonly selectedRecord = signal<RequestRecord | null>(null);
   readonly records = signal<RequestRecord[]>([
     {id:'3066382',actionTool:'SUBMIT_NET',actionType:'SUBMIT_NET',requestStatus:'PENDING_APPROVAL',sourceStatus:'SUBMITTED',createdBy:'st30839',details:'Network submission request requires review.',comments:'submit net',createdDate:'10/26/2026 05:18 AM',actionedBy:'—',actionComments:'—',folder:'Inbox',unread:true,starred:false,important:true},
@@ -147,6 +168,36 @@ export class InboxComponent {
   readonly rowSelection = 'single' as const;
   private gridApi: any;
 
+  openCreateRequest() {
+    this.newActionType.set('SUBMIT_NET');
+    this.newActionTool.set('SUBMIT_NET');
+    this.newCreatedBy.set('');
+    this.newDetails.set('');
+    this.newComments.set('');
+    this.createRequestOpen.set(true);
+  }
+  closeCreateRequest() { this.createRequestOpen.set(false); }
+  submitCreateRequest(event: Event) {
+    event.preventDefault();
+    const now = new Date();
+    const id = String(Math.max(3066400, ...this.records().map(r => Number(r.id) || 0)) + 1);
+    const actionType = this.newActionType();
+    const record: RequestRecord = {
+      id, actionTool: this.newActionTool().trim() || actionType, actionType,
+      requestStatus: 'PENDING_APPROVAL', sourceStatus: 'SUBMITTED',
+      createdBy: this.newCreatedBy().trim(), details: this.newDetails().trim(),
+      comments: this.newComments().trim(), createdDate: now.toLocaleString(),
+      actionedBy: '—', actionComments: '—', folder: 'Inbox',
+      unread: true, starred: false, important: false
+    };
+    this.records.update(rows => [record, ...rows]);
+    this.activeFolder.set('Inbox');
+    this.statusFilter.set('All');
+    this.gridSearch.set('');
+    this.globalSearch.set('');
+    this.createRequestOpen.set(false);
+    this.selectedRecord.set(record);
+  }
   onGridReady(event: GridReadyEvent) { this.gridApi = event.api; }
   refreshGrid() { this.gridApi?.refreshCells({force:true}); }
   selectFolder(folder: Mailbox) { this.activeFolder.set(folder); this.statusFilter.set('All'); this.gridSearch.set(''); }
