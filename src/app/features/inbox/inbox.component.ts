@@ -6,11 +6,13 @@ import { ColDef, GridReadyEvent, ModuleRegistry, ClientSideRowModelModule } from
 ModuleRegistry.registerModules([ClientSideRowModelModule]);
 
 type Mailbox = 'Inbox' | 'Starred' | 'Snoozed' | 'Important' | 'Sent' | 'Drafts' | 'Spam' | 'Trash';
+type RequestCategory = 'ALL' | 'MATCH_CLOSE' | 'EDIT' | 'DEPARTMENT' | 'NET' | 'DELETE' | 'SPLIT_UNSPLIT' | 'CATEGORY_REASON';
+interface RequestTabConfig { id: RequestCategory; label: string; enabled: boolean; order: number; }
 interface RequestRecord {
   id: string; actionTool: string; actionType: string; requestStatus: string;
   sourceStatus: string; createdBy: string; details: string; comments: string;
   createdDate: string; actionedBy: string; actionComments: string;
-  folder: Mailbox; unread: boolean; starred: boolean; important: boolean;
+  folder: Mailbox; unread: boolean; starred: boolean; important: boolean; category: RequestCategory;
 }
 
 @Component({
@@ -55,6 +57,11 @@ interface RequestRecord {
         <section class="page-heading">
           <div><div class="eyebrow">REQUEST MANAGEMENT</div><h1>{{ activeFolder() }}</h1><p>Review and manage operational requests in one place.</p></div>
           <div class="heading-actions"><button class="secondary-button" (click)="markAllRead()">✓ Mark all read</button><button class="primary-button" (click)="openCreateRequest()">＋ Create request</button></div>
+        </section>
+        <section class="request-tabs" aria-label="Request categories">
+          <button *ngFor="let tab of requestTabs()" type="button" class="request-tab" [class.selected]="selectedRequestTab() === tab.id" (click)="selectRequestTab(tab.id)">
+            {{ tab.label }} <span class="request-tab-count" *ngIf="tab.id === 'ALL'">{{ filteredCategoryCount() }}</span>
+          </button>
         </section>
         <section class="summary-strip">
           <div class="summary-card"><div class="summary-icon blue">▤</div><div><span>Total requests</span><strong>{{ visibleRows().length }}</strong></div></div>
@@ -121,6 +128,18 @@ export class InboxComponent {
     {name:'Sent',icon:'➤'},{name:'Drafts',icon:'▱'},{name:'Spam',icon:'⊘'},{name:'Trash',icon:'♲'}
   ];
   readonly activeFolder = signal<Mailbox>('Inbox');
+  // Backend-shaped configuration: replace this seed with GET /api/inbox/request-tabs when the API is available.
+  readonly requestTabs = signal<RequestTabConfig[]>([
+    {id:'ALL',label:'All Requests',enabled:true,order:0},
+    {id:'MATCH_CLOSE',label:'Match/Close Requests',enabled:true,order:1},
+    {id:'EDIT',label:'Edit Requests',enabled:true,order:2},
+    {id:'DEPARTMENT',label:'Department Requests',enabled:true,order:3},
+    {id:'NET',label:'Net Requests',enabled:true,order:4},
+    {id:'DELETE',label:'Delete Requests',enabled:true,order:5},
+    {id:'SPLIT_UNSPLIT',label:'Split/Unsplit Requests',enabled:true,order:6},
+    {id:'CATEGORY_REASON',label:'Category/Reason Code Requests',enabled:true,order:7}
+  ]);
+  readonly selectedRequestTab = signal<RequestCategory>('ALL');
   readonly statusFilter = signal('All');
   readonly gridSearch = signal('');
   readonly globalSearch = signal('');
@@ -133,22 +152,24 @@ export class InboxComponent {
   readonly newComments = signal('');
   readonly selectedRecord = signal<RequestRecord | null>(null);
   readonly records = signal<RequestRecord[]>([
-    {id:'3066382',actionTool:'SUBMIT_NET',actionType:'SUBMIT_NET',requestStatus:'PENDING_APPROVAL',sourceStatus:'SUBMITTED',createdBy:'st30839',details:'Network submission request requires review.',comments:'submit net',createdDate:'10/26/2026 05:18 AM',actionedBy:'—',actionComments:'—',folder:'Inbox',unread:true,starred:false,important:true},
-    {id:'3066371',actionTool:'EDIT_REQUEST',actionType:'EDIT',requestStatus:'PENDING_APPROVAL',sourceStatus:'IN_REVIEW',createdBy:'st29418',details:'Department access information update.',comments:'Please review department changes.',createdDate:'10/26/2026 04:42 AM',actionedBy:'—',actionComments:'—',folder:'Inbox',unread:true,starred:true,important:false},
-    {id:'3066294',actionTool:'SPLIT_NET',actionType:'SPLIT_UNSPLIT',requestStatus:'PENDING_APPROVAL',sourceStatus:'SUBMITTED',createdBy:'st30127',details:'Split/unsplit request submitted for approval.',comments:'Split request',createdDate:'10/25/2026 03:26 PM',actionedBy:'—',actionComments:'—',folder:'Inbox',unread:true,starred:false,important:false},
-    {id:'3066118',actionTool:'CATEGORY_UPDATE',actionType:'CATEGORY_REASON',requestStatus:'APPROVED',sourceStatus:'COMPLETED',createdBy:'st27642',details:'Category and reason code update completed.',comments:'Updated as requested.',createdDate:'10/24/2026 11:03 AM',actionedBy:'st30839',actionComments:'Approved',folder:'Sent',unread:false,starred:false,important:false},
-    {id:'3066092',actionTool:'DELETE_REQUEST',actionType:'DELETE',requestStatus:'PENDING_APPROVAL',sourceStatus:'SUBMITTED',createdBy:'st31882',details:'Delete request is waiting for reviewer action.',comments:'Delete request',createdDate:'10/24/2026 09:37 AM',actionedBy:'—',actionComments:'—',folder:'Inbox',unread:false,starred:false,important:true}
+    {id:'3066382',actionTool:'SUBMIT_NET',actionType:'SUBMIT_NET',requestStatus:'PENDING_APPROVAL',sourceStatus:'SUBMITTED',createdBy:'st30839',details:'Network submission request requires review.',comments:'submit net',createdDate:'10/26/2026 05:18 AM',actionedBy:'—',actionComments:'—',folder:'Inbox',unread:true,starred:false,important:true,category:'NET'},
+    {id:'3066371',actionTool:'EDIT_REQUEST',actionType:'EDIT',requestStatus:'PENDING_APPROVAL',sourceStatus:'IN_REVIEW',createdBy:'st29418',details:'Department access information update.',comments:'Please review department changes.',createdDate:'10/26/2026 04:42 AM',actionedBy:'—',actionComments:'—',folder:'Inbox',unread:true,starred:true,important:false,category:'EDIT'},
+    {id:'3066294',actionTool:'SPLIT_NET',actionType:'SPLIT_UNSPLIT',requestStatus:'PENDING_APPROVAL',sourceStatus:'SUBMITTED',createdBy:'st30127',details:'Split/unsplit request submitted for approval.',comments:'Split request',createdDate:'10/25/2026 03:26 PM',actionedBy:'—',actionComments:'—',folder:'Inbox',unread:true,starred:false,important:false,category:'SPLIT_UNSPLIT'},
+    {id:'3066118',actionTool:'CATEGORY_UPDATE',actionType:'CATEGORY_REASON',requestStatus:'APPROVED',sourceStatus:'COMPLETED',createdBy:'st27642',details:'Category and reason code update completed.',comments:'Updated as requested.',createdDate:'10/24/2026 11:03 AM',actionedBy:'st30839',actionComments:'Approved',folder:'Sent',unread:false,starred:false,important:false,category:'CATEGORY_REASON'},
+    {id:'3066092',actionTool:'DELETE_REQUEST',actionType:'DELETE',requestStatus:'PENDING_APPROVAL',sourceStatus:'SUBMITTED',createdBy:'st31882',details:'Delete request is waiting for reviewer action.',comments:'Delete request',createdDate:'10/24/2026 09:37 AM',actionedBy:'—',actionComments:'—',folder:'Inbox',unread:false,starred:false,important:true,category:'DELETE'}
   ]);
   readonly unreadCount = computed(() => this.records().filter(r => r.folder !== 'Trash' && r.unread).length);
   readonly pendingCount = computed(() => this.visibleRows().filter(r => r.requestStatus === 'PENDING_APPROVAL').length);
+  readonly filteredCategoryCount = computed(() => this.records().filter(r => this.activeFolder() === 'Inbox' ? r.folder === 'Inbox' : this.activeFolder() === 'Starred' ? r.starred : this.activeFolder() === 'Important' ? r.important : r.folder === this.activeFolder()).filter(r => this.selectedRequestTab() === 'ALL' || r.category === this.selectedRequestTab()).length);
   readonly visibleRows = computed(() => {
     const folder = this.activeFolder();
     const query = (this.gridSearch() || this.globalSearch()).toLowerCase().trim();
     return this.records().filter(r => {
       const inFolder = folder === 'Inbox' ? r.folder === 'Inbox' : folder === 'Starred' ? r.starred : folder === 'Important' ? r.important : r.folder === folder;
+      const inCategory = this.selectedRequestTab() === 'ALL' || r.category === this.selectedRequestTab();
       const inStatus = this.statusFilter() === 'All' || r.requestStatus === 'PENDING_APPROVAL';
       const text = [r.id,r.actionTool,r.actionType,r.requestStatus,r.sourceStatus,r.createdBy,r.details,r.comments].join(' ').toLowerCase();
-      return inFolder && inStatus && (!query || text.includes(query));
+      return inFolder && inCategory && inStatus && (!query || text.includes(query));
     });
   });
   readonly defaultColDef: ColDef = { sortable:true, filter:true, resizable:true, minWidth:115, flex:1 };
@@ -188,7 +209,7 @@ export class InboxComponent {
       createdBy: this.newCreatedBy().trim(), details: this.newDetails().trim(),
       comments: this.newComments().trim(), createdDate: now.toLocaleString(),
       actionedBy: '—', actionComments: '—', folder: 'Inbox',
-      unread: true, starred: false, important: false
+      unread: true, starred: false, important: false, category: this.categoryForAction(actionType)
     };
     this.records.update(rows => [record, ...rows]);
     this.activeFolder.set('Inbox');
@@ -200,7 +221,19 @@ export class InboxComponent {
   }
   onGridReady(event: GridReadyEvent) { this.gridApi = event.api; }
   refreshGrid() { this.gridApi?.refreshCells({force:true}); }
-  selectFolder(folder: Mailbox) { this.activeFolder.set(folder); this.statusFilter.set('All'); this.gridSearch.set(''); }
+  selectFolder(folder: Mailbox) { this.activeFolder.set(folder); this.selectedRequestTab.set('ALL'); this.statusFilter.set('All'); this.gridSearch.set(''); }
+  selectRequestTab(category: RequestCategory) { this.selectedRequestTab.set(category); this.gridSearch.set(''); }
+  private categoryForAction(actionType: string): RequestCategory {
+    const value = actionType.toUpperCase();
+    if (value.includes('EDIT')) return 'EDIT';
+    if (value.includes('DEPARTMENT')) return 'DEPARTMENT';
+    if (value.includes('NET')) return 'NET';
+    if (value.includes('DELETE')) return 'DELETE';
+    if (value.includes('SPLIT')) return 'SPLIT_UNSPLIT';
+    if (value.includes('CATEGORY') || value.includes('REASON')) return 'CATEGORY_REASON';
+    if (value.includes('MATCH') || value.includes('CLOSE')) return 'MATCH_CLOSE';
+    return 'ALL';
+  }
   onRowClicked(record: RequestRecord) { this.selectedRecord.set(record); if (record.unread) this.updateRecord(record.id,{unread:false}); }
   markAllRead() { this.records.update(rows => rows.map(r => ({...r,unread:false}))); }
   toggleStar(record: RequestRecord) { this.updateRecord(record.id,{starred:!record.starred}); this.selectedRecord.set({...record,starred:!record.starred}); }
