@@ -1,5 +1,5 @@
 import { Injectable, OnDestroy } from '@angular/core';
-import { Observable, Subject } from 'rxjs';
+import { BehaviorSubject, Observable, Subject } from 'rxjs';
 
 /**
  * Server-Sent Events (SSE) channel for live inbox/report updates.
@@ -27,6 +27,7 @@ export interface LiveReportEvent {
 export class InboxLiveUpdatesService implements OnDestroy {
   private readonly eventsSubject = new Subject<LiveReportEvent>();
   readonly events$: Observable<LiveReportEvent> = this.eventsSubject.asObservable();
+  readonly connectionState$ = new BehaviorSubject<'connecting' | 'connected' | 'offline'>('offline');
 
   private source: EventSource | null = null;
   private endpoint = '';
@@ -42,7 +43,10 @@ export class InboxLiveUpdatesService implements OnDestroy {
 
     this.disconnect();
     this.endpoint = nextEndpoint;
+    this.connectionState$.next('connecting');
     this.source = new EventSource(nextEndpoint, { withCredentials: true });
+    this.source.onopen = () => this.connectionState$.next('connected');
+    this.source.onerror = () => this.connectionState$.next('offline');
 
     this.source.onmessage = event => this.emit('reports-refresh', event.data);
 
@@ -63,6 +67,7 @@ export class InboxLiveUpdatesService implements OnDestroy {
     this.source?.close();
     this.source = null;
     this.endpoint = '';
+    this.connectionState$.next('offline');
   }
 
   private emit(type: LiveReportEventType, rawData: string): void {
