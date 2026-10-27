@@ -72,3 +72,17 @@
 .scope-option:has(input:checked){color:#315fd0;font-weight:700}
 .scope-total{font-size:10px;color:#7d899c;white-space:nowrap}
 @media(max-width:640px){.request-scopes{gap:10px}.scope-option{font-size:10px}}
+
+.toast-stack{position:fixed;top:84px;right:24px;z-index:1000;display:flex;flex-direction:column;gap:10px;width:min(380px,calc(100vw - 32px));pointer-events:none}
+.toast-message{display:flex;align-items:flex-start;gap:11px;padding:14px 14px 13px;border:1px solid #e0e6ef;border-radius:12px;background:#fff;box-shadow:0 12px 35px #1b2c4a20;pointer-events:auto;animation:toast-enter .22s ease-out}
+.toast-symbol{width:25px;height:25px;flex:0 0 25px;display:grid;place-items:center;border-radius:50%;font-size:14px;font-weight:800}
+.toast-success .toast-symbol{background:#e3f7eb;color:#16844a}
+.toast-error .toast-symbol{background:#ffeded;color:#c43b3b}
+.toast-info .toast-symbol{background:#eaf0ff;color:#315fd0}
+.toast-copy{display:flex;flex:1;flex-direction:column;gap:3px;min-width:0}
+.toast-copy strong{font-size:12px;color:#25344d;font-weight:750}
+.toast-copy>span{font-size:11px;line-height:1.5;color:#69778d;overflow-wrap:anywhere}
+.toast-close{border:0;background:transparent;color:#8792a5;font-size:19px;line-height:1;cursor:pointer;padding:0 2px}
+.toast-close:hover{color:#25344d}
+@keyframes toast-enter{from{opacity:0;transform:translateY(-7px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:640px){.toast-stack{top:72px;right:12px}}
