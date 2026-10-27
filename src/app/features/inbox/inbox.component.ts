@@ -8,6 +8,8 @@ ModuleRegistry.registerModules([ClientSideRowModelModule]);
 type Mailbox = 'Inbox' | 'Starred' | 'Snoozed' | 'Important' | 'Sent' | 'Drafts' | 'Spam' | 'Trash';
 type RequestCategory = 'ALL' | 'MATCH_CLOSE' | 'EDIT' | 'DEPARTMENT' | 'NET' | 'DELETE' | 'SPLIT_UNSPLIT' | 'CATEGORY_REASON';
 type RequestScope = 'ALL' | 'MINE' | 'AWAITING_APPROVAL';
+type ToastType = 'success' | 'error' | 'info';
+interface ToastMessage { id: number; type: ToastType; title: string; message: string; }
 interface RequestTabConfig { id: RequestCategory; label: string; enabled: boolean; order: number; }
 interface RequestRecord {
   id: string; actionTool: string; actionType: string; requestStatus: string;
@@ -102,6 +104,14 @@ interface RequestRecord {
       </main>
     </div>
 
+
+    <div class="toast-stack" aria-live="polite" aria-atomic="true">
+      <div *ngFor="let toast of toasts()" class="toast-message" [class.toast-success]="toast.type === 'success'" [class.toast-error]="toast.type === 'error'" [class.toast-info]="toast.type === 'info'" role="status">
+        <span class="toast-symbol" aria-hidden="true">{{ toast.type === 'success' ? '✓' : toast.type === 'error' ? '!' : 'i' }}</span>
+        <span class="toast-copy"><strong>{{ toast.title }}</strong><span>{{ toast.message }}</span></span>
+        <button type="button" class="toast-close" aria-label="Dismiss notification" (click)="dismissToast(toast.id)">×</button>
+      </div>
+    </div>
     <div class="modal-backdrop" *ngIf="createRequestOpen()" (click)="closeCreateRequest()">
       <section class="create-modal" role="dialog" aria-modal="true" aria-labelledby="create-request-title" (click)="$event.stopPropagation()">
         <div class="drawer-head"><div><span class="eyebrow">REQUEST MANAGEMENT</span><h2 id="create-request-title">Create request</h2></div><button type="button" class="square-button" aria-label="Close form" (click)="closeCreateRequest()">×</button></div>
@@ -153,6 +163,9 @@ export class InboxComponent {
   readonly gridSearch = signal('');
   readonly globalSearch = signal('');
   readonly showNotifications = signal(false);
+  readonly toasts = signal<ToastMessage[]>([]);
+  private toastSequence = 0;
+  private toastTimers = new Map<number, ReturnType<typeof setTimeout>>();
   readonly createRequestOpen = signal(false);
   readonly newActionType = signal('SUBMIT_NET');
   readonly newActionTool = signal('SUBMIT_NET');
@@ -253,7 +266,27 @@ export class InboxComponent {
   onRowClicked(record: RequestRecord) { this.selectedRecord.set(record); if (record.unread) this.updateRecord(record.id,{unread:false}); }
   markAllRead() { this.records.update(rows => rows.map(r => ({...r,unread:false}))); }
   toggleStar(record: RequestRecord) { this.updateRecord(record.id,{starred:!record.starred}); this.selectedRecord.set({...record,starred:!record.starred}); }
-  approve(record: RequestRecord) { this.updateRecord(record.id,{requestStatus:'APPROVED',actionedBy:'You',actionComments:'Approved'}); this.selectedRecord.set({...record,requestStatus:'APPROVED',actionedBy:'You',actionComments:'Approved'}); }
+  approve(record: RequestRecord) {
+    if (record.requestStatus === 'APPROVED') {
+      this.showToast('info', 'Already approved', `Request ${record.id} has already been approved.`);
+      return;
+    }
+    this.updateRecord(record.id,{requestStatus:'APPROVED',sourceStatus:'COMPLETED',actionedBy:'You',actionComments:'Approved'});
+    this.selectedRecord.set({...record,requestStatus:'APPROVED',sourceStatus:'COMPLETED',actionedBy:'You',actionComments:'Approved'});
+    this.showToast('success', 'Request approved', `Request ${record.id} was approved successfully.`);
+  }
+  private showToast(type: ToastType, title: string, message: string) {
+    const id = ++this.toastSequence;
+    this.toasts.update(items => [...items, {id, type, title, message}]);
+    const timer = setTimeout(() => this.dismissToast(id), 4500);
+    this.toastTimers.set(id, timer);
+  }
+  dismissToast(id: number) {
+    const timer = this.toastTimers.get(id);
+    if (timer) clearTimeout(timer);
+    this.toastTimers.delete(id);
+    this.toasts.update(items => items.filter(item => item.id !== id));
+  }
   moveToTrash(record: RequestRecord) { if (!confirm('Move request '+record.id+' to Trash?')) return; this.updateRecord(record.id,{folder:'Trash',unread:false}); this.selectedRecord.set(null); }
   private updateRecord(id:string, patch:Partial<RequestRecord>) { this.records.update(rows => rows.map(r => r.id === id ? {...r,...patch} : r)); }
 }
