@@ -27,3 +27,35 @@
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important}}
 @media(max-width:900px){.sidebar{width:190px}.content{padding:22px 18px}.top-search{margin-left:8px}.brand-copy{min-width:145px}.summary-strip{gap:9px}.summary-card{padding:13px}.table-toolbar{align-items:flex-start;flex-direction:column;padding:10px 14px}.tabs{height:39px}.table-tools{width:100%}.grid-search{flex:1}}
 @media(max-width:640px){.topbar{padding:0 14px}.brand-copy{min-width:0}.brand-copy span{display:none}.top-search{display:none}.top-actions{gap:8px}.app-layout{display:block}.sidebar{width:100%;padding:12px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px}.compose{grid-column:span 4;margin:0 0 7px}.nav-label,.sidebar-footer{display:none}.nav-item{justify-content:center;padding:0 4px;gap:5px;height:36px;font-size:10px}.nav-icon{font-size:14px;width:auto}.nav-count{display:none}.content{padding:19px 12px}.page-heading{align-items:flex-start;flex-direction:column;margin:16px 0}.page-heading h1{font-size:25px}.heading-actions{width:100%}.summary-strip{grid-template-columns:1fr;gap:8px}.summary-card{padding:10px 13px}.summary-icon{width:32px;height:32px}.summary-card strong{font-size:18px}.grid-wrap{height:440px}.page-footer{flex-wrap:wrap;gap:9px}.page-footer span:nth-child(2){margin-right:0}.panel-footer{gap:10px}.table-tools{width:100%}}
+
+
+/* Horizontal mailbox navigation */
+.app-layout{display:block;min-height:calc(100vh - 70px)}
+.mailbox-nav{background:#fff;border-bottom:1px solid #e7ebf2;padding:12px 30px 10px;display:flex;align-items:center;gap:20px;min-width:0}
+.mailbox-nav-label{color:#9aa5b7;font-size:9px;font-weight:800;letter-spacing:1.3px;flex-shrink:0}
+.mailbox-nav-items{display:flex;align-items:center;gap:6px;min-width:0;flex:1;overflow-x:auto;scrollbar-width:thin}
+.mailbox-nav .compose{display:flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:9px;background:#315fd0;color:white;height:36px;padding:0 15px;font-weight:650;white-space:nowrap;box-shadow:0 5px 12px #315fd02b;margin:0 8px 0 0;flex-shrink:0}
+.mailbox-nav .nav-item{height:36px;display:flex;align-items:center;gap:8px;padding:0 12px;border:0;border-radius:8px;background:transparent;color:#5b6880;text-align:left;white-space:nowrap;flex-shrink:0}
+.mailbox-nav .nav-item:hover{background:#f5f7fb}
+.mailbox-nav .nav-item.active{background:#eaf0ff;color:#2e5dcc;font-weight:700}
+.mailbox-nav .nav-icon{width:17px;text-align:center;font-size:16px}
+.mailbox-nav .nav-name{flex:1}
+.mailbox-nav .nav-count{font-size:10px;font-weight:750;color:#315fd0}
+.mailbox-nav .sidebar-footer{padding-left:12px;color:#8792a5;font-size:10px;display:flex;align-items:center;gap:6px;white-space:nowrap;flex-shrink:0}
+.mailbox-nav .sidebar-footer .demo-pill{margin-left:3px}
+
+/* Create-request dialog */
+.modal-backdrop{position:fixed;inset:0;z-index:20;background:#13213c70;display:flex;align-items:center;justify-content:center;padding:20px}
+.create-modal{width:min(560px,100%);max-height:calc(100vh - 40px);overflow:auto;background:#fff;border-radius:14px;padding:25px;box-shadow:0 24px 70px #12234445}
+.create-modal .drawer-head{margin-bottom:10px}
+.create-modal .drawer-head h2{font-size:23px}
+.form-intro{font-size:12px;color:#78859a;line-height:1.5;margin:0 0 20px}
+.request-form{display:grid;gap:14px}
+.request-form label{display:grid;gap:7px;color:#4d5b72;font-size:11px;font-weight:650}
+.request-form label span{display:inline;color:#d34b4b}
+.request-form input,.request-form select,.request-form textarea{box-sizing:border-box;width:100%;border:1px solid #dce3ed;border-radius:8px;background:#fff;padding:10px 11px;color:#25344d;font:inherit;font-weight:400;outline:none}
+.request-form input:focus,.request-form select:focus,.request-form textarea:focus{border-color:#5c80df;box-shadow:0 0 0 3px #315fd018}
+.request-form textarea{resize:vertical;min-height:72px}
+.form-actions{display:flex;justify-content:flex-end;gap:9px;padding-top:8px;border-top:1px solid #edf0f5;margin-top:4px}
+@media(max-width:900px){.mailbox-nav{padding:10px 18px;gap:12px}.mailbox-nav-label,.mailbox-nav>.sidebar-footer{display:none}}
+@media(max-width:640px){.mailbox-nav{padding:10px 12px;display:block}.mailbox-nav-items{gap:4px;padding-bottom:3px}.mailbox-nav .compose{height:34px;padding:0 11px;margin-right:4px}.mailbox-nav .nav-item{padding:0 10px;gap:6px;height:34px;font-size:10px}.mailbox-nav .nav-icon{font-size:14px;width:auto}.mailbox-nav .nav-count{display:none}.create-modal{padding:18px}}
