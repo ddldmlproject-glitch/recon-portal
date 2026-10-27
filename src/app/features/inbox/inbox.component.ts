@@ -37,16 +37,18 @@ interface RequestRecord {
     </header>
 
     <div class="app-layout">
-      <aside class="sidebar">
-        <button class="compose" (click)="selectFolder('Drafts')"><span>＋</span> New request</button>
-        <div class="nav-label">MAILBOX</div>
-        <button *ngFor="let item of folders" class="nav-item" [class.active]="activeFolder() === item.name" (click)="selectFolder(item.name)">
-          <span class="nav-icon">{{ item.icon }}</span><span class="nav-name">{{ item.name }}</span>
-          <span class="nav-count" *ngIf="item.name === 'Inbox' && unreadCount()">{{ unreadCount() }}</span>
-          <span class="nav-count" *ngIf="item.name === 'Drafts'">2</span>
-        </button>
+      <nav class="mailbox-nav" aria-label="Mailbox folders">
+        <div class="mailbox-nav-label">MAILBOX</div>
+        <div class="mailbox-nav-items">
+          <button class="compose" (click)="selectFolder('Drafts')"><span>＋</span> New request</button>
+          <button *ngFor="let item of folders" class="nav-item" [class.active]="activeFolder() === item.name" (click)="selectFolder(item.name)">
+            <span class="nav-icon">{{ item.icon }}</span><span class="nav-name">{{ item.name }}</span>
+            <span class="nav-count" *ngIf="item.name === 'Inbox' && unreadCount()">{{ unreadCount() }}</span>
+            <span class="nav-count" *ngIf="item.name === 'Drafts'">2</span>
+          </button>
+        </div>
         <div class="sidebar-footer"><span class="status-dot"></span> Demo environment <span class="demo-pill">LOCAL</span></div>
-      </aside>
+      </nav>
 
       <main class="content">
         <div class="breadcrumb"><span>WORKSPACE</span><span class="crumb-slash">/</span><span>MAILBOX</span></div>
