@@ -7,6 +7,7 @@ ModuleRegistry.registerModules([ClientSideRowModelModule]);
 
 type Mailbox = 'Inbox' | 'Starred' | 'Snoozed' | 'Important' | 'Sent' | 'Drafts' | 'Spam' | 'Trash';
 type RequestCategory = 'ALL' | 'MATCH_CLOSE' | 'EDIT' | 'DEPARTMENT' | 'NET' | 'DELETE' | 'SPLIT_UNSPLIT' | 'CATEGORY_REASON';
+type RequestScope = 'ALL' | 'MINE' | 'AWAITING_APPROVAL';
 interface RequestTabConfig { id: RequestCategory; label: string; enabled: boolean; order: number; }
 interface RequestRecord {
   id: string; actionTool: string; actionType: string; requestStatus: string;
@@ -71,7 +72,12 @@ interface RequestRecord {
 
         <section class="table-panel">
           <div class="table-toolbar">
-            <div class="tabs"><button class="tab" [class.selected]="statusFilter() === 'All'" (click)="statusFilter.set('All')">All requests <span>{{ visibleRows().length }}</span></button><button class="tab" [class.selected]="statusFilter() === 'Pending'" (click)="statusFilter.set('Pending')">Awaiting approval</button></div>
+            <div class="request-scopes" role="radiogroup" aria-label="Filter requests">
+              <label class="scope-option"><input type="radio" name="requestScope" value="ALL" [checked]="requestScope() === 'ALL'" (change)="setRequestScope('ALL')"><span>All</span></label>
+              <label class="scope-option"><input type="radio" name="requestScope" value="MINE" [checked]="requestScope() === 'MINE'" (change)="setRequestScope('MINE')"><span>My Requests</span></label>
+              <label class="scope-option"><input type="radio" name="requestScope" value="AWAITING_APPROVAL" [checked]="requestScope() === 'AWAITING_APPROVAL'" (change)="setRequestScope('AWAITING_APPROVAL')"><span>Awaiting Approval</span></label>
+              <span class="scope-total">Total: {{ visibleRows().length }}</span>
+            </div>
             <div class="table-tools"><label class="grid-search"><span>⌕</span><input placeholder="Filter requests" [value]="gridSearch()" (input)="gridSearch.set($any($event.target).value)"></label><button class="square-button" title="Refresh sample data" (click)="refreshGrid()">↻</button></div>
           </div>
           <div class="grid-meta"><span><strong>{{ visibleRows().length }}</strong> requests <span class="meta-divider">·</span> Updated just now</span><span class="demo-note"><span class="status-dot"></span> Sample data</span></div>
@@ -141,6 +147,9 @@ export class InboxComponent {
   ]);
   readonly selectedRequestTab = signal<RequestCategory>('ALL');
   readonly statusFilter = signal('All');
+  readonly requestScope = signal<RequestScope>('AWAITING_APPROVAL');
+  // Demo identity; replace with the authenticated user from the future identity/session API.
+  readonly currentUserId = signal('st30839');
   readonly gridSearch = signal('');
   readonly globalSearch = signal('');
   readonly showNotifications = signal(false);
@@ -167,9 +176,15 @@ export class InboxComponent {
     return this.records().filter(r => {
       const inFolder = folder === 'Inbox' ? r.folder === 'Inbox' : folder === 'Starred' ? r.starred : folder === 'Important' ? r.important : r.folder === folder;
       const inCategory = this.selectedRequestTab() === 'ALL' || r.category === this.selectedRequestTab();
+      const scope = this.requestScope();
+      const inScope = scope === 'ALL'
+        ? true
+        : scope === 'MINE'
+          ? r.createdBy.toLowerCase() === this.currentUserId().toLowerCase()
+          : r.requestStatus === 'PENDING_APPROVAL';
       const inStatus = this.statusFilter() === 'All' || r.requestStatus === 'PENDING_APPROVAL';
       const text = [r.id,r.actionTool,r.actionType,r.requestStatus,r.sourceStatus,r.createdBy,r.details,r.comments].join(' ').toLowerCase();
-      return inFolder && inCategory && inStatus && (!query || text.includes(query));
+      return inFolder && inCategory && inScope && inStatus && (!query || text.includes(query));
     });
   });
   readonly defaultColDef: ColDef = { sortable:true, filter:true, resizable:true, minWidth:115, flex:1 };
@@ -223,6 +238,7 @@ export class InboxComponent {
   refreshGrid() { this.gridApi?.refreshCells({force:true}); }
   selectFolder(folder: Mailbox) { this.activeFolder.set(folder); this.selectedRequestTab.set('ALL'); this.statusFilter.set('All'); this.gridSearch.set(''); }
   selectRequestTab(category: RequestCategory) { this.selectedRequestTab.set(category); this.gridSearch.set(''); }
+  setRequestScope(scope: RequestScope) { this.requestScope.set(scope); this.statusFilter.set('All'); this.gridSearch.set(''); }
   private categoryForAction(actionType: string): RequestCategory {
     const value = actionType.toUpperCase();
     if (value.includes('EDIT')) return 'EDIT';
