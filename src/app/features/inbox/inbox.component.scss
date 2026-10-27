@@ -65,3 +65,10 @@
 .request-tab:hover{background:#f5f7fb;color:#315fd0}
 .request-tab.selected{border-bottom-color:#315fd0;color:#315fd0;font-weight:750}
 .request-tab-count{margin-left:5px;padding:2px 6px;border-radius:9px;background:#eaf0ff;color:#315fd0;font-size:9px}
+
+.request-scopes{display:flex;align-items:center;gap:15px;flex-wrap:wrap}
+.scope-option{display:inline-flex;align-items:center;gap:5px;color:#526078;font-size:11px;white-space:nowrap;cursor:pointer}
+.scope-option input{accent-color:#315fd0;margin:0;width:13px;height:13px}
+.scope-option:has(input:checked){color:#315fd0;font-weight:700}
+.scope-total{font-size:10px;color:#7d899c;white-space:nowrap}
+@media(max-width:640px){.request-scopes{gap:10px}.scope-option{font-size:10px}}
