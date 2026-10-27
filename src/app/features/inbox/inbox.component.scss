@@ -59,3 +59,9 @@
 .form-actions{display:flex;justify-content:flex-end;gap:9px;padding-top:8px;border-top:1px solid #edf0f5;margin-top:4px}
 @media(max-width:900px){.mailbox-nav{padding:10px 18px;gap:12px}.mailbox-nav-label,.mailbox-nav>.sidebar-footer{display:none}}
 @media(max-width:640px){.mailbox-nav{padding:10px 12px;display:block}.mailbox-nav-items{gap:4px;padding-bottom:3px}.mailbox-nav .compose{height:34px;padding:0 11px;margin-right:4px}.mailbox-nav .nav-item{padding:0 10px;gap:6px;height:34px;font-size:10px}.mailbox-nav .nav-icon{font-size:14px;width:auto}.mailbox-nav .nav-count{display:none}.create-modal{padding:18px}}
+
+.request-tabs{display:flex;align-items:stretch;gap:4px;overflow-x:auto;margin:0 0 20px;padding:0 0 2px;border-bottom:1px solid #e0e6ef;scrollbar-width:thin}
+.request-tab{position:relative;flex:0 0 auto;min-height:39px;padding:0 13px;border:0;border-bottom:3px solid transparent;background:transparent;color:#58677e;font-size:11px;font-weight:600;white-space:nowrap;cursor:pointer}
+.request-tab:hover{background:#f5f7fb;color:#315fd0}
+.request-tab.selected{border-bottom-color:#315fd0;color:#315fd0;font-weight:750}
+.request-tab-count{margin-left:5px;padding:2px 6px;border-radius:9px;background:#eaf0ff;color:#315fd0;font-size:9px}
