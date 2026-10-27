@@ -237,14 +237,14 @@ export class InboxComponent implements OnInit, OnDestroy {
   }
 
   private handleLiveEvent(event: LiveReportEvent): void {
-    if (event.type === 'reports-refresh') {
-      // Backend signals that the report list changed; the live API integration
-      // can call the report-list endpoint here once it is available.
+    if (event.type === 'reports-refresh' && !event.report) {
+      // A refresh-only event needs the report-list API to fetch current data.
+      this.showToast('info', 'Reports updated', event.message || 'New report activity is available. Refresh the report list.');
       this.refreshGrid();
       return;
     }
 
-    if (event.type === 'report-created' || event.type === 'report-updated') {
+    if (event.type === 'report-created' || event.type === 'report-updated' || event.type === 'reports-refresh') {
       const report = event.report;
       if (report) {
         const mapped = this.mapLiveReport(report);
@@ -257,8 +257,10 @@ export class InboxComponent implements OnInit, OnDestroy {
           });
           if (event.type === 'report-created') {
             this.showToast('info', 'New report available', event.message || `Report ${mapped.id} is available for review.`);
-          } else {
+          } else if (event.type === 'report-updated') {
             this.showToast('info', 'Report updated', event.message || `Report ${mapped.id} has been updated.`);
+          } else {
+            this.showToast('info', 'Reports refreshed', event.message || `Report ${mapped.id} was received from the live stream.`);
           }
         } else {
           this.showToast('info', 'Reports updated', event.message || 'New report activity is available. Refresh the report list.');
