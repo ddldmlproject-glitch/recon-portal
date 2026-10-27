@@ -5,7 +5,7 @@ This folder is intentionally isolated so it can be copied into another Angular a
 ## Files
 
 - `inbox.component.ts` — standalone Angular component, sample records, mailbox state, AG Grid configuration and demo actions.
-- `inbox.component.css` — feature styles, responsive layout and notification animation.
+- `inbox.component.scss` — feature styles, responsive layout and notification animation.
 
 ## Copy into Citi MFE
 
@@ -49,7 +49,7 @@ Ensure the host's global stylesheet imports AG Grid styles once:
 @import 'ag-grid-community/styles/ag-theme-quartz.css';
 ```
 
-If the host uses a different design system, adapt the colors and typography in `inbox.component.css` to its design tokens. The component includes its own demo header; when embedding it in the Citi MFE, remove or adapt that header if the host application already provides a global header.
+If the host uses a different design system, adapt the colors and typography in `inbox.component.scss` to its design tokens. The component includes its own demo header; when embedding it in the Citi MFE, remove or adapt that header if the host application already provides a global header.
 
 ## API integration later
 
