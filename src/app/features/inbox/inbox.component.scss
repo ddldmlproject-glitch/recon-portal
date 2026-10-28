@@ -86,3 +86,11 @@
 .toast-close:hover{color:#25344d}
 @keyframes toast-enter{from{opacity:0;transform:translateY(-7px)}to{opacity:1;transform:translateY(0)}}
 @media(max-width:640px){.toast-stack{top:72px;right:12px}}
+
+.request-toolbar-row{display:flex;align-items:center;justify-content:space-between;gap:20px;width:100%;min-width:0}
+.request-owner-scopes,.request-approval-scopes{display:flex;align-items:center;gap:18px;min-width:0}
+.request-approval-scopes{justify-content:flex-end;margin-left:auto}
+.request-toolbar-row .scope-option{gap:6px}
+.request-toolbar-row .scope-total{margin-left:3px;padding-left:12px;border-left:1px solid #e0e6ef}
+@media(max-width:700px){.request-toolbar-row{flex-wrap:wrap;gap:12px}.request-owner-scopes,.request-approval-scopes{gap:12px}.request-approval-scopes{margin-left:0;justify-content:flex-start}}
+@media(max-width:430px){.request-toolbar-row{align-items:flex-start;flex-direction:column}.request-owner-scopes,.request-approval-scopes{flex-wrap:wrap}}
