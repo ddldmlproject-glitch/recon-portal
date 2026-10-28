@@ -8,7 +8,7 @@ import { ColDef, GridReadyEvent, ModuleRegistry, ClientSideRowModelModule } from
 ModuleRegistry.registerModules([ClientSideRowModelModule]);
 
 type Mailbox = 'Inbox' | 'Starred' | 'Snoozed' | 'Important' | 'Sent' | 'Drafts' | 'Spam' | 'Trash';
-type RequestCategory = 'ALL' | 'MATCH_CLOSE' | 'EDIT' | 'DEPARTMENT' | 'NET' | 'DELETE' | 'SPLIT_UNSPLIT' | 'CATEGORY_REASON';
+type RequestCategory = 'ALL' | 'MATCH_CLOSE' | 'EDIT' | 'DEPARTMENT' | 'NET' | 'DELETE' | 'SPLIT_UNSPLIT' | 'CATEGORY_REASON' | 'HITL_PENDING';
 type RequestOwnerScope = 'GROUP' | 'MINE';
 type RequestApprovalScope = 'ALL' | 'AWAITING_APPROVAL';
 type ToastType = 'success' | 'error' | 'info';
@@ -79,12 +79,12 @@ interface RequestRecord {
           <div class="table-toolbar">
             <div class="request-toolbar-row">
               <div class="request-owner-scopes" role="radiogroup" aria-label="Request ownership">
-                <label class="scope-option"><input type="radio" name="requestOwnerScope" value="GROUP" [checked]="requestOwnerScope() === 'GROUP'" (change)="setRequestOwnerScope('GROUP')"><span>My group requests</span></label>
-                <label class="scope-option"><input type="radio" name="requestOwnerScope" value="MINE" [checked]="requestOwnerScope() === 'MINE'" (change)="setRequestOwnerScope('MINE')"><span>My requests</span></label>
+                <label class="scope-option"><input type="radio" name="requestOwnerScope" value="MINE" [checked]="requestOwnerScope() === 'MINE'" (change)="setRequestOwnerScope('MINE')"><span>My Requests</span></label>
+                <label class="scope-option"><input type="radio" name="requestOwnerScope" value="GROUP" [checked]="requestOwnerScope() === 'GROUP'" (change)="setRequestOwnerScope('GROUP')"><span>My Group Requests</span></label>
               </div>
               <div class="request-approval-scopes" role="radiogroup" aria-label="Approval status">
+                <label class="scope-option"><input type="radio" name="requestApprovalScope" value="AWAITING_APPROVAL" [checked]="requestApprovalScope() === 'AWAITING_APPROVAL'" (change)="setRequestApprovalScope('AWAITING_APPROVAL')"><span>Awaiting For Approval</span></label>
                 <label class="scope-option"><input type="radio" name="requestApprovalScope" value="ALL" [checked]="requestApprovalScope() === 'ALL'" (change)="setRequestApprovalScope('ALL')"><span>All</span></label>
-                <label class="scope-option"><input type="radio" name="requestApprovalScope" value="AWAITING_APPROVAL" [checked]="requestApprovalScope() === 'AWAITING_APPROVAL'" (change)="setRequestApprovalScope('AWAITING_APPROVAL')"><span>Awaiting Approval</span></label>
                 <span class="scope-total">Total: {{ visibleRows().length }}</span>
               </div>
             </div>
@@ -158,15 +158,15 @@ export class InboxComponent implements OnInit, OnDestroy {
   ];
   readonly activeFolder = signal<Mailbox>('Inbox');
   // Backend-shaped configuration: replace this seed with GET /api/inbox/request-tabs when the API is available.
+  // Seed configuration for the request-tab configuration API.
+  // Removed Department, Net, and Split/Unsplit from the visible navigation.
   readonly requestTabs = signal<RequestTabConfig[]>([
     {id:'ALL',label:'All Requests',enabled:true,order:0},
     {id:'MATCH_CLOSE',label:'Match/Close Requests',enabled:true,order:1},
     {id:'EDIT',label:'Edit Requests',enabled:true,order:2},
-    {id:'DEPARTMENT',label:'Department Requests',enabled:true,order:3},
-    {id:'NET',label:'Net Requests',enabled:true,order:4},
-    {id:'DELETE',label:'Delete Requests',enabled:true,order:5},
-    {id:'SPLIT_UNSPLIT',label:'Split/Unsplit Requests',enabled:true,order:6},
-    {id:'CATEGORY_REASON',label:'Category/Reason Code Requests',enabled:true,order:7}
+    {id:'DELETE',label:'Delete Requests',enabled:true,order:3},
+    {id:'CATEGORY_REASON',label:'Category/Reason Code Requests',enabled:true,order:4},
+    {id:'HITL_PENDING',label:'HITL Pending Requests',enabled:true,order:5}
   ]);
   readonly selectedRequestTab = signal<RequestCategory>('ALL');
   readonly statusFilter = signal('All');
@@ -289,14 +289,17 @@ export class InboxComponent implements OnInit, OnDestroy {
     const id = String(raw['id'] ?? (mongoId && typeof mongoId === 'object' ? (mongoId as Record<string, unknown>)['$oid'] ?? '' : mongoId) ?? raw['reportId'] ?? '');
     if (!id) return null;
     const actionType = String(raw['actionType'] ?? raw['action_type'] ?? raw['type'] ?? 'REPORT');
-    const category = this.categoryForAction(actionType);
+    const requestStatus = String(raw['requestStatus'] ?? raw['status'] ?? 'PENDING_APPROVAL');
+    const sourceCategory = String(raw['category'] ?? raw['requestCategory'] ?? raw['request_category'] ?? raw['requestType'] ?? '').toUpperCase().replace(/[\\s/-]+/g, '_');
+    const isHitlPending = raw['hitlPending'] === true || sourceCategory.includes('HITL') || requestStatus.toUpperCase().includes('HITL_PENDING');
+    const category = isHitlPending ? 'HITL_PENDING' : this.categoryForAction(actionType);
     const folderValue = String(raw['folder'] ?? 'Inbox');
     const validFolders: Mailbox[] = ['Inbox','Starred','Snoozed','Important','Sent','Drafts','Spam','Trash'];
     return {
       id,
       actionTool: String(raw['actionTool'] ?? raw['action_tool'] ?? actionType),
       actionType,
-      requestStatus: String(raw['requestStatus'] ?? raw['status'] ?? 'PENDING_APPROVAL'),
+      requestStatus,
       sourceStatus: String(raw['sourceStatus'] ?? raw['source_status'] ?? 'SUBMITTED'),
       createdBy: String(raw['createdBy'] ?? raw['created_by'] ?? '—'),
       details: String(raw['details'] ?? raw['description'] ?? ''),
@@ -308,7 +311,7 @@ export class InboxComponent implements OnInit, OnDestroy {
       unread: true,
       starred: Boolean(raw['starred']),
       important: Boolean(raw['important']),
-      category: category === 'ALL' ? 'ALL' : category
+      category
     };
   }
 
@@ -350,6 +353,7 @@ export class InboxComponent implements OnInit, OnDestroy {
   setRequestApprovalScope(scope: RequestApprovalScope) { this.requestApprovalScope.set(scope); this.statusFilter.set('All'); this.gridSearch.set(''); }
   private categoryForAction(actionType: string): RequestCategory {
     const value = actionType.toUpperCase();
+    if (value.includes('HITL')) return 'HITL_PENDING';
     if (value.includes('EDIT')) return 'EDIT';
     if (value.includes('DEPARTMENT')) return 'DEPARTMENT';
     if (value.includes('NET')) return 'NET';
