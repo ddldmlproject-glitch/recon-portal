@@ -94,3 +94,80 @@
 .request-toolbar-row .scope-total{margin-left:3px;padding-left:12px;border-left:1px solid #e0e6ef}
 @media(max-width:700px){.request-toolbar-row{flex-wrap:wrap;gap:12px}.request-owner-scopes,.request-approval-scopes{gap:12px}.request-approval-scopes{margin-left:0;justify-content:flex-start}}
 @media(max-width:430px){.request-toolbar-row{align-items:flex-start;flex-direction:column}.request-owner-scopes,.request-approval-scopes{flex-wrap:wrap}}
+
+/* Consistent typography system across the entire inbox feature.
+   Keep hierarchy, but standardize font family, weights, line-height and control text. */
+:host {
+  --inbox-font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+  --inbox-font-body: 12px;
+  --inbox-font-secondary: 11px;
+  --inbox-font-meta: 10px;
+  --inbox-text-line-height: 1.45;
+  font-family: var(--inbox-font-family);
+  font-size: var(--inbox-font-body);
+  line-height: var(--inbox-text-line-height);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+:host,
+:host *,
+:host *::before,
+:host *::after {
+  font-family: var(--inbox-font-family);
+  box-sizing: border-box;
+}
+
+:host button,
+:host input,
+:host select,
+:host textarea {
+  font: inherit;
+  letter-spacing: inherit;
+}
+
+:host button { line-height: 1.35; }
+:host input,
+:host select,
+:host textarea { font-size: var(--inbox-font-secondary); line-height: var(--inbox-text-line-height); }
+
+:host .brand-copy strong { font-size: 14px; font-weight: 700; line-height: 1.25; }
+:host .brand-copy span,
+:host .eyebrow,
+:host .breadcrumb,
+:host .nav-label,
+:host .mailbox-nav-label,
+:host .local-tag { font-size: var(--inbox-font-meta); line-height: 1.4; letter-spacing: .06em; }
+:host .page-heading h1 { font-size: 28px; line-height: 1.2; font-weight: 700; letter-spacing: -.02em; }
+:host .page-heading p,
+:host .detail-description,
+:host .form-intro { font-size: var(--inbox-font-body); line-height: 1.55; }
+:host .nav-item,
+:host .request-tab,
+:host .scope-option,
+:host .tab,
+:host .primary-button,
+:host .secondary-button,
+:host .danger-button,
+:host .request-form label { font-size: var(--inbox-font-secondary); line-height: 1.4; }
+:host .summary-card span,
+:host .grid-meta,
+:host .panel-footer,
+:host .page-footer,
+:host .sidebar-footer,
+:host .demo-note,
+:host .scope-total { font-size: var(--inbox-font-meta); line-height: 1.45; }
+:host .summary-card strong { font-size: 20px; line-height: 1.2; font-weight: 700; }
+:host .detail-list span { font-size: var(--inbox-font-meta); line-height: 1.4; }
+:host .detail-list strong { font-size: var(--inbox-font-body); line-height: 1.45; font-weight: 600; }
+:host .toast-copy strong { font-size: var(--inbox-font-body); line-height: 1.35; font-weight: 700; }
+:host .toast-copy > span { font-size: var(--inbox-font-secondary); line-height: 1.5; }
+:host .request-tab-count,
+:host .nav-count { font-size: var(--inbox-font-meta); line-height: 1.2; }
+:host .recon-grid { --ag-font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif; --ag-font-size: 11px; }
+
+@media(max-width:640px) {
+  :host .page-heading h1 { font-size: 25px; }
+  :host .request-tab,
+  :host .scope-option { font-size: var(--inbox-font-secondary); }
+}
