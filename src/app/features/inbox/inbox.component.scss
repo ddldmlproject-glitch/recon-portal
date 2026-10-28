@@ -171,3 +171,39 @@
   :host .request-tab,
   :host .scope-option { font-size: var(--inbox-font-secondary); }
 }
+
+/* Keep ownership radio labels visually identical to the approval radio labels. */
+:host .request-toolbar-row .request-owner-scopes .scope-option,
+:host .request-toolbar-row .request-approval-scopes .scope-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  color: #526078;
+  font-family: var(--inbox-font-family);
+  font-size: var(--inbox-font-secondary);
+  font-weight: 500;
+  font-style: normal;
+  line-height: 1.4;
+  letter-spacing: normal;
+  text-transform: none;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+:host .request-toolbar-row .scope-option:has(input:checked) {
+  color: #315fd0;
+  font-weight: 600;
+}
+
+:host .request-toolbar-row .scope-option input[type="radio"] {
+  display: inline-block;
+  flex: 0 0 13px;
+  width: 13px;
+  height: 13px;
+  margin: 0;
+  padding: 0;
+  accent-color: #315fd0;
+  font: inherit;
+}
