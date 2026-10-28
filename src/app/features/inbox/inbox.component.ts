@@ -162,11 +162,9 @@ export class InboxComponent implements OnInit, OnDestroy {
   // Removed Department, Net, and Split/Unsplit from the visible navigation.
   readonly requestTabs = signal<RequestTabConfig[]>([
     {id:'ALL',label:'All Requests',enabled:true,order:0},
-    {id:'MATCH_CLOSE',label:'Match/Close Requests',enabled:true,order:1},
-    {id:'EDIT',label:'Edit Requests',enabled:true,order:2},
-    {id:'DELETE',label:'Delete Requests',enabled:true,order:3},
-    {id:'CATEGORY_REASON',label:'Category/Reason Code Requests',enabled:true,order:4},
-    {id:'HITL_PENDING',label:'HITL Pending Requests',enabled:true,order:5}
+    {id:'EDIT',label:'Edit Requests',enabled:true,order:1},
+    {id:'DELETE',label:'Delete Requests',enabled:true,order:2},
+    {id:'HITL_PENDING',label:'HITL Pending Requests',enabled:true,order:3}
   ]);
   readonly selectedRequestTab = signal<RequestCategory>('ALL');
   readonly statusFilter = signal('All');
