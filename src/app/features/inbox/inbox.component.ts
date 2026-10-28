@@ -9,7 +9,8 @@ ModuleRegistry.registerModules([ClientSideRowModelModule]);
 
 type Mailbox = 'Inbox' | 'Starred' | 'Snoozed' | 'Important' | 'Sent' | 'Drafts' | 'Spam' | 'Trash';
 type RequestCategory = 'ALL' | 'MATCH_CLOSE' | 'EDIT' | 'DEPARTMENT' | 'NET' | 'DELETE' | 'SPLIT_UNSPLIT' | 'CATEGORY_REASON';
-type RequestScope = 'ALL' | 'MINE' | 'AWAITING_APPROVAL';
+type RequestOwnerScope = 'GROUP' | 'MINE';
+type RequestApprovalScope = 'ALL' | 'AWAITING_APPROVAL';
 type ToastType = 'success' | 'error' | 'info';
 interface ToastMessage { id: number; type: ToastType; title: string; message: string; }
 interface RequestTabConfig { id: RequestCategory; label: string; enabled: boolean; order: number; }
@@ -76,11 +77,16 @@ interface RequestRecord {
 
         <section class="table-panel">
           <div class="table-toolbar">
-            <div class="request-scopes" role="radiogroup" aria-label="Filter requests">
-              <label class="scope-option"><input type="radio" name="requestScope" value="ALL" [checked]="requestScope() === 'ALL'" (change)="setRequestScope('ALL')"><span>All</span></label>
-              <label class="scope-option"><input type="radio" name="requestScope" value="MINE" [checked]="requestScope() === 'MINE'" (change)="setRequestScope('MINE')"><span>My Requests</span></label>
-              <label class="scope-option"><input type="radio" name="requestScope" value="AWAITING_APPROVAL" [checked]="requestScope() === 'AWAITING_APPROVAL'" (change)="setRequestScope('AWAITING_APPROVAL')"><span>Awaiting Approval</span></label>
-              <span class="scope-total">Total: {{ visibleRows().length }}</span>
+            <div class="request-toolbar-row">
+              <div class="request-owner-scopes" role="radiogroup" aria-label="Request ownership">
+                <label class="scope-option"><input type="radio" name="requestOwnerScope" value="GROUP" [checked]="requestOwnerScope() === 'GROUP'" (change)="setRequestOwnerScope('GROUP')"><span>My group requests</span></label>
+                <label class="scope-option"><input type="radio" name="requestOwnerScope" value="MINE" [checked]="requestOwnerScope() === 'MINE'" (change)="setRequestOwnerScope('MINE')"><span>My requests</span></label>
+              </div>
+              <div class="request-approval-scopes" role="radiogroup" aria-label="Approval status">
+                <label class="scope-option"><input type="radio" name="requestApprovalScope" value="ALL" [checked]="requestApprovalScope() === 'ALL'" (change)="setRequestApprovalScope('ALL')"><span>All</span></label>
+                <label class="scope-option"><input type="radio" name="requestApprovalScope" value="AWAITING_APPROVAL" [checked]="requestApprovalScope() === 'AWAITING_APPROVAL'" (change)="setRequestApprovalScope('AWAITING_APPROVAL')"><span>Awaiting Approval</span></label>
+                <span class="scope-total">Total: {{ visibleRows().length }}</span>
+              </div>
             </div>
             <div class="table-tools"><label class="grid-search"><span>⌕</span><input placeholder="Filter requests" [value]="gridSearch()" (input)="gridSearch.set($any($event.target).value)"></label><button class="square-button" title="Refresh sample data" (click)="refreshGrid()">↻</button></div>
           </div>
@@ -164,7 +170,10 @@ export class InboxComponent implements OnInit, OnDestroy {
   ]);
   readonly selectedRequestTab = signal<RequestCategory>('ALL');
   readonly statusFilter = signal('All');
-  readonly requestScope = signal<RequestScope>('AWAITING_APPROVAL');
+  readonly requestOwnerScope = signal<RequestOwnerScope>('GROUP');
+  readonly requestApprovalScope = signal<RequestApprovalScope>('AWAITING_APPROVAL');
+  // Demo group membership; replace with group membership from the backend/session API.
+  readonly currentGroupUserIds = signal<string[]>(['st30839','st29418','st30127']);
   // Demo identity; replace with the authenticated user from the future identity/session API.
   readonly currentUserId = signal('st30839');
   readonly gridSearch = signal('');
@@ -196,15 +205,15 @@ export class InboxComponent implements OnInit, OnDestroy {
     return this.records().filter(r => {
       const inFolder = folder === 'Inbox' ? r.folder === 'Inbox' : folder === 'Starred' ? r.starred : folder === 'Important' ? r.important : r.folder === folder;
       const inCategory = this.selectedRequestTab() === 'ALL' || r.category === this.selectedRequestTab();
-      const scope = this.requestScope();
-      const inScope = scope === 'ALL'
-        ? true
-        : scope === 'MINE'
-          ? r.createdBy.toLowerCase() === this.currentUserId().toLowerCase()
-          : r.requestStatus === 'PENDING_APPROVAL';
+      const ownerScope = this.requestOwnerScope();
+      const approvalScope = this.requestApprovalScope();
+      const inOwnerScope = ownerScope === 'MINE'
+        ? r.createdBy.toLowerCase() === this.currentUserId().toLowerCase()
+        : this.currentGroupUserIds().some(userId => userId.toLowerCase() === r.createdBy.toLowerCase());
+      const inApprovalScope = approvalScope === 'ALL' || r.requestStatus === 'PENDING_APPROVAL';
       const inStatus = this.statusFilter() === 'All' || r.requestStatus === 'PENDING_APPROVAL';
       const text = [r.id,r.actionTool,r.actionType,r.requestStatus,r.sourceStatus,r.createdBy,r.details,r.comments].join(' ').toLowerCase();
-      return inFolder && inCategory && inScope && inStatus && (!query || text.includes(query));
+      return inFolder && inCategory && inOwnerScope && inApprovalScope && inStatus && (!query || text.includes(query));
     });
   });
   readonly defaultColDef: ColDef = { sortable:true, filter:true, resizable:true, minWidth:115, flex:1 };
@@ -337,7 +346,8 @@ export class InboxComponent implements OnInit, OnDestroy {
   refreshGrid() { this.gridApi?.refreshCells({force:true}); }
   selectFolder(folder: Mailbox) { this.activeFolder.set(folder); this.selectedRequestTab.set('ALL'); this.statusFilter.set('All'); this.gridSearch.set(''); }
   selectRequestTab(category: RequestCategory) { this.selectedRequestTab.set(category); this.gridSearch.set(''); }
-  setRequestScope(scope: RequestScope) { this.requestScope.set(scope); this.statusFilter.set('All'); this.gridSearch.set(''); }
+  setRequestOwnerScope(scope: RequestOwnerScope) { this.requestOwnerScope.set(scope); this.statusFilter.set('All'); this.gridSearch.set(''); }
+  setRequestApprovalScope(scope: RequestApprovalScope) { this.requestApprovalScope.set(scope); this.statusFilter.set('All'); this.gridSearch.set(''); }
   private categoryForAction(actionType: string): RequestCategory {
     const value = actionType.toUpperCase();
     if (value.includes('EDIT')) return 'EDIT';
