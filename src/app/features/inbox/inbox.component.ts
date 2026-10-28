@@ -290,7 +290,7 @@ export class InboxComponent implements OnInit, OnDestroy {
     if (!id) return null;
     const actionType = String(raw['actionType'] ?? raw['action_type'] ?? raw['type'] ?? 'REPORT');
     const requestStatus = String(raw['requestStatus'] ?? raw['status'] ?? 'PENDING_APPROVAL');
-    const sourceCategory = String(raw['category'] ?? raw['requestCategory'] ?? raw['request_category'] ?? raw['requestType'] ?? '').toUpperCase().replace(/[\\s/-]+/g, '_');
+    const sourceCategory = String(raw['category'] ?? raw['requestCategory'] ?? raw['request_category'] ?? raw['requestType'] ?? '').toUpperCase().replace(/[\s/-]+/g, '_');
     const isHitlPending = raw['hitlPending'] === true || sourceCategory.includes('HITL') || requestStatus.toUpperCase().includes('HITL_PENDING');
     const category = isHitlPending ? 'HITL_PENDING' : this.categoryForAction(actionType);
     const folderValue = String(raw['folder'] ?? 'Inbox');
