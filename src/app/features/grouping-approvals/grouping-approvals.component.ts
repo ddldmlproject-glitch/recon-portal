@@ -122,8 +122,27 @@ export class GroupingApprovalsComponent {
     this.triggerFilters.set({ reconId: '', reconName: '', triggerType: '', loadStatus: '', updatedBy: '' });
   }
   closeDialog(): void { this.dialogMode.set(null); }
-  setScreen(screen: ApprovalScreenId): void { this.activeScreen.set(screen); this.searchText.set(''); }
+  setScreen(screen: ApprovalScreenId): void {
+    this.activeScreen.set(screen);
+    this.searchText.set('');
+    const group = this.selectedGroup();
+    if (group && screen === 'users') this.userIdsDraft.set(group.userIds.join('\\n'));
+    if (group && screen === 'roles') {
+      this.roleIdsDraft.set([...group.roleIds]);
+      this.reconIdsDraft.set(group.reconIds.join(', '));
+    }
+  }
   selectGroup(group: EntitlementGroup): void { this.selectedGroupId.set(group.id); }
+  changeSelectedGroup(groupId: string): void {
+    this.selectedGroupId.set(groupId);
+    const group = this.data.groups().find(item => item.id === groupId);
+    if (!group) return;
+    if (this.activeScreen() === 'users') this.userIdsDraft.set(group.userIds.join('\\n'));
+    if (this.activeScreen() === 'roles') {
+      this.roleIdsDraft.set([...group.roleIds]);
+      this.reconIdsDraft.set(group.reconIds.join(', '));
+    }
+  }
   showTrigger(trigger: ReconTrigger): void { this.selectedTrigger.set(trigger); }
   closeTrigger(): void { this.selectedTrigger.set(null); }
 
