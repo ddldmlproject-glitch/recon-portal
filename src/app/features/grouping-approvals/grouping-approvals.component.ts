@@ -74,7 +74,7 @@ export class GroupingApprovalsComponent {
     this.draft.update(group => ({ ...group, approvers: value.split(',').map(id => id.trim()).filter(Boolean) }));
   }
   updateDraftReconSelection(value: string): void { this.draft.update(group => ({ ...group, reconSelection: value })); }
-  resetUsersDraft(): void { this.userIdsDraft.set(this.selectedGroup()?.userIds.join('\\n') ?? ''); }
+  resetUsersDraft(): void { const group = this.selectedGroup(); this.userIdsDraft.set(group ? group.userIds.join(String.fromCharCode(10)) : ''); }
   removeDraftUser(userId: string): void {
     this.userIdsDraft.set(this.draftUserIds().filter(id => id !== userId).join('\n'));
   }
