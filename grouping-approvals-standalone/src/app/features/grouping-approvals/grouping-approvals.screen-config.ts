@@ -24,7 +24,7 @@ const triggerColumns: ColDef<ReconLoadTrigger>[] = [
   { field: 'updatedAt', headerName: 'Updated Date', minWidth: 160 }
 ];
 
-export const GROUPING_APPROVALS_SCREENS: ScreenConfig[] = [
+export const GROUPING_APPROVALS_SCREENS: ScreenConfig<any>[] = [
   { id: 'groups', title: 'Entitlement Groups', description: 'Manage group membership, ownership and reconciliation access.', layout: 'grid', dataSource: { resource: 'groups', operation: 'groupsList' }, grid: { id: 'groups-grid', rowId: 'id', columns: groupColumns, pageSize: 20, selectable: true, quickFilter: true }, actions: [{ id: 'create-group', label: 'Create Group', kind: 'create' }, { id: 'export-groups', label: 'Export CSV', kind: 'export' }, { id: 'edit-group', label: 'Edit', kind: 'edit' }, { id: 'delete-group', label: 'Delete', kind: 'delete', confirmation: 'Delete this group? This action cannot be undone.' }] },
   { id: 'triggers', title: 'Recon Load Triggers', description: 'Review reconciliation load trigger activity.', layout: 'grid', dataSource: { resource: 'recon-load-triggers', operation: 'triggersList' }, grid: { id: 'triggers-grid', rowId: 'id', columns: triggerColumns, pageSize: 20, selectable: true, quickFilter: true }, actions: [] }
 ];
