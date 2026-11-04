@@ -8,7 +8,7 @@ import { themeQuartz } from 'ag-grid-community';
   standalone: true,
   imports: [AgGridAngular],
   template: `<ag-grid-angular class="dynamic-grid" [rowData]="rowData()" [columnDefs]="columnDefs()" [defaultColDef]="defaultColDef" [gridOptions]="gridOptions()" [theme]="theme" />`,
-  styles: [`:host{display:block;width:100%;min-width:0}.dynamic-grid{display:block;width:100%;height:100%;min-height:320px}`]
+  styles: [`:host{display:block;width:100%;height:100%;min-width:0;min-height:450px}.dynamic-grid{display:block;width:100%;height:100%;min-height:450px}`]
 })
 export class DynamicGridComponent<TData = unknown> {
   readonly rowData = input<TData[]>([]);
