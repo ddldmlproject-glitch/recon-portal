@@ -57,4 +57,8 @@ export interface GroupUpdate {
   approvers: string[];
   userIds: string[];
   roles: string[];
+  toolsAndReports: string[];
+  reconSelection: 'All Recons' | 'Recon IDs';
+  allEntities: number;
+  status: ApprovalStatus;
 }
