@@ -74,7 +74,7 @@ export class GroupingApprovalsComponent {
     this.draft.update(group => ({ ...group, approvers: value.split(',').map(id => id.trim()).filter(Boolean) }));
   }
   updateDraftReconSelection(value: string): void { this.draft.update(group => ({ ...group, reconSelection: value })); }
-  removeDraftUser(userId: string): void {
+  resetUsersDraft(): void { this.userIdsDraft.set(this.selectedGroup()?.userIds.join('\\n') ?? ''); }\n  removeDraftUser(userId: string): void {
     this.userIdsDraft.set(this.draftUserIds().filter(id => id !== userId).join('\n'));
   }
   toggleRole(roleId: string, checked: boolean): void {
