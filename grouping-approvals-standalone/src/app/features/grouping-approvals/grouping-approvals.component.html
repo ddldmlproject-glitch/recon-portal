@@ -1,0 +1,39 @@
+<section class="ga-shell">
+  <header class="ga-header">
+    <div><div class="ga-eyebrow">RECON PORTAL <span>/</span> ADMINISTRATION</div><h1>{{ config.title }}</h1><p>{{ config.subtitle }}</p></div>
+    <div class="ga-header-actions"><button class="ga-button ga-button--secondary" (click)="loadData()" [disabled]="busy()">Refresh</button><button class="ga-button ga-button--primary" *ngIf="config.permissions.canExport && activeTab() === 'groups'" (click)="exportGroups()">Export</button></div>
+  </header>
+  <nav class="ga-tabs" aria-label="Grouping and approvals sections">
+    <button *ngFor="let tab of config.tabs" [class.is-active]="activeTab() === tab.id" (click)="setTab(tab.id)">{{ tab.label }}<span class="ga-tab-count">{{ tab.id === 'groups' ? groups().length : triggers().length }}</span></button>
+  </nav>
+  <div class="ga-toolbar">
+    <div class="ga-search"><span>⌕</span><input type="search" placeholder="Search by name, ID or description" [ngModel]="searchText()" (ngModelChange)="searchText.set($event)"><button *ngIf="searchText()" (click)="searchText.set('')">×</button></div>
+    <span class="ga-result-count">{{ activeTab() === 'groups' ? filteredGroups().length + ' groups' : filteredTriggers().length + ' triggers' }}</span>
+  </div>
+  <div class="ga-alert" *ngIf="errorMessage()">{{ errorMessage() }}</div><div class="ga-loading" *ngIf="busy()">Loading data…</div>
+
+  <ng-container *ngIf="activeTab() === 'groups'">
+    <div class="ga-table-wrap"><table class="ga-table"><thead><tr><th *ngFor="let c of config.groupColumns" [style.width]="c.width">{{ c.label }}</th><th>Actions</th></tr></thead>
+      <tbody><tr *ngFor="let g of filteredGroups(); trackBy: trackById">
+        <td><strong class="ga-group-name">{{ g.groupName }}</strong><span class="ga-status" [class.is-pending]="g.status === 'Pending'">{{ g.status }}</span></td><td class="ga-description">{{ g.description }}</td><td>{{ g.owner }}</td><td>{{ g.approvers.join(', ') }}</td><td>{{ g.reconSelection }}</td><td>{{ g.allEntities }}</td><td>{{ g.updatedBy }}</td><td>{{ g.updatedAt }}</td>
+        <td><div class="ga-row-actions"><button class="ga-link" (click)="openDialog(g, 'users')" *ngIf="config.permissions.canManageUsers">Users</button><button class="ga-link" (click)="openDialog(g, 'roles')" *ngIf="config.permissions.canManageRoles">Roles</button></div></td>
+      </tr><tr *ngIf="filteredGroups().length === 0"><td colspan="9" class="ga-empty">No entitlement groups found.</td></tr></tbody>
+    </table></div><div class="ga-footnote">Select Users to manage group membership or Roles to configure access entitlements.</div>
+  </ng-container>
+
+  <ng-container *ngIf="activeTab() === 'triggers'">
+    <div class="ga-filter-summary"><span>Recon load trigger records</span><span>Search by Recon ID, name or trigger status.</span></div>
+    <div class="ga-table-wrap"><table class="ga-table"><thead><tr><th *ngFor="let c of config.triggerColumns" [style.width]="c.width">{{ c.label }}</th></tr></thead>
+      <tbody><tr *ngFor="let t of filteredTriggers(); trackBy: trackById"><td><strong>{{ t.reconId }}</strong></td><td>{{ t.reconName }}</td><td>{{ t.triggerType }}</td><td>{{ t.value }}</td><td><span class="ga-status" [class.is-pending]="t.loadStatus === 'Pending'" [class.is-failed]="t.loadStatus === 'Failed'">{{ t.loadStatus }}</span></td><td>{{ t.matchLoadStatus }}</td><td>{{ t.updatedBy }}</td><td>{{ t.updatedAt }}</td></tr><tr *ngIf="filteredTriggers().length === 0"><td colspan="8" class="ga-empty">No trigger records found.</td></tr></tbody>
+    </table></div>
+  </ng-container>
+
+  <div class="ga-overlay" *ngIf="dialogMode() && selectedGroup()" (click)="closeDialog()">
+    <section class="ga-dialog" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
+      <header class="ga-dialog-header"><div><span class="ga-eyebrow">ENTITLEMENT MANAGEMENT</span><h2>{{ dialogMode() === 'users' ? 'Manage Group Users Entitlement' : 'Entitlement Group Role Setup' }}</h2><p>{{ selectedGroup()?.groupName }}</p></div><button class="ga-close" (click)="closeDialog()">×</button></header>
+      <div class="ga-dialog-body" *ngIf="dialogMode() === 'users'"><label class="ga-field-label">Group</label><input class="ga-input" [value]="selectedGroup()?.groupName" disabled><div class="ga-two-column"><div><label class="ga-field-label">Assigned User IDs</label><textarea class="ga-textarea" [(ngModel)]="userIdsText" rows="11" placeholder="One user ID per line"></textarea><small>Enter one user ID per line. Existing IDs are pre-populated.</small></div><div class="ga-help-panel"><strong>Group membership</strong><p>Maintain the users assigned to this entitlement group. Remove an ID to revoke membership.</p><p>Changes are stored in the local mock repository.</p></div></div></div>
+      <div class="ga-dialog-body" *ngIf="dialogMode() === 'roles'"><div class="ga-form-grid"><label>Group Name<input class="ga-input" [value]="selectedGroup()?.groupName" disabled></label><label>Group Owner<input class="ga-input" [(ngModel)]="ownerDraft"></label><label class="ga-full">Description<input class="ga-input" [(ngModel)]="descriptionDraft"></label><label class="ga-full">Group Approvers<input class="ga-input" [(ngModel)]="approversDraft" placeholder="user1, user2"></label></div><div class="ga-role-tabs"><span class="is-selected">Recons</span><span>User Actions</span><span>Manage Roles</span><span>Tools and Reports</span></div><label class="ga-field-label">Configured Roles</label><textarea class="ga-textarea" [(ngModel)]="rolesText" rows="5" placeholder="One role per line"></textarea><small>Role-specific entitlement rules are a follow-on configuration step.</small></div>
+      <footer class="ga-dialog-footer"><button class="ga-button ga-button--secondary" (click)="closeDialog()">Cancel</button><button class="ga-button ga-button--primary" (click)="saveDialog()" [disabled]="busy()">Save changes</button></footer>
+    </section>
+  </div>
+</section>
