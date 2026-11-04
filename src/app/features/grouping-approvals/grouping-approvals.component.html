@@ -1,0 +1,88 @@
+<div class="ga-shell">
+  <header class="ga-header">
+    <div class="brand"><span class="brand-symbol">R</span><span><strong>Recon Portal</strong><small>OPERATIONS WORKSPACE</small></span></div>
+    <div class="header-context">Grouping &amp; Approvals <span> / </span> <b>{{ currentScreen().title }}</b></div>
+    <div class="header-right"><span class="environment"><i></i> DEMO ENVIRONMENT</span><span class="user-avatar">KA</span></div>
+  </header>
+
+  <div class="ga-layout">
+    <aside class="ga-sidebar">
+      <div class="sidebar-caption">ADMINISTRATION</div>
+      <button *ngFor="let screen of config.screens" class="side-link" [class.active]="activeScreen() === screen.id" (click)="setScreen(screen.id)">
+        <span class="side-icon">{{ screen.icon }}</span><span>{{ screen.navLabel }}</span><span class="side-chevron" *ngIf="activeScreen() === screen.id">›</span>
+      </button>
+      <div class="sidebar-note"><span class="note-icon">ⓘ</span><span><b>Configuration workspace</b><small>Changes are stored locally in this demo. API integration can be enabled later.</small></span></div>
+    </aside>
+
+    <main class="ga-main">
+      <div class="breadcrumb">ADMINISTRATION <span>/</span> GROUPING &amp; APPROVALS <span>/</span> <b>{{ currentScreen().navLabel | uppercase }}</b></div>
+      <div class="page-heading">
+        <div><div class="eyebrow">ENTITLEMENT MANAGEMENT</div><h1>{{ currentScreen().title }}</h1><p>{{ currentScreen().description }}</p></div>
+        <button *ngIf="activeScreen() === 'groups'" class="btn primary" (click)="openCreate()">＋ Create group</button>
+      </div>
+
+      <ng-container [ngSwitch]="activeScreen()">
+        <section *ngSwitchCase="'groups'" class="content-card">
+          <div class="card-toolbar"><div><b>Entitlement Group Grid</b><small>{{ filteredGroups().length }} groups configured</small></div><div class="toolbar-actions"><label class="search-box"><span>⌕</span><input placeholder="Search groups..." [ngModel]="searchText()" (ngModelChange)="searchText.set($event)"></label><button class="btn outline" (click)="notify('Export is ready to connect to the backend export endpoint')">⇩ Export</button></div></div>
+          <div class="table-scroll"><table><thead><tr><th class="check-col"><input type="checkbox" aria-label="Select all groups"></th><th *ngFor="let col of config.groupColumns">{{ col.label }}</th><th>Actions</th></tr></thead><tbody>
+            <tr *ngFor="let group of filteredGroups()" [class.row-selected]="selectedGroupId() === group.id" (click)="selectGroup(group)">
+              <td><input type="checkbox" [checked]="selectedGroupId() === group.id" (click)="$event.stopPropagation(); selectGroup(group)" [attr.aria-label]="'Select ' + group.name"></td>
+              <td class="group-name">{{ group.name }}</td><td class="description-cell">{{ group.description }}</td><td>{{ group.owner }}</td><td>{{ group.approvers.join(', ') }}</td><td>{{ group.reconSelection }}</td><td>{{ group.allEntities }}</td><td>{{ group.updatedBy }}</td><td class="date-cell">{{ group.updatedAt }}</td>
+              <td><div class="row-actions"><button title="View details" (click)="$event.stopPropagation(); runGroupAction('view', group)">◉</button><button title="Edit group" (click)="$event.stopPropagation(); runGroupAction('edit', group)">✎</button><button title="Manage users" (click)="$event.stopPropagation(); runGroupAction('manage-users', group)">♙</button><button title="Configure roles" (click)="$event.stopPropagation(); runGroupAction('configure-roles', group)">▤</button><button class="delete-action" title="Delete group" (click)="$event.stopPropagation(); runGroupAction('delete', group)">⌫</button></div></td>
+            </tr><tr *ngIf="!filteredGroups().length"><td colspan="11" class="empty-state">No entitlement groups match your search.</td></tr>
+          </tbody></table></div>
+          <div class="table-footer"><span>Showing <b>{{ filteredGroups().length }}</b> of <b>{{ data.groups().length }}</b> groups</span><span>Last updated values are sample data</span></div>
+        </section>
+
+        <section *ngSwitchCase="'users'" class="content-card">
+          <div class="card-toolbar"><div><b>Manage Group Users Entitlement</b><small>Select a group and maintain its assigned users.</small></div></div>
+          <div class="form-workspace"><div class="field-block group-select"><label>Group</label><select [ngModel]="selectedGroupId()" (ngModelChange)="selectedGroupId.set($event)"><option *ngFor="let group of data.groups()" [value]="group.id">{{ group.name }}</option></select></div>
+            <div class="dual-list">
+              <div class="list-panel"><div class="list-heading">Assigned User IDs <span>{{ selectedGroup()?.userIds?.length || 0 }}</span></div><div class="user-list"><div class="user-row" *ngFor="let user of selectedGroup()?.userIds"><span class="user-initial">{{ user.slice(0,1).toUpperCase() }}</span><b>{{ user }}</b><button title="Remove user" (click)="userIdsDraft.set(userIdsDraft().split('\n').filter(id => id.trim() !== user).join('\n'))">×</button></div><div *ngIf="!selectedGroup()?.userIds?.length" class="empty-list">No users assigned.</div></div></div>
+              <div class="list-panel add-panel"><div class="list-heading">Add User IDs</div><textarea rows="8" placeholder="Enter one user ID per line" [ngModel]="userIdsDraft()" (ngModelChange)="userIdsDraft.set($event)"></textarea><small>Separate multiple IDs with a new line, comma or semicolon.</small><button class="btn primary add-users" (click)="saveUsers()">Add / Save IDs →</button></div>
+            </div>
+          </div>
+          <div class="card-footer"><button class="btn outline" (click)="userIdsDraft.set(selectedGroup()?.userIds?.join('\n') || '')">Reset</button><button class="btn primary" (click)="saveUsers()">Save changes</button></div>
+        </section>
+
+        <section *ngSwitchCase="'roles'" class="content-card">
+          <div class="card-toolbar"><div><b>Entitlement Group Role Setup</b><small>Configure recon scope, user actions, roles, tools and reports.</small></div></div>
+          <div class="role-form"><div class="form-grid"><div class="field-block"><label>Group</label><select [ngModel]="selectedGroupId()" (ngModelChange)="selectedGroupId.set($event)"><option *ngFor="let group of data.groups()" [value]="group.id">{{ group.name }}</option></select></div><div class="field-block"><label>Group description</label><input [value]="selectedGroup()?.description || ''" readonly></div></div>
+            <div class="role-tabs"><button class="active">Recons</button><button (click)="notify('User Actions configuration is ready for API-backed permission definitions')">User Actions</button><button (click)="notify('Manage Roles configuration is ready for API-backed permission definitions')">Manage Roles</button><button (click)="notify('Tools and Reports configuration is ready for API-backed permission definitions')">Tools and Reports</button></div>
+            <div class="recon-config"><div class="scope-choice"><label><input type="radio" name="reconScope" [checked]="!reconIdsDraft().trim()" (change)="reconIdsDraft.set('')"> All Recons</label><label><input type="radio" name="reconScope" [checked]="!!reconIdsDraft().trim()" (change)="reconIdsDraft.set('R-100')"> Recon IDs</label></div>
+              <div class="recon-picker"><label>Recon IDs <small>(comma separated)</small></label><input placeholder="R-100, R-102" [ngModel]="reconIdsDraft()" (ngModelChange)="reconIdsDraft.set($event)" [disabled]="!reconIdsDraft().trim() && selectedGroup()?.reconSelection === 'All Recons'"></div>
+              <div class="role-picker"><label>Selected Entitlements</label><div class="role-options"><label *ngFor="let role of data.roles()"><input type="checkbox" [checked]="roleIdsDraft().includes(role.id)" (change)="roleIdsDraft.set($any($event.target).checked ? [...roleIdsDraft(), role.id] : roleIdsDraft().filter(id => id !== role.id))"><span><b>{{ role.name }}</b><small>{{ role.description }}</small></span></label></div></div>
+            </div>
+          </div>
+          <div class="card-footer"><button class="btn outline" (click)="closeDialog()">Cancel</button><button class="btn primary" (click)="saveRoles()">Save configuration</button></div>
+        </section>
+
+        <section *ngSwitchCase="'triggers'" class="content-card">
+          <div class="card-toolbar"><div><b>Manage Load Trigger</b><small>Search recon load trigger records by the available criteria.</small></div><span class="result-count">Total: {{ filteredTriggers().length }}</span></div>
+          <div class="trigger-search">
+            <div class="field-block"><label>Recon ID</label><input placeholder="Enter recon ID" [ngModel]="triggerFilters().reconId" (ngModelChange)="updateTriggerFilter('reconId', $event)"></div>
+            <div class="field-block"><label>Recon Name</label><input placeholder="Enter recon name" [ngModel]="triggerFilters().reconName" (ngModelChange)="updateTriggerFilter('reconName', $event)"></div>
+            <div class="field-block"><label>Trigger Type</label><select [ngModel]="triggerFilters().triggerType" (ngModelChange)="updateTriggerFilter('triggerType', $event)"><option value="">All types</option><option>SCHEDULED</option><option>MANUAL</option><option>EVENT</option></select></div>
+            <div class="field-block"><label>Recon Load Status</label><select [ngModel]="triggerFilters().loadStatus" (ngModelChange)="updateTriggerFilter('loadStatus', $event)"><option value="">All statuses</option><option>COMPLETED</option><option>IN_PROGRESS</option><option>FAILED</option></select></div>
+            <div class="field-block"><label>Updated By</label><input placeholder="User ID" [ngModel]="triggerFilters().updatedBy" (ngModelChange)="updateTriggerFilter('updatedBy', $event)"></div>
+            <div class="trigger-buttons"><button class="btn primary" (click)="notify(filteredTriggers().length + ' matching trigger records found')">Search</button><button class="btn outline" (click)="clearTriggerFilters()">Clear</button></div>
+          </div>
+          <div class="table-scroll"><table><thead><tr><th *ngFor="let col of config.triggerColumns">{{ col.label }}</th><th>Action</th></tr></thead><tbody><tr *ngFor="let trigger of filteredTriggers()"><td class="mono">{{ trigger.id }}</td><td>{{ trigger.reconId }}</td><td class="group-name">{{ trigger.reconName }}</td><td>{{ trigger.triggerType }}</td><td>{{ trigger.value }}</td><td><span class="status-pill" [class.failed]="trigger.loadStatus === 'FAILED'" [class.progress]="trigger.loadStatus === 'IN_PROGRESS'">{{ trigger.loadStatus }}</span></td><td>{{ trigger.matchLoadStatus }}</td><td>{{ trigger.updatedBy }}</td><td>{{ trigger.updatedAt }}</td><td><button class="icon-action" (click)="showTrigger(trigger)" title="View trigger details">◉</button></td></tr><tr *ngIf="!filteredTriggers().length"><td colspan="10" class="empty-state">No trigger records found. Adjust the filters and search again.</td></tr></tbody></table></div>
+          <div class="table-footer"><span>Showing <b>{{ filteredTriggers().length }}</b> trigger records</span><span>Search uses local demo data</span></div>
+        </section>
+      </ng-container>
+    </main>
+  </div>
+
+  <div class="modal-backdrop" *ngIf="dialogMode() === 'create' || dialogMode() === 'edit' || dialogMode() === 'view'" (click)="closeDialog()">
+    <section class="dialog" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
+      <div class="dialog-header"><div><div class="eyebrow">GROUP CONFIGURATION</div><h2>{{ dialogMode() === 'create' ? 'Create entitlement group' : dialogMode() === 'edit' ? 'Edit entitlement group' : 'Group details' }}</h2></div><button class="close-button" (click)="closeDialog()">×</button></div>
+      <div class="dialog-grid"><div class="field-block"><label>Group name <em>*</em></label><input [ngModel]="draft().name" (ngModelChange)="draft.set({...draft(), name: $event})" [readonly]="dialogMode() === 'view'" placeholder="Enter group name"></div><div class="field-block"><label>Group owner</label><input [ngModel]="draft().owner" (ngModelChange)="draft.set({...draft(), owner: $event})" [readonly]="dialogMode() === 'view'" placeholder="User ID"></div><div class="field-block full"><label>Description</label><textarea rows="3" [ngModel]="draft().description" (ngModelChange)="draft.set({...draft(), description: $event})" [readonly]="dialogMode() === 'view'" placeholder="Describe the group's purpose"></textarea></div><div class="field-block"><label>Approver IDs</label><input [ngModel]="draft().approvers.join(', ')" (ngModelChange)="draft.set({...draft(), approvers: $event.split(',').map((id: string) => id.trim()).filter(Boolean)})" [readonly]="dialogMode() === 'view'" placeholder="user1, user2"></div><div class="field-block"><label>Recon selection</label><select [ngModel]="draft().reconSelection" (ngModelChange)="draft.set({...draft(), reconSelection: $event})" [disabled]="dialogMode() === 'view'"><option>All Recons</option><option>Recon IDs</option></select></div></div>
+      <div class="dialog-actions"><button class="btn outline" (click)="closeDialog()">{{ dialogMode() === 'view' ? 'Close' : 'Cancel' }}</button><button *ngIf="dialogMode() !== 'view'" class="btn primary" [disabled]="!draft().name.trim()" (click)="saveGroup()">Save group</button></div>
+    </section>
+  </div>
+
+  <div class="detail-backdrop" *ngIf="selectedTrigger()" (click)="closeTrigger()"><section class="trigger-detail" (click)="$event.stopPropagation()"><div class="dialog-header"><div><div class="eyebrow">TRIGGER DETAILS</div><h2>{{ selectedTrigger()?.reconName }}</h2></div><button class="close-button" (click)="closeTrigger()">×</button></div><p><b>Trigger ID:</b> {{ selectedTrigger()?.id }}</p><p><b>Recon ID:</b> {{ selectedTrigger()?.reconId }}</p><p><b>Trigger type:</b> {{ selectedTrigger()?.triggerType }}</p><p><b>Load status:</b> {{ selectedTrigger()?.loadStatus }}</p><p><b>Match load status:</b> {{ selectedTrigger()?.matchLoadStatus }}</p><p><b>Updated by:</b> {{ selectedTrigger()?.updatedBy }}</p><button class="btn primary" (click)="closeTrigger()">Close</button></section></div>
+
+  <div class="toast" *ngIf="toast()">{{ toast() }}</div>
+</div>
