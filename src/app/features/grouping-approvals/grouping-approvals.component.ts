@@ -32,7 +32,7 @@ export class GroupingApprovalsComponent {
 
   readonly currentScreen = computed(() => this.config.getScreen(this.activeScreen()));
   readonly selectedGroup = computed(() => this.data.groups().find(group => group.id === this.selectedGroupId()) ?? this.data.groups()[0] ?? null);
-  readonly draftUserIds = computed(() => this.userIdsDraft().split(/[\\s,;]+/).map(id => id.trim()).filter(Boolean));
+  readonly draftUserIds = computed(() => this.userIdsDraft().split(/[\s,;]+/).map(id => id.trim()).filter(Boolean));
   readonly filteredGroups = computed(() => {
     const query = this.searchText().trim().toLowerCase();
     return this.data.groups().filter(group => !query || [group.name, group.description, group.owner, ...group.approvers].join(' ').toLowerCase().includes(query));
@@ -55,7 +55,7 @@ export class GroupingApprovalsComponent {
   }
   openUsers(group: EntitlementGroup): void {
     this.selectedGroupId.set(group.id);
-    this.userIdsDraft.set(group.userIds.join('\\n'));
+    this.userIdsDraft.set(group.userIds.join('\n'));
     this.dialogMode.set('users');
     this.activeScreen.set('users');
   }
@@ -75,7 +75,7 @@ export class GroupingApprovalsComponent {
   }
   updateDraftReconSelection(value: string): void { this.draft.update(group => ({ ...group, reconSelection: value })); }
   removeDraftUser(userId: string): void {
-    this.userIdsDraft.set(this.draftUserIds().filter(id => id !== userId).join('\\n'));
+    this.userIdsDraft.set(this.draftUserIds().filter(id => id !== userId).join('\n'));
   }
   toggleRole(roleId: string, checked: boolean): void {
     this.roleIdsDraft.update(ids => checked ? [...new Set([...ids, roleId])] : ids.filter(id => id !== roleId));
@@ -97,7 +97,7 @@ export class GroupingApprovalsComponent {
     this.notify('Group users updated');
   }
   saveRoles(): void {
-    const reconIds = this.reconIdsDraft().split(/[\\s,;]+/).map(id => id.trim()).filter(Boolean);
+    const reconIds = this.reconIdsDraft().split(/[\s,;]+/).map(id => id.trim()).filter(Boolean);
     this.data.saveRoles(this.selectedGroupId(), this.roleIdsDraft(), reconIds);
     this.notify('Role and recon entitlements saved');
   }
@@ -126,7 +126,7 @@ export class GroupingApprovalsComponent {
     this.activeScreen.set(screen);
     this.searchText.set('');
     const group = this.selectedGroup();
-    if (group && screen === 'users') this.userIdsDraft.set(group.userIds.join('\\n'));
+    if (group && screen === 'users') this.userIdsDraft.set(group.userIds.join('\n'));
     if (group && screen === 'roles') {
       this.roleIdsDraft.set([...group.roleIds]);
       this.reconIdsDraft.set(group.reconIds.join(', '));
@@ -137,7 +137,7 @@ export class GroupingApprovalsComponent {
     this.selectedGroupId.set(groupId);
     const group = this.data.groups().find(item => item.id === groupId);
     if (!group) return;
-    if (this.activeScreen() === 'users') this.userIdsDraft.set(group.userIds.join('\\n'));
+    if (this.activeScreen() === 'users') this.userIdsDraft.set(group.userIds.join('\n'));
     if (this.activeScreen() === 'roles') {
       this.roleIdsDraft.set([...group.roleIds]);
       this.reconIdsDraft.set(group.reconIds.join(', '));
