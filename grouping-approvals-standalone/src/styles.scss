@@ -1,0 +1,16 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+:root {
+  --citi-primary: #056dae;
+  --citi-surface: #fff;
+  --citi-surface-subtle: #f7f9fb;
+  --citi-surface-hover: #f2f7fb;
+  --citi-border: #d9e0e7;
+  --citi-text-primary: #263544;
+  --citi-text-secondary: #687888;
+  --citi-table-header: #edf2f6;
+  --citi-input-bg: #fff;
+}
+* { box-sizing: border-box; }
+html, body { min-height: 100%; margin: 0; }
+body { background: #f2f5f8; color: var(--citi-text-primary); font-family: Inter, Arial, sans-serif; }
+button, input, textarea { font: inherit; }
