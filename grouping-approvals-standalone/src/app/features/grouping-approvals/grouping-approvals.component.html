@@ -47,7 +47,7 @@
 
 
   <ng-container *ngIf="activeTab() === 'inbox'">
-    <section class="ga-empty-screen"><div class="ga-empty-icon">✉</div><h2>Inbox</h2><p>Messages and assigned items will appear here after the Inbox service is connected.</p><span>Inbox screen ready for API integration</span></section>
+    <app-inbox />
   </ng-container>
 
   <ng-container *ngIf="customRecordScreen() as customScreen">
