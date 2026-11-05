@@ -8,7 +8,7 @@ import { ScreenConfig, FieldConfig } from '../../core/config/screen-config.model
 import { ScreenRegistryService } from '../../core/engine/screen-registry.service';
 import { GROUPING_APPROVALS_CONFIG } from './grouping-approvals.config';
 import { GROUPING_APPROVALS_SCREENS } from './grouping-approvals.screen-config';
-import { EntitlementGroup, ReconLoadTrigger, GroupUpdate, ApprovalDecision, ApprovalStatus } from './grouping-approvals.models';
+import { EntitlementGroup, ReconLoadTrigger, GroupUpdate, ApprovalStatus } from './grouping-approvals.models';
 import { GROUPING_APPROVALS_REPOSITORY } from './grouping-approvals.repository';
 import { UserScreenStorageService, UserCreatedScreen } from '../../core/engine/user-screen-storage.service';
 
@@ -31,7 +31,7 @@ export class GroupingApprovalsComponent implements OnInit {
   readonly groupScreen: ScreenConfig<EntitlementGroup>;
   readonly triggerScreen: ScreenConfig<ReconLoadTrigger>;
 
-  readonly activeTab = signal('groups');
+  readonly activeTab = signal('grouping');
   readonly groups = signal<EntitlementGroup[]>([]);
   readonly triggers = signal<ReconLoadTrigger[]>([]);
   readonly searchText = signal('');
@@ -40,8 +40,6 @@ export class GroupingApprovalsComponent implements OnInit {
   readonly busy = signal(false);
   readonly errorMessage = signal('');
   readonly initialFormValue = signal<Record<string, unknown>>({});
-  readonly approvalComment = signal('');
-  readonly approvalTarget = signal<EntitlementGroup | null>(null);
   readonly userScreens = signal<UserCreatedScreen[]>([]);
   readonly userScreenRecords = signal<Record<string, Record<string, unknown>[]>>({});
   readonly screenBuilderOpen = signal(false);
@@ -51,7 +49,8 @@ export class GroupingApprovalsComponent implements OnInit {
   readonly screenFieldDrafts = signal<ScreenFieldDraft[]>([{ label: 'Name', type: 'text', required: true, options: '' }]);
   readonly customRecordValue = signal<Record<string, unknown>>({});
   readonly customRecordScreen = computed(() => this.userScreens().find(item => item.config.id === this.activeTab()) ?? null);
-  readonly visibleTabs = computed(() => [...this.config.tabs, ...this.userScreens().map(item => ({ id: item.config.id, label: item.config.title }))]);
+  readonly adminScreens = [{ id: 'grouping', label: 'Grouping' }, { id: 'inbox', label: 'Inbox' }, { id: 'orchestration', label: 'Orchestration' }, { id: 'create-screen', label: 'Create Screen' }];
+  readonly visibleTabs = computed(() => [...this.adminScreens, ...this.userScreens().map(item => ({ id: item.config.id, label: item.config.title }))]);
 
   readonly groupFormFields: FieldConfig[] = [
     { key: 'groupName', label: 'Group Name', type: 'text', required: true, placeholder: 'Enter unique group name' },
@@ -76,26 +75,18 @@ export class GroupingApprovalsComponent implements OnInit {
     const q = this.searchText().trim().toLowerCase();
     return q ? this.triggers().filter(t => Object.values(t).join(' ').toLowerCase().includes(q)) : this.triggers();
   });
-  readonly pendingGroups = computed(() => this.groups().filter(group => group.status === 'Pending'));
-  readonly filteredPendingGroups = computed(() => {
-    const q = this.searchText().trim().toLowerCase();
-    const rows = this.pendingGroups();
-    return q ? rows.filter(group => [group.groupName, group.owner, group.description].join(' ').toLowerCase().includes(q)) : rows;
-  });
 
   readonly groupColumnDefs: ColDef<EntitlementGroup>[] = [
     ...this.screens[0].grid!.columns as ColDef<EntitlementGroup>[],
     {
       headerName: 'Actions', colId: 'rowActions', pinned: 'right', sortable: false, filter: false,
-      resizable: false, minWidth: 310, flex: 0,
+      resizable: false, minWidth: 170, flex: 0,
       cellRenderer: (params: ICellRendererParams<EntitlementGroup>) => {
         const wrapper = document.createElement('div');
         wrapper.className = 'ga-grid-actions';
         const actions: { label: string; run: () => void; disabled?: boolean }[] = [
           { label: 'Edit', run: () => params.data && this.openEditGroup(params.data) },
-          { label: 'Delete', run: () => params.data && void this.deleteGroup(params.data) },
-          { label: 'Approve', run: () => params.data && this.openApproval(params.data, 'Approved'), disabled: params.data?.status !== 'Pending' },
-          { label: 'Reject', run: () => params.data && this.openApproval(params.data, 'Rejected'), disabled: params.data?.status !== 'Pending' }
+          { label: 'Delete', run: () => params.data && void this.deleteGroup(params.data) }
         ];
         for (const action of actions) {
           const button = document.createElement('button');
@@ -202,31 +193,8 @@ export class GroupingApprovalsComponent implements OnInit {
     } finally { this.busy.set(false); }
   }
 
-  openApproval(group: EntitlementGroup, decision: ApprovalDecision): void {
-    this.approvalTarget.set(group);
-    this.approvalComment.set('');
-    this.approvalDecision.set(decision);
-  }
-  readonly approvalDecision = signal<ApprovalDecision>('Approved');
-  closeApproval(): void { this.approvalTarget.set(null); this.approvalComment.set(''); }
-  async submitApproval(): Promise<void> {
-    const group = this.approvalTarget();
-    if (!group) return;
-    if (this.approvalDecision() === 'Rejected' && !this.approvalComment().trim()) {
-      this.errorMessage.set('A reason is required when rejecting a group.'); return;
-    }
-    this.busy.set(true); this.errorMessage.set('');
-    try {
-      const saved = await this.repository.decideGroup(group.id, this.approvalDecision(), this.approvalComment().trim());
-      this.groups.update(rows => rows.map(row => row.id === saved.id ? saved : row));
-      this.closeApproval();
-    } catch (error) {
-      this.errorMessage.set(error instanceof Error ? error.message : 'Unable to process approval.');
-    } finally { this.busy.set(false); }
-  }
-
-
   openScreenBuilder(): void {
+    this.activeTab.set('create-screen');
     this.newScreenName.set(''); this.newScreenDescription.set('');
     this.screenFieldDrafts.set([{ label: 'Name', type: 'text', required: true, options: '' }]);
     this.errorMessage.set('');
@@ -306,7 +274,7 @@ export class GroupingApprovalsComponent implements OnInit {
     this.userScreens.set(next); this.userScreenStorage.saveScreens(next);
     this.userScreenRecords.update(records => { const copy = { ...records }; delete copy[screen.config.id]; return copy; });
     this.userScreenStorage.saveRecords(this.userScreenRecords());
-    this.activeTab.set('groups');
+    this.activeTab.set('grouping');
   }
 
   exportGroups(): void {
