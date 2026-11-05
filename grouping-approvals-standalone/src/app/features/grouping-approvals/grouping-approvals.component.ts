@@ -10,6 +10,7 @@ import { GROUPING_APPROVALS_CONFIG } from './grouping-approvals.config';
 import { GROUPING_APPROVALS_SCREENS } from './grouping-approvals.screen-config';
 import { EntitlementGroup, ReconLoadTrigger, GroupUpdate, ApprovalDecision, ApprovalStatus } from './grouping-approvals.models';
 import { GROUPING_APPROVALS_REPOSITORY } from './grouping-approvals.repository';
+import { UserScreenStorageService, UserCreatedScreen } from '../../core/engine/user-screen-storage.service';
 
 type DialogMode = 'create' | 'edit';
 
@@ -25,6 +26,7 @@ export class GroupingApprovalsComponent implements OnInit {
   readonly screens = GROUPING_APPROVALS_SCREENS;
   private readonly repository = inject(GROUPING_APPROVALS_REPOSITORY);
   private readonly screenRegistry = inject(ScreenRegistryService);
+  private readonly userScreenStorage = inject(UserScreenStorageService);
   readonly groupScreen: ScreenConfig<EntitlementGroup>;
   readonly triggerScreen: ScreenConfig<ReconLoadTrigger>;
 
@@ -39,6 +41,16 @@ export class GroupingApprovalsComponent implements OnInit {
   readonly initialFormValue = signal<Record<string, unknown>>({});
   readonly approvalComment = signal('');
   readonly approvalTarget = signal<EntitlementGroup | null>(null);
+  readonly userScreens = signal<UserCreatedScreen[]>([]);
+  readonly userScreenRecords = signal<Record<string, Record<string, unknown>[]>>({});
+  readonly screenBuilderOpen = signal(false);
+  readonly recordEditorOpen = signal(false);
+  readonly newScreenName = signal('');
+  readonly newScreenDescription = signal('');
+  readonly newScreenFields = signal('Name|text\\nDescription|textarea|optional\\nStatus|select|Active,Inactive');
+  readonly customRecordValue = signal<Record<string, unknown>>({});
+  readonly customRecordScreen = computed(() => this.userScreens().find(item => item.config.id === this.activeTab()) ?? null);
+  readonly visibleTabs = computed(() => [...this.config.tabs, ...this.userScreens().map(item => ({ id: item.config.id, label: item.config.title }))]);
 
   readonly groupFormFields: FieldConfig[] = [
     { key: 'groupName', label: 'Group Name', type: 'text', required: true, placeholder: 'Enter unique group name' },
@@ -104,6 +116,10 @@ export class GroupingApprovalsComponent implements OnInit {
 
   constructor() {
     this.screenRegistry.registerMany(this.screens);
+    const savedScreens = this.userScreenStorage.loadScreens();
+    for (const item of savedScreens) { try { this.screenRegistry.register(item.config); } catch { /* Existing screen IDs are ignored safely. */ } }
+    this.userScreens.set(savedScreens);
+    this.userScreenRecords.set(this.userScreenStorage.loadRecords());
     this.groupScreen = this.screenRegistry.get<EntitlementGroup>('groups');
     this.triggerScreen = this.screenRegistry.get<ReconLoadTrigger>('triggers');
   }
@@ -206,6 +222,73 @@ export class GroupingApprovalsComponent implements OnInit {
     } catch (error) {
       this.errorMessage.set(error instanceof Error ? error.message : 'Unable to process approval.');
     } finally { this.busy.set(false); }
+  }
+
+
+  openScreenBuilder(): void {
+    this.newScreenName.set(''); this.newScreenDescription.set('');
+    this.newScreenFields.set('Name|text\\nDescription|textarea|optional\\nStatus|select|Active,Inactive');
+    this.screenBuilderOpen.set(true);
+  }
+  closeScreenBuilder(): void { this.screenBuilderOpen.set(false); }
+  createUserScreen(): void {
+    const title = this.newScreenName().trim();
+    if (!title) { this.errorMessage.set('Enter a screen name.'); return; }
+    const fields: FieldConfig[] = [];
+    const lines = this.newScreenFields().split(/\\r?\\n/).map(line => line.trim()).filter(Boolean);
+    for (const [index, line] of lines.entries()) {
+      const [rawLabel, rawType = 'text', rawOptions = ''] = line.split('|').map(value => value.trim());
+      const label = rawLabel?.trim();
+      const type = rawType.toLowerCase() as FieldConfig['type'];
+      if (!label || !['text','textarea','number','date','select','checkbox'].includes(type)) {
+        this.errorMessage.set(`Invalid field on line ${index + 1}. Use Label|text, textarea, number, date, select or checkbox.`); return;
+      }
+      const key = label.replace(/[^a-zA-Z0-9]+(.)/g, (_match, char: string) => char.toUpperCase()).replace(/[^a-zA-Z0-9]/g, '');
+      if (!key || fields.some(field => field.key === key)) { this.errorMessage.set(`Field name "${label}" is empty or duplicated.`); return; }
+      fields.push({
+        key, label, type, required: !line.toLowerCase().includes('|optional'),
+        placeholder: `Enter ${label.toLowerCase()}`,
+        ...(type === 'select' ? { options: rawOptions.split(',').map(option => option.trim()).filter(Boolean).map(value => ({ label: value, value })) } : {})
+      });
+      if (type === 'select' && !rawOptions.trim()) { this.errorMessage.set(`Provide comma-separated options for select field "${label}".`); return; }
+    }
+    if (!fields.length) { this.errorMessage.set('Add at least one field definition.'); return; }
+    const id = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    if (!id || this.screenRegistry.has(id) || this.userScreens().some(item => item.config.id === id)) {
+      this.errorMessage.set('A screen with this name already exists. Choose a different name.'); return;
+    }
+    const config = this.userScreenStorage.createConfig(id, title, this.newScreenDescription().trim(), fields);
+    const next = [...this.userScreens(), { config, records: [] }];
+    this.screenRegistry.register(config);
+    this.userScreens.set(next);
+    this.userScreenRecords.update(records => ({ ...records, [id]: [] }));
+    this.userScreenStorage.saveScreens(next);
+    this.userScreenStorage.saveRecords(this.userScreenRecords());
+    this.activeTab.set(id); this.searchText.set(''); this.screenBuilderOpen.set(false); this.errorMessage.set('');
+  }
+  openCustomRecordEditor(): void {
+    const screen = this.customRecordScreen();
+    if (!screen) return;
+    this.customRecordValue.set(Object.fromEntries((screen.config.fields ?? []).map(field => [field.key, field.defaultValue ?? (field.type === 'checkbox' ? false : '')])));
+    this.recordEditorOpen.set(true);
+  }
+  closeCustomRecordEditor(): void { this.recordEditorOpen.set(false); }
+  saveCustomRecord(value: Record<string, unknown>): void {
+    const screen = this.customRecordScreen();
+    if (!screen) return;
+    const record = { id: `${screen.config.id}-${Date.now()}`, ...value };
+    this.userScreenRecords.update(records => ({ ...records, [screen.config.id]: [record, ...(records[screen.config.id] ?? [])] }));
+    this.userScreenStorage.saveRecords(this.userScreenRecords());
+    this.recordEditorOpen.set(false);
+  }
+  deleteUserScreen(): void {
+    const screen = this.customRecordScreen();
+    if (!screen || !window.confirm(`Delete screen "${screen.config.title}" and its locally saved records?`)) return;
+    const next = this.userScreens().filter(item => item.config.id !== screen.config.id);
+    this.userScreens.set(next); this.userScreenStorage.saveScreens(next);
+    this.userScreenRecords.update(records => { const copy = { ...records }; delete copy[screen.config.id]; return copy; });
+    this.userScreenStorage.saveRecords(this.userScreenRecords());
+    this.activeTab.set('groups');
   }
 
   exportGroups(): void {
