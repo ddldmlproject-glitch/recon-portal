@@ -1,7 +1,7 @@
 <section class="ga-shell">
   <header class="ga-header">
     <div class="ga-brand-block">
-      <div class="ga-eyebrow">RECON PORTAL <span>•</span> ADMINISTRATION</div>
+      <div class="ga-eyebrow">REGHUB OPS <span>•</span> ADMINISTRATION</div>
       <h1>{{ activeTab() === 'grouping' ? 'Grouping' : activeTab() === 'inbox' ? 'Inbox' : activeTab() === 'orchestration' ? 'Orchestration' : activeTab() === 'create-screen' ? 'Create Screen' : (customRecordScreen()?.config?.title || 'Workspace') }}</h1>
       <p>{{ activeTab() === 'grouping' ? 'Manage access groups, membership and entitlements.' : activeTab() === 'inbox' ? 'Review messages and assigned work in one place.' : activeTab() === 'orchestration' ? 'Monitor orchestration activity and execution triggers.' : activeTab() === 'create-screen' ? 'Build a configurable screen for your administration workspace.' : 'Manage records in this configurable workspace.' }}</p>
     </div>
