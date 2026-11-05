@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, signal } from '@angular/core';
+import { Component, computed, input, signal } from '@angular/core';
+import { EntitlementGroup } from '../grouping-approvals/grouping-approvals.models';
 import { FormsModule } from '@angular/forms';
 import { AgGridAngular } from 'ag-grid-angular';
 import type { ColDef, GridOptions, ICellRendererParams, RowClickedEvent } from 'ag-grid-community';
@@ -19,6 +20,8 @@ type NewRequestDraft = { actionType: string; actionTool: string; createdBy: stri
 
 @Component({ selector: 'app-inbox', standalone: true, imports: [CommonModule, FormsModule, AgGridAngular], templateUrl: './inbox.component.html', styleUrl: './inbox.component.scss' })
 export class InboxComponent {
+  readonly groups = input<EntitlementGroup[]>([]);
+  readonly currentUserId = input('sso0204');
   readonly folders: { name: Mailbox; icon: string }[] = [
     {name:'Inbox',icon:'▣'},{name:'Starred',icon:'☆'},{name:'Snoozed',icon:'◷'},{name:'Important',icon:'⚑'},
     {name:'Sent',icon:'➤'},{name:'Drafts',icon:'▱'},{name:'Spam',icon:'⊘'},{name:'Trash',icon:'♲'}
@@ -33,8 +36,7 @@ export class InboxComponent {
   readonly selectedRequestTab = signal<RequestCategory>('ALL');
   readonly requestOwnerScope = signal<RequestOwnerScope>('GROUP');
   readonly requestApprovalScope = signal<RequestApprovalScope>('AWAITING_APPROVAL');
-  readonly currentGroupUserIds = signal<string[]>(['st30839','st29418','st30127']);
-  readonly currentUserId = signal('st30839');
+  readonly currentGroupIds = computed(() => this.groups().filter(group => this.groupMemberIds(group).includes(this.currentUserId().trim().toLowerCase())).map(group => group.id));
   readonly gridSearch = signal('');
   readonly globalSearch = signal('');
   readonly showNotifications = signal(false);
@@ -46,11 +48,11 @@ export class InboxComponent {
   readonly newComments = signal('');
   readonly selectedRecord = signal<RequestRecord | null>(null);
   readonly records = signal<RequestRecord[]>([
-    {id:'3066382',actionTool:'SUBMIT_NET',actionType:'SUBMIT_NET',requestStatus:'PENDING_APPROVAL',sourceStatus:'SUBMITTED',createdBy:'st30839',details:'Network submission request requires review.',comments:'Submit net',createdDate:'11/05/2026 09:18 AM',actionedBy:'—',actionComments:'—',folder:'Inbox',unread:true,starred:false,important:true,category:'NET'},
-    {id:'3066371',actionTool:'EDIT_REQUEST',actionType:'EDIT',requestStatus:'PENDING_APPROVAL',sourceStatus:'IN_REVIEW',createdBy:'st29418',details:'Department access information update.',comments:'Please review department changes.',createdDate:'11/05/2026 08:42 AM',actionedBy:'—',actionComments:'—',folder:'Inbox',unread:true,starred:true,important:false,category:'EDIT'},
-    {id:'3066294',actionTool:'SPLIT_NET',actionType:'SPLIT_UNSPLIT',requestStatus:'PENDING_APPROVAL',sourceStatus:'SUBMITTED',createdBy:'st30127',details:'Split/unsplit request submitted for approval.',comments:'Split request',createdDate:'11/04/2026 03:26 PM',actionedBy:'—',actionComments:'—',folder:'Inbox',unread:true,starred:false,important:false,category:'NET'},
-    {id:'3066118',actionTool:'CATEGORY_UPDATE',actionType:'CATEGORY_REASON',requestStatus:'APPROVED',sourceStatus:'COMPLETED',createdBy:'st27642',details:'Category and reason code update completed.',comments:'Updated as requested.',createdDate:'11/04/2026 11:03 AM',actionedBy:'st30839',actionComments:'Approved',folder:'Sent',unread:false,starred:false,important:false,category:'ALL'},
-    {id:'3066092',actionTool:'DELETE_REQUEST',actionType:'DELETE',requestStatus:'PENDING_APPROVAL',sourceStatus:'SUBMITTED',createdBy:'st31882',details:'Delete request is waiting for reviewer action.',comments:'Delete request',createdDate:'11/03/2026 09:37 AM',actionedBy:'—',actionComments:'—',folder:'Inbox',unread:false,starred:false,important:true,category:'DELETE'}
+    {id:'3066382',actionTool:'SUBMIT_NET',actionType:'SUBMIT_NET',requestStatus:'PENDING_APPROVAL',sourceStatus:'SUBMITTED',createdBy:'sso0204',details:'Network submission request requires review.',comments:'Submit net',createdDate:'11/05/2026 09:18 AM',actionedBy:'—',actionComments:'—',folder:'Inbox',unread:true,starred:false,important:true,category:'NET'},
+    {id:'3066371',actionTool:'EDIT_REQUEST',actionType:'EDIT',requestStatus:'PENDING_APPROVAL',sourceStatus:'IN_REVIEW',createdBy:'GR30775',details:'Department access information update.',comments:'Please review department changes.',createdDate:'11/05/2026 08:42 AM',actionedBy:'—',actionComments:'—',folder:'Inbox',unread:true,starred:true,important:false,category:'EDIT'},
+    {id:'3066294',actionTool:'SPLIT_NET',actionType:'SPLIT_UNSPLIT',requestStatus:'PENDING_APPROVAL',sourceStatus:'SUBMITTED',createdBy:'ops1001',details:'Split/unsplit request submitted for approval.',comments:'Split request',createdDate:'11/04/2026 03:26 PM',actionedBy:'—',actionComments:'—',folder:'Inbox',unread:true,starred:false,important:false,category:'NET'},
+    {id:'3066118',actionTool:'CATEGORY_UPDATE',actionType:'CATEGORY_REASON',requestStatus:'APPROVED',sourceStatus:'COMPLETED',createdBy:'sso0204',details:'Category and reason code update completed.',comments:'Updated as requested.',createdDate:'11/04/2026 11:03 AM',actionedBy:'st30839',actionComments:'Approved',folder:'Sent',unread:false,starred:false,important:false,category:'ALL'},
+    {id:'3066092',actionTool:'DELETE_REQUEST',actionType:'DELETE',requestStatus:'PENDING_APPROVAL',sourceStatus:'SUBMITTED',createdBy:'GR30775',details:'Delete request is waiting for reviewer action.',comments:'Delete request',createdDate:'11/03/2026 09:37 AM',actionedBy:'—',actionComments:'—',folder:'Inbox',unread:false,starred:false,important:true,category:'DELETE'}
   ]);
   readonly unreadCount = computed(() => this.records().filter(r => r.folder !== 'Trash' && r.unread).length);
   readonly visibleRows = computed(() => {
@@ -58,7 +60,9 @@ export class InboxComponent {
     return this.records().filter(r => {
       const inFolder = folder === 'Inbox' ? r.folder === 'Inbox' : folder === 'Starred' ? r.starred : folder === 'Important' ? r.important : r.folder === folder;
       const inCategory = this.selectedRequestTab() === 'ALL' || r.category === this.selectedRequestTab() || (this.selectedRequestTab() === 'EDIT' && r.actionType.toUpperCase().includes('EDIT')) || (this.selectedRequestTab() === 'DELETE' && r.actionType.toUpperCase().includes('DELETE')) || (this.selectedRequestTab() === 'HITL_PENDING' && r.requestStatus.toUpperCase().includes('HITL_PENDING'));
-      const inOwner = this.requestOwnerScope() === 'MINE' ? r.createdBy.toLowerCase() === this.currentUserId().toLowerCase() : this.currentGroupUserIds().some(id => id.toLowerCase() === r.createdBy.toLowerCase());
+      const inOwner = this.requestOwnerScope() === 'MINE'
+        ? this.isSameUser(r.createdBy, this.currentUserId())
+        : this.groupsForRequestCreator(r.createdBy).some(group => this.currentGroupIds().includes(group.id));
       const inApproval = this.requestApprovalScope() === 'ALL' || r.requestStatus === 'PENDING_APPROVAL';
       const text = [r.id,r.actionTool,r.actionType,r.requestStatus,r.sourceStatus,r.createdBy,r.details,r.comments].join(' ').toLowerCase();
       return inFolder && inCategory && inOwner && inApproval && (!query || text.includes(query));
@@ -88,22 +92,44 @@ export class InboxComponent {
   setRequestApprovalScope(scope: RequestApprovalScope): void { this.requestApprovalScope.set(scope); this.gridSearch.set(''); }
   markAllRead(): void { this.records.update(rows => rows.map(r => ({...r,unread:false}))); }
   openNotifications(): void { this.showNotifications.update(v => !v); }
-  openCreateRequest(): void { this.newActionType.set('SUBMIT_NET'); this.newActionTool.set('SUBMIT_NET'); this.newCreatedBy.set(''); this.newDetails.set(''); this.newComments.set(''); this.createRequestOpen.set(true); }
+  openCreateRequest(): void { this.newActionType.set('SUBMIT_NET'); this.newActionTool.set('SUBMIT_NET'); this.newCreatedBy.set(this.currentUserId()); this.newDetails.set(''); this.newComments.set(''); this.createRequestOpen.set(true); }
   closeCreateRequest(): void { this.createRequestOpen.set(false); }
   submitCreateRequest(event: Event): void {
     event.preventDefault(); const actionType=this.newActionType(); const id=String(Math.max(3066400,...this.records().map(r=>Number(r.id)||0))+1);
-    const record: RequestRecord={id,actionTool:this.newActionTool().trim()||actionType,actionType,requestStatus:'PENDING_APPROVAL',sourceStatus:'SUBMITTED',createdBy:this.newCreatedBy().trim(),details:this.newDetails().trim(),comments:this.newComments().trim(),createdDate:new Date().toLocaleString(),actionedBy:'—',actionComments:'—',folder:'Inbox',unread:true,starred:false,important:false,category:this.categoryForAction(actionType)};
+    const record: RequestRecord={id,actionTool:this.newActionTool().trim()||actionType,actionType,requestStatus:'PENDING_APPROVAL',sourceStatus:'SUBMITTED',createdBy:this.currentUserId().trim(),details:this.newDetails().trim(),comments:this.newComments().trim(),createdDate:new Date().toLocaleString(),actionedBy:'—',actionComments:'—',folder:'Inbox',unread:true,starred:false,important:false,category:this.categoryForAction(actionType)};
     this.records.update(rows=>[record,...rows]); this.activeFolder.set('Inbox'); this.selectedRequestTab.set('ALL'); this.requestApprovalScope.set('ALL'); this.createRequestOpen.set(false); this.selectedRecord.set(record);
   }
   rowClicked(event: RowClickedEvent<RequestRecord>): void { if(event.data) this.openRecord(event.data); }
   openRecord(record: RequestRecord): void { this.records.update(rows=>rows.map(r=>r.id===record.id?{...r,unread:false}:r)); this.selectedRecord.set({...record,unread:false}); }
   toggleStar(record: RequestRecord): void { this.updateRecord(record.id,{starred:!record.starred}); this.selectedRecord.update(v=>v?{...v,starred:!v.starred}:v); }
   toggleImportant(record: RequestRecord): void { this.updateRecord(record.id,{important:!record.important}); this.selectedRecord.update(v=>v?{...v,important:!v.important}:v); }
-  approve(record: RequestRecord): void { this.updateRecord(record.id,{requestStatus:'APPROVED',sourceStatus:'COMPLETED',actionedBy:'You',actionComments:'Approved'}); this.selectedRecord.update(v=>v?{...v,requestStatus:'APPROVED',sourceStatus:'COMPLETED',actionedBy:'You',actionComments:'Approved'}:v); }
-  reject(record: RequestRecord): void { this.updateRecord(record.id,{requestStatus:'REJECTED',sourceStatus:'REJECTED',actionedBy:'You',actionComments:'Rejected'}); this.selectedRecord.update(v=>v?{...v,requestStatus:'REJECTED',sourceStatus:'REJECTED',actionedBy:'You',actionComments:'Rejected'}:v); }
+  canApprove(record: RequestRecord): boolean {
+    if (record.requestStatus !== 'PENDING_APPROVAL' || this.isSameUser(record.createdBy, this.currentUserId())) return false;
+    return this.groupsForRequestCreator(record.createdBy).some(group =>
+      this.currentGroupIds().includes(group.id) && group.approvers.some(id => this.isSameUser(id, this.currentUserId()))
+    );
+  }
+  approve(record: RequestRecord): void {
+    if (!this.canApprove(record)) return;
+    this.updateRecord(record.id,{requestStatus:'APPROVED',sourceStatus:'COMPLETED',actionedBy:this.currentUserId(),actionComments:'Approved'});
+    this.selectedRecord.update(v=>v?{...v,requestStatus:'APPROVED',sourceStatus:'COMPLETED',actionedBy:this.currentUserId(),actionComments:'Approved'}:v);
+  }
+  reject(record: RequestRecord): void {
+    if (!this.canApprove(record)) return;
+    this.updateRecord(record.id,{requestStatus:'REJECTED',sourceStatus:'REJECTED',actionedBy:this.currentUserId(),actionComments:'Rejected'});
+    this.selectedRecord.update(v=>v?{...v,requestStatus:'REJECTED',sourceStatus:'REJECTED',actionedBy:this.currentUserId(),actionComments:'Rejected'}:v);
+  }
   moveToTrash(record: RequestRecord): void { if(!confirm(`Move request ${record.id} to Trash?`)) return; this.updateRecord(record.id,{folder:'Trash',unread:false}); this.selectedRecord.set(null); }
   moveToInbox(record: RequestRecord): void { this.updateRecord(record.id,{folder:'Inbox'}); this.selectedRecord.set(null); }
   closeDetails(): void { this.selectedRecord.set(null); }
+  private isSameUser(left: string, right: string): boolean { return left.trim().toLowerCase() === right.trim().toLowerCase(); }
+  private groupMemberIds(group: EntitlementGroup): string[] {
+    return [group.owner, ...group.approvers, ...group.userIds].filter(Boolean).map(id => id.trim().toLowerCase());
+  }
+  private groupsForRequestCreator(creatorId: string): EntitlementGroup[] {
+    const creator = creatorId.trim().toLowerCase();
+    return this.groups().filter(group => this.groupMemberIds(group).includes(creator));
+  }
   private categoryForAction(actionType: string): RequestCategory { const value=actionType.toUpperCase(); if(value.includes('HITL'))return 'HITL_PENDING'; if(value.includes('EDIT'))return 'EDIT'; if(value.includes('DELETE'))return 'DELETE'; if(value.includes('MATCH')||value.includes('CLOSE'))return 'MATCH_CLOSE'; return 'ALL'; }
   private updateRecord(id:string,patch:Partial<RequestRecord>): void { this.records.update(rows=>rows.map(r=>r.id===id?{...r,...patch}:r)); }
 }
