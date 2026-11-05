@@ -8,8 +8,8 @@ export interface EntitlementGroup {
   description: string;
   owner: string;
   approvers: string[];
-  reconSelection: 'All Recons' | 'Recon IDs';
-  reconIds: string[];
+  opsScope: 'All Ops' | 'Ops IDs';
+  opsIds: string[];
   allEntities: number;
   updatedBy: string;
   updatedAt: string;
@@ -22,10 +22,10 @@ export interface EntitlementGroup {
   approvedAt?: string;
 }
 
-export interface ReconLoadTrigger {
+export interface OpsLoadTrigger {
   id: string;
-  reconId: string;
-  reconName: string;
+  opsId: string;
+  opsName: string;
   triggerType: string;
   value: string;
   loadStatus: TriggerStatus;
@@ -42,7 +42,7 @@ export interface GroupingApprovalsConfig {
   subtitle: string;
   tabs: { id: string; label: string }[];
   groupColumns: GridColumn<EntitlementGroup>[];
-  triggerColumns: GridColumn<ReconLoadTrigger>[];
+  triggerColumns: GridColumn<OpsLoadTrigger>[];
   permissions: {
     canCreateGroup: boolean;
     canEditGroup: boolean;
@@ -61,8 +61,8 @@ export interface GroupUpdate {
   userIds: string[];
   roles: string[];
   toolsAndReports: string[];
-  reconSelection: 'All Recons' | 'Recon IDs';
-  reconIds: string[];
+  opsScope: 'All Ops' | 'Ops IDs';
+  opsIds: string[];
   allEntities: number;
   status: ApprovalStatus;
 }
