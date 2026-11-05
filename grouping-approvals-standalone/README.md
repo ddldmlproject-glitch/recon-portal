@@ -186,7 +186,7 @@ The parent handles the emitted values and calls its repository. The form rendere
 4. Change a grid column's `headerName` in `grouping-approvals.screen-config.ts`, save, and confirm the heading changes after Angular rebuilds.
 5. Change a grid column's `minWidth` or add a column definition, save, and confirm the grid reflects it.
 6. Change `pageSize` in the grid config and verify the pagination page size.
-7. Search for `1001_CHECKER`; verify the displayed rows filter.
+7. Search for `1001_ReghubOps2`; verify the displayed rows filter.
 8. Open Create Group, enter a unique group name and owner, save, and confirm the new row appears.
 9. Edit a group and change its users, roles or tools; save and verify the row remains updated.
 10. Switch to Orchestration and verify the three sample records.
@@ -235,7 +235,7 @@ This branch is an implementation foundation, not a completed production approval
 - The Create/Edit Group dialog is still feature-specific HTML; it has not yet been migrated to the reusable DynamicFormComponent.
 - The reusable dynamic form component exists, but it is not yet the renderer for the Group dialog.
 - Action and permission engines exist as foundations; the feature's current buttons are not all dispatched through ActionEngineService.
-- User CRUD, role-permission matrix, recon-ID selector, tool/report catalog, delete confirmation, approval state machine and audit history are not complete.
+- User CRUD, role-permission matrix, Ops-ID selector, tool/report catalog, delete confirmation, approval state machine and audit history are not complete.
 - API URLs and payload contracts must be aligned with the actual microservices.
 - UI permission checks do not replace backend authorization.
 
@@ -250,9 +250,9 @@ This is a separate Angular CLI application. To embed the feature in an MFE, move
 
 The standalone demo now supports:
 - Create and edit entitlement groups using the reusable `DynamicFormComponent` and field metadata.
-- Required group name/owner validation, select controls, checkbox, text areas and conditional Recon IDs field.
+- Required group name/owner validation, select controls, checkbox, text areas and conditional Ops IDs field.
 - User IDs, roles and tools/reports assignment as list-based group attributes.
-- Recon scope: all recons or a specified list of Recon IDs.
+- Recon scope: all ops or a specified list of Ops IDs.
 - Delete with a browser confirmation.
 - Inbox tab. Pending groups can be reviewed; rejection requires a reason.
 - CSV export of the currently filtered group list.
@@ -262,12 +262,12 @@ The standalone demo now supports:
 ### Test the full demo flow
 
 1. Open Grouping and click **Create Group**.
-2. Enter a unique name and owner. Set Recon Selection to **Specific Recon IDs** and enter values such as `R-10021, R-10022`.
+2. Enter a unique name and owner. Set Ops Scope to **Specific Ops IDs** and enter values such as `R-10021, R-10022`.
 3. Enter approvers, user IDs, roles and tools/reports; choose Pending approval and save.
 4. Verify the new record appears in the group grid and Inbox count increases.
 5. Open **Inbox**. Use the row's **Approve** action and confirm. The group should move to Active and disappear from the pending list.
 6. Create another group and use **Reject**. Enter a rejection reason; the record should move to Rejected.
-7. Edit an existing group, change its owner/users/roles/tools/recon scope, save and verify the row updates.
+7. Edit an existing group, change its owner/users/roles/tools/Ops scope, save and verify the row updates.
 8. Delete a test group and confirm the browser prompt. Verify it disappears from the grid.
 9. Search for a group, export CSV, and verify the downloaded file.
 10. Refresh the browser. Mock changes reset because the repository is in-memory.
