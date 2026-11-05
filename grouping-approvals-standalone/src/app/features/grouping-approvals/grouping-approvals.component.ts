@@ -32,6 +32,7 @@ export class GroupingApprovalsComponent implements OnInit {
   readonly triggerScreen: ScreenConfig<ReconLoadTrigger>;
 
   readonly activeTab = signal('grouping');
+  readonly adminMenuOpen = signal(false);
   readonly groups = signal<EntitlementGroup[]>([]);
   readonly triggers = signal<ReconLoadTrigger[]>([]);
   readonly searchText = signal('');
@@ -128,7 +129,9 @@ export class GroupingApprovalsComponent implements OnInit {
     } finally { this.busy.set(false); }
   }
 
-  setTab(id: string): void { this.activeTab.set(id); this.searchText.set(''); }
+  setTab(id: string): void { this.activeTab.set(id); this.searchText.set(''); this.adminMenuOpen.set(false); this.screenBuilderOpen.set(false); }
+  toggleAdminMenu(): void { this.adminMenuOpen.update(open => !open); }
+  closeAdminMenu(): void { this.adminMenuOpen.set(false); }
   openCreateGroup(): void { this.selectedGroup.set(null); this.initialFormValue.set(this.formValue()); this.dialogMode.set('create'); this.errorMessage.set(''); }
   openEditGroup(group: EntitlementGroup): void { this.selectedGroup.set(group); this.initialFormValue.set(this.formValue(group)); this.dialogMode.set('edit'); this.errorMessage.set(''); }
   closeDialog(): void { this.dialogMode.set(null); this.selectedGroup.set(null); }
@@ -194,13 +197,13 @@ export class GroupingApprovalsComponent implements OnInit {
   }
 
   openScreenBuilder(): void {
-    this.activeTab.set('create-screen');
+    this.setTab('create-screen');
     this.newScreenName.set(''); this.newScreenDescription.set('');
     this.screenFieldDrafts.set([{ label: 'Name', type: 'text', required: true, options: '' }]);
     this.errorMessage.set('');
-    this.screenBuilderOpen.set(true);
+    this.screenBuilderOpen.set(false);
   }
-  closeScreenBuilder(): void { this.screenBuilderOpen.set(false); }
+  closeScreenBuilder(): void { this.setTab('grouping'); }
   addScreenField(): void {
     this.screenFieldDrafts.update(fields => [...fields, { label: '', type: 'text', required: true, options: '' }]);
   }
