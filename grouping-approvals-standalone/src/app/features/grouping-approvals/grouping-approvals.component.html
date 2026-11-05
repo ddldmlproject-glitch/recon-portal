@@ -60,7 +60,7 @@
       <div class="ga-dialog-body">
         <app-dynamic-form
           [fields]="groupFormFields"
-          [initialValue]="formValue(selectedGroup() ?? undefined)"
+          [initialValue]="initialFormValue()"
           (submitted)="saveGroupForm($event)" />
       </div>
       <footer class="ga-dialog-footer">
