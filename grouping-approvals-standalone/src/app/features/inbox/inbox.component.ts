@@ -7,6 +7,7 @@ import { themeQuartz } from 'ag-grid-community';
 
 type InboxFolder = 'Inbox' | 'Starred' | 'Snoozed' | 'Important' | 'Sent' | 'Drafts' | 'Spam' | 'Trash';
 type InboxStatus = 'PENDING_APPROVAL' | 'APPROVED' | 'REJECTED' | 'COMPLETED' | 'DRAFT';
+type InboxDraft = { actionType: string; tool: string; createdBy: string; details: string; comments: string; priority: 'High' | 'Medium' | 'Low' };
 interface InboxMessage {
   id: string; subject: string; actionType: string; tool: string; createdBy: string;
   details: string; comments: string; status: InboxStatus; priority: 'High' | 'Medium' | 'Low';
@@ -61,7 +62,7 @@ export class InboxComponent {
     rowHeight:52, headerHeight:42, suppressCellFocus:true, getRowClass:p => p.data?.unread ? 'inbox-row-unread' : ''
   };
   readonly gridTheme = themeQuartz.withParams({ spacing:7, fontSize:12, borderRadius:5, headerFontSize:11, rowHoverColor:'#f0f7fc' });
-  readonly draft = signal({ actionType:'Access Request', tool:'', createdBy:'', details:'', comments:'', priority:'Medium' as 'High'|'Medium'|'Low' });
+  readonly draft = signal<InboxDraft>({ actionType:'Access Request', tool:'', createdBy:'', details:'', comments:'', priority:'Medium' });
   setFolder(folder: InboxFolder): void { this.activeFolder.set(folder); this.selected.set(null); }
   openMessage(message: InboxMessage): void {
     this.messages.update(rows => rows.map(m => m.id === message.id ? { ...m, unread:false } : m));
@@ -79,7 +80,7 @@ export class InboxComponent {
     const created: InboxMessage={id,subject:d.tool.trim()+' — '+d.actionType,actionType:d.actionType,tool:d.tool.trim(),createdBy:d.createdBy.trim(),details:d.details.trim(),comments:d.comments.trim(),status:'PENDING_APPROVAL',priority:d.priority,createdAt:new Date().toISOString(),unread:false,starred:false,important:false,folder:'Sent'};
     this.messages.update(rows=>[created,...rows]); this.createOpen.set(false); this.setFolder('Sent'); this.selected.set(created);
   }
-  updateDraft<K extends keyof ReturnType<typeof this.draft>>(key: K, value: ReturnType<typeof this.draft>[K]): void { this.draft.update(d=>({...d,[key]:value})); }
+  updateDraft<K extends keyof InboxDraft>(key: K, value: InboxDraft[K]): void { this.draft.update(d=>({...d,[key]:value})); }
   closeDetails(): void { this.selected.set(null); }
   rowClicked(event: RowClickedEvent<InboxMessage>): void { if(event.data)this.openMessage(event.data); }
   trackFolder(_index:number, folder:{name:InboxFolder}):string { return folder.name; }
