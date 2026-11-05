@@ -7,51 +7,87 @@
       <button class="ga-button ga-button--primary" *ngIf="config.permissions.canCreateGroup && activeTab() === 'groups'" (click)="openCreateGroup()">+ Create Group</button>
     </div>
   </header>
+
   <nav class="ga-tabs" aria-label="Grouping and approvals sections">
     <button *ngFor="let tab of config.tabs" [class.is-active]="activeTab() === tab.id" (click)="setTab(tab.id)">
-      {{ tab.label }}<span class="ga-tab-count">{{ tab.id === 'groups' ? groups().length : triggers().length }}</span>
+      {{ tab.label }}
+      <span class="ga-tab-count">
+        {{ tab.id === 'groups' ? groups().length : tab.id === 'approvals' ? pendingGroups().length : triggers().length }}
+      </span>
     </button>
   </nav>
+
   <div class="ga-toolbar">
     <div class="ga-search"><span>⌕</span><input type="search" placeholder="Search by name, ID or description" [ngModel]="searchText()" (ngModelChange)="searchText.set($event)"><button *ngIf="searchText()" (click)="searchText.set('')">×</button></div>
-    <span class="ga-result-count">{{ activeTab() === 'groups' ? filteredGroups().length + ' groups' : filteredTriggers().length + ' triggers' }}</span>
+    <span class="ga-result-count">
+      {{ activeTab() === 'groups' ? filteredGroups().length + ' groups' : activeTab() === 'approvals' ? filteredPendingGroups().length + ' pending approvals' : filteredTriggers().length + ' triggers' }}
+    </span>
   </div>
+
   <div class="ga-alert" *ngIf="errorMessage()">{{ errorMessage() }}</div>
-  <div class="ga-loading" *ngIf="busy()">Loading data…</div>
+  <div class="ga-loading" *ngIf="busy()">Processing…</div>
+
   <ng-container *ngIf="activeTab() === 'groups'">
-    <div class="ga-grid-wrap"><app-dynamic-screen [config]="groupScreen" [rowData]="filteredGroups()" [columnDefs]="groupColumnDefs" [gridOptions]="gridOptions" /></div>
-    <div class="ga-footnote">Use the row actions to manage users, roles, tools and group details. Grid configuration is defined independently from the page template.</div>
+    <div class="ga-grid-wrap">
+      <app-dynamic-screen [config]="groupScreen" [rowData]="filteredGroups()" [columnDefs]="groupColumnDefs" [gridOptions]="gridOptions" />
+    </div>
+    <div class="ga-footnote">Manage group details, users, roles, reconciliation scope and approval status from the row actions.</div>
   </ng-container>
+
+  <ng-container *ngIf="activeTab() === 'approvals'">
+    <div class="ga-grid-wrap">
+      <app-dynamic-screen [config]="groupScreen" [rowData]="filteredPendingGroups()" [columnDefs]="groupColumnDefs" [gridOptions]="gridOptions" />
+    </div>
+    <div class="ga-footnote">Only groups in Pending status can be approved or rejected. Rejection requires a reason.</div>
+  </ng-container>
+
   <ng-container *ngIf="activeTab() === 'triggers'">
-    <div class="ga-grid-wrap"><app-dynamic-screen [config]="triggerScreen" [rowData]="filteredTriggers()" [columnDefs]="triggerColumnDefs" [gridOptions]="gridOptions" /></div>
+    <div class="ga-grid-wrap">
+      <app-dynamic-screen [config]="triggerScreen" [rowData]="filteredTriggers()" [columnDefs]="triggerColumnDefs" [gridOptions]="gridOptions" />
+    </div>
   </ng-container>
+
   <div class="ga-overlay" *ngIf="dialogMode()" (click)="closeDialog()">
     <section class="ga-dialog" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
       <header class="ga-dialog-header">
-        <div><span class="ga-eyebrow">ENTITLEMENT MANAGEMENT</span><h2>{{ dialogMode() === 'create' ? 'Create Entitlement Group' : 'Manage Entitlement Group' }}</h2><p>{{ dialogMode() === 'create' ? 'Define group details and configure access.' : selectedGroup()?.groupName }}</p></div>
-        <button class="ga-close" (click)="closeDialog()">×</button>
-      </header>
-      <nav class="ga-role-tabs">
-        <button [class.is-selected]="activeSection() === 'recons'" (click)="activeSection.set('recons')">Recons</button>
-        <button [class.is-selected]="activeSection() === 'users'" (click)="activeSection.set('users')">User Actions</button>
-        <button [class.is-selected]="activeSection() === 'roles'" (click)="activeSection.set('roles')">Manage Roles</button>
-        <button [class.is-selected]="activeSection() === 'tools'" (click)="activeSection.set('tools')">Tools and Reports</button>
-      </nav>
-      <div class="ga-dialog-body">
-        <div class="ga-form-grid" *ngIf="activeSection() === 'recons'">
-          <label>Group Name<input class="ga-input" [(ngModel)]="groupNameDraft" [disabled]="dialogMode() === 'edit'"></label>
-          <label>Group Owner<input class="ga-input" [(ngModel)]="ownerDraft" placeholder="Enter owner user ID"></label>
-          <label class="ga-full">Description<input class="ga-input" [(ngModel)]="descriptionDraft" placeholder="Describe the group's purpose"></label>
-          <label class="ga-full">Group Approvers<input class="ga-input" [(ngModel)]="approversDraft" placeholder="Enter user IDs separated by commas"></label>
-          <label>Recon Selection<select class="ga-input" [(ngModel)]="reconSelectionDraft"><option value="All Recons">All Recons</option><option value="Recon IDs">Recon IDs</option></select></label>
-          <label>Status<select class="ga-input" [(ngModel)]="statusDraft"><option>Active</option><option>Inactive</option><option>Pending</option></select></label>
-          <label class="ga-check"><input type="checkbox" [(ngModel)]="allEntitiesDraft"> All Entities</label>
+        <div>
+          <span class="ga-eyebrow">CONFIGURATION-DRIVEN FORM</span>
+          <h2>{{ dialogMode() === 'create' ? 'Create Entitlement Group' : 'Edit Entitlement Group' }}</h2>
+          <p>{{ selectedGroup()?.groupName || 'Define group details and access configuration.' }}</p>
         </div>
-        <div *ngIf="activeSection() === 'users'"><label class="ga-field-label">Assigned User IDs</label><textarea class="ga-textarea" [(ngModel)]="userIdsText" rows="10" placeholder="Enter one user ID per line"></textarea><small>Use one user ID per line, or separate IDs with commas. Remove an ID to revoke membership.</small></div>
-        <div *ngIf="activeSection() === 'roles'"><label class="ga-field-label">Assigned Roles</label><textarea class="ga-textarea" [(ngModel)]="rolesText" rows="10" placeholder="Enter one role per line (for example: Maker, Checker, Reviewer)"></textarea><small>Maintain the roles assigned to this group.</small></div>
-        <div *ngIf="activeSection() === 'tools'"><label class="ga-field-label">Enabled Tools and Reports</label><textarea class="ga-textarea" [(ngModel)]="toolsText" rows="10" placeholder="Enter one tool or report per line"></textarea><small>Examples: Recon Summary, Break Report, Audit Report, Match Workbench.</small></div>
+        <button class="ga-close" type="button" (click)="closeDialog()">×</button>
+      </header>
+      <div class="ga-dialog-body">
+        <app-dynamic-form
+          [fields]="groupFormFields"
+          [initialValue]="formValue(selectedGroup() ?? undefined)"
+          (submitted)="saveGroupForm($event)" />
       </div>
-      <footer class="ga-dialog-footer"><button class="ga-button ga-button--secondary" (click)="closeDialog()">Cancel</button><button class="ga-button ga-button--primary" (click)="saveDialog()" [disabled]="busy()">{{ busy() ? 'Saving…' : (dialogMode() === 'create' ? 'Create Group' : 'Save Changes') }}</button></footer>
+      <footer class="ga-dialog-footer">
+        <button class="ga-button ga-button--secondary" type="button" (click)="closeDialog()">Cancel</button>
+      </footer>
+    </section>
+  </div>
+
+  <div class="ga-overlay" *ngIf="approvalTarget()" (click)="closeApproval()">
+    <section class="ga-dialog ga-dialog--approval" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
+      <header class="ga-dialog-header">
+        <div>
+          <span class="ga-eyebrow">GROUP APPROVAL</span>
+          <h2>{{ approvalDecision() }} Group</h2>
+          <p>{{ approvalTarget()?.groupName }}</p>
+        </div>
+        <button class="ga-close" type="button" (click)="closeApproval()">×</button>
+      </header>
+      <div class="ga-dialog-body">
+        <label class="ga-field-label">{{ approvalDecision() === 'Rejected' ? 'Rejection reason (required)' : 'Approval comment (optional)' }}
+          <textarea class="ga-textarea" rows="4" [ngModel]="approvalComment()" (ngModelChange)="approvalComment.set($event)" placeholder="Enter decision comments"></textarea>
+        </label>
+      </div>
+      <footer class="ga-dialog-footer">
+        <button class="ga-button ga-button--secondary" type="button" (click)="closeApproval()">Cancel</button>
+        <button class="ga-button ga-button--primary" type="button" [disabled]="busy()" (click)="submitApproval()">Confirm {{ approvalDecision() }}</button>
+      </footer>
     </section>
   </div>
 </section>
