@@ -1,4 +1,4 @@
-# Grouping & Approvals — Angular 21 configuration-driven standalone application
+# Admin — Angular 21 configuration-driven standalone application
 
 A standalone Angular application demonstrating a metadata-driven UI architecture. Angular owns screen configuration, rendering, forms, validation, navigation and interaction dispatch. Repository adapters isolate the UI from persistence: the local demo uses mock data, while a microservice adapter is provided as an integration starting point.
 
@@ -65,8 +65,8 @@ Open:
 
 The `GROUPING_APPROVALS_SCREENS` array currently contains two screen definitions:
 
-- `id: 'groups'`: Entitlement Groups.
-- `id: 'triggers'`: Recon Load Triggers.
+- `id: 'groups'`: Grouping.
+- `id: 'triggers'`: Orchestration.
 
 A grid screen definition has this shape:
 
@@ -182,14 +182,14 @@ The parent handles the emitted values and calls its repository. The form rendere
 
 1. Run `npm install`, then `npm start`.
 2. Open `http://localhost:4200/grouping-approvals`.
-3. Confirm Entitlement Groups shows four mock records and Recon Load Triggers shows three.
+3. Confirm Grouping shows four mock records and Orchestration shows three.
 4. Change a grid column's `headerName` in `grouping-approvals.screen-config.ts`, save, and confirm the heading changes after Angular rebuilds.
 5. Change a grid column's `minWidth` or add a column definition, save, and confirm the grid reflects it.
 6. Change `pageSize` in the grid config and verify the pagination page size.
 7. Search for `1001_CHECKER`; verify the displayed rows filter.
 8. Open Create Group, enter a unique group name and owner, save, and confirm the new row appears.
 9. Edit a group and change its users, roles or tools; save and verify the row remains updated.
-10. Switch to Recon Load Triggers and verify the three sample records.
+10. Switch to Orchestration and verify the three sample records.
 11. Use Export CSV and verify the downloaded file contains the filtered group data.
 12. Refresh the browser and note that mock changes reset. This is expected because the mock repository is in-memory.
 
@@ -254,18 +254,18 @@ The standalone demo now supports:
 - User IDs, roles and tools/reports assignment as list-based group attributes.
 - Recon scope: all recons or a specified list of Recon IDs.
 - Delete with a browser confirmation.
-- Pending Approvals tab. Pending groups can be approved or rejected; rejection requires a reason.
+- Inbox tab. Pending groups can be reviewed; rejection requires a reason.
 - CSV export of the currently filtered group list.
-- Recon Load Triggers listing.
+- Orchestration listing.
 - Mock repository implementations for create, read, update, delete and approval decisions.
 
 ### Test the full demo flow
 
-1. Open Entitlement Groups and click **Create Group**.
+1. Open Grouping and click **Create Group**.
 2. Enter a unique name and owner. Set Recon Selection to **Specific Recon IDs** and enter values such as `R-10021, R-10022`.
 3. Enter approvers, user IDs, roles and tools/reports; choose Pending approval and save.
-4. Verify the new record appears in the group grid and Pending Approvals count increases.
-5. Open **Pending Approvals**. Use the row's **Approve** action and confirm. The group should move to Active and disappear from the pending list.
+4. Verify the new record appears in the group grid and Inbox count increases.
+5. Open **Inbox**. Use the row's **Approve** action and confirm. The group should move to Active and disappear from the pending list.
 6. Create another group and use **Reject**. Enter a rejection reason; the record should move to Rejected.
 7. Edit an existing group, change its owner/users/roles/tools/recon scope, save and verify the row updates.
 8. Delete a test group and confirm the browser prompt. Verify it disappears from the grid.
@@ -301,7 +301,7 @@ The field builder generates the `FieldConfig[]` and `ScreenConfig` used by the d
 ### API integration instructions
 
 See **[API Integration Guide](./API-INTEGRATION-GUIDE.md)** for the end-to-end integration procedure, including:
-- Existing Groups and Recon Load Triggers API operation mapping.
+- Existing Groups and Orchestration API operation mapping.
 - Configuring the API base URL and switching from mock to API repository.
 - Creating a new API-backed feature screen, model, repository contract and API adapter.
 - Connecting screen metadata and generated forms to a backend resource.
