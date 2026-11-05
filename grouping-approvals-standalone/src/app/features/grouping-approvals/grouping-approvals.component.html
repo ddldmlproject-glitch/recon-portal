@@ -76,19 +76,30 @@
         <label class="ga-field-label">Description
           <input class="ga-input" [ngModel]="newScreenDescription()" (ngModelChange)="newScreenDescription.set($event)" placeholder="What is this screen used for?">
         </label>
-        <label class="ga-field-label">Field definitions *
-          <textarea class="ga-textarea ga-field-spec" rows="7" [ngModel]="newScreenFields()" (ngModelChange)="newScreenFields.set($event)"></textarea>
-        </label>
-        <div class="ga-builder-help">
-          One field per line: Label|type or Label|type|optional.
-          Supported types: text, textarea, number, date, select, checkbox.
-          For select fields, provide options: Status|select|Active,Inactive,Pending.
-          Example:
-          User ID|text
-          Full Name|text
-          Email|text
-          Role|select|Maker,Checker,Approver
-          Enabled|checkbox|optional
+        <div class="ga-field-builder">
+          <div class="ga-field-builder-heading">
+            <div><strong>Screen fields</strong><p>Add the columns and form fields users will see on this screen.</p></div>
+            <button class="ga-button ga-button--secondary" type="button" (click)="addScreenField()">+ Add Field</button>
+          </div>
+          <div class="ga-field-builder-list">
+            <div class="ga-field-builder-row" *ngFor="let field of screenFieldDrafts(); let i = index">
+              <div class="ga-field-builder-index">{{ i + 1 }}</div>
+              <label class="ga-field-label">Field name *
+                <input class="ga-input" [ngModel]="field.label" (ngModelChange)="updateScreenField(i, { label: $event })" placeholder="e.g. Full Name">
+              </label>
+              <label class="ga-field-label">Field type
+                <select class="ga-input" [ngModel]="field.type" (ngModelChange)="updateScreenField(i, { type: $event })">
+                  <option value="text">Text</option><option value="textarea">Long text</option><option value="number">Number</option><option value="date">Date</option><option value="select">Dropdown</option><option value="checkbox">Checkbox</option>
+                </select>
+              </label>
+              <label class="ga-field-label ga-field-options" *ngIf="field.type === 'select'">Dropdown options *
+                <input class="ga-input" [ngModel]="field.options" (ngModelChange)="updateScreenField(i, { options: $event })" placeholder="Active, Inactive, Pending">
+              </label>
+              <label class="ga-field-required"><input type="checkbox" [ngModel]="field.required" (ngModelChange)="updateScreenField(i, { required: $event })"> Required</label>
+              <button class="ga-remove-field" type="button" (click)="removeScreenField(i)" [disabled]="screenFieldDrafts().length === 1" aria-label="Remove field">Remove</button>
+            </div>
+          </div>
+          <p class="ga-field-builder-note">No special syntax required. Choose a field type from the dropdown. For dropdown fields, enter comma-separated choices.</p>
         </div>
       </div>
       <footer class="ga-dialog-footer">
