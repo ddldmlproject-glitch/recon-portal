@@ -11,6 +11,7 @@ import { GROUPING_APPROVALS_SCREENS } from './grouping-approvals.screen-config';
 import { EntitlementGroup, ReconLoadTrigger, GroupUpdate, ApprovalStatus } from './grouping-approvals.models';
 import { GROUPING_APPROVALS_REPOSITORY } from './grouping-approvals.repository';
 import { UserScreenStorageService, UserCreatedScreen } from '../../core/engine/user-screen-storage.service';
+import { InboxComponent } from '../inbox/inbox.component';
 
 type DialogMode = 'create' | 'edit';
 type ScreenFieldDraft = { label: string; type: FieldConfig['type']; required: boolean; options: string };
@@ -18,7 +19,7 @@ type ScreenFieldDraft = { label: string; type: FieldConfig['type']; required: bo
 @Component({
   selector: 'app-grouping-approvals',
   standalone: true,
-  imports: [CommonModule, FormsModule, DynamicScreenComponent, DynamicFormComponent],
+  imports: [CommonModule, FormsModule, DynamicScreenComponent, DynamicFormComponent, InboxComponent],
   templateUrl: './grouping-approvals.component.html',
   styleUrl: './grouping-approvals.component.scss'
 })
