@@ -1,20 +1,35 @@
 <section class="ga-shell">
   <header class="ga-header">
-    <div><div class="ga-eyebrow">ADMINISTRATION</div><h1>Admin</h1><p>Manage grouping, inbox, orchestration and configurable screens.</p></div>
+    <div class="ga-brand-block">
+      <div class="ga-eyebrow">RECON PORTAL <span>•</span> ADMINISTRATION</div>
+      <h1>{{ activeTab() === 'grouping' ? 'Grouping' : activeTab() === 'inbox' ? 'Inbox' : activeTab() === 'orchestration' ? 'Orchestration' : activeTab() === 'create-screen' ? 'Create Screen' : (customRecordScreen()?.config?.title || 'Workspace') }}</h1>
+      <p>{{ activeTab() === 'grouping' ? 'Manage access groups, membership and entitlements.' : activeTab() === 'inbox' ? 'Review messages and assigned work in one place.' : activeTab() === 'orchestration' ? 'Monitor orchestration activity and execution triggers.' : activeTab() === 'create-screen' ? 'Build a configurable screen for your administration workspace.' : 'Manage records in this configurable workspace.' }}</p>
+    </div>
     <div class="ga-header-actions">
-      <button class="ga-button ga-button--secondary" type="button" (click)="loadData()" [disabled]="busy()">Refresh</button>
+      <div class="ga-admin-menu-wrap">
+        <button class="ga-admin-trigger" type="button" (click)="toggleAdminMenu()" [attr.aria-expanded]="adminMenuOpen()" aria-haspopup="menu">
+          <span class="ga-admin-trigger-icon">⚙</span><span>Admin</span><span class="ga-admin-chevron" [class.is-open]="adminMenuOpen()">⌄</span>
+        </button>
+        <div class="ga-admin-dropdown" *ngIf="adminMenuOpen()" role="menu">
+          <div class="ga-dropdown-heading">ADMIN WORKSPACE</div>
+          <button type="button" role="menuitem" *ngFor="let item of adminScreens" (click)="item.id === 'create-screen' ? openScreenBuilder() : setTab(item.id)" [class.is-selected]="activeTab() === item.id">
+            <span class="ga-menu-icon">{{ item.id === 'grouping' ? '▦' : item.id === 'inbox' ? '✉' : item.id === 'orchestration' ? '⇄' : '＋' }}</span>
+            <span class="ga-menu-copy"><strong>{{ item.label }}</strong><small>{{ item.id === 'grouping' ? 'Groups and access management' : item.id === 'inbox' ? 'Messages and assigned items' : item.id === 'orchestration' ? 'Triggers and activity' : 'Create a configurable screen' }}</small></span>
+            <span class="ga-menu-arrow">›</span>
+          </button>
+        </div>
+      </div>
+      <button class="ga-button ga-button--secondary" type="button" (click)="loadData()" [disabled]="busy()">↻ Refresh</button>
       <button class="ga-button ga-button--secondary" type="button" *ngIf="activeTab() === 'grouping'" (click)="exportGroups()">Export CSV</button>
       <button class="ga-button ga-button--primary" type="button" *ngIf="activeTab() === 'grouping'" (click)="openCreateGroup()">+ Create Group</button>
     </div>
   </header>
-  <nav class="ga-tabs" aria-label="Admin screens">
-    <button *ngFor="let tab of adminScreens" [class.is-active]="activeTab() === tab.id" (click)="tab.id === 'create-screen' ? openScreenBuilder() : setTab(tab.id)">
-      {{ tab.label }}
-      <span class="ga-tab-count" *ngIf="tab.id === 'grouping'">{{ groups().length }}</span>
-      <span class="ga-tab-count" *ngIf="tab.id === 'orchestration'">{{ triggers().length }}</span>
-    </button>
-    <button *ngFor="let customTab of userScreens()" [class.is-active]="activeTab() === customTab.config.id" (click)="setTab(customTab.config.id)">{{ customTab.config.title }}</button>
-  </nav>
+  <div class="ga-workspace-context">
+    <span class="ga-context-dot"></span>
+    <span>Admin workspace</span><span class="ga-context-divider">/</span>
+    <strong>{{ activeTab() === 'create-screen' ? 'Create Screen' : activeTab() === 'inbox' ? 'Inbox' : activeTab() === 'orchestration' ? 'Orchestration' : activeTab() === 'grouping' ? 'Grouping' : customRecordScreen()?.config?.title }}</strong>
+    <span class="ga-context-spacer"></span><span class="ga-context-meta">STANDALONE ADMIN CONSOLE</span>
+  </div>
   <div class="ga-alert" *ngIf="errorMessage()">{{ errorMessage() }}</div>
   <div class="ga-loading" *ngIf="busy()">Processing…</div>
   <ng-container *ngIf="activeTab() === 'grouping'">
@@ -49,51 +64,34 @@
     <div class="ga-footnote">This screen was generated from its configuration. Screen definition and records are saved in this browser's local storage for this standalone demo.</div>
   </ng-container>
 
-  <div class="ga-overlay" *ngIf="screenBuilderOpen()" (click)="closeScreenBuilder()">
-    <section class="ga-dialog" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
-      <header class="ga-dialog-header">
-        <div><span class="ga-eyebrow">SCREEN CONFIGURATION</span><h2>Create New Screen</h2><p>Define a screen and its fields. It will be added to the application navigation immediately.</p></div>
-        <button class="ga-close" type="button" (click)="closeScreenBuilder()">×</button>
-      </header>
-      <div class="ga-dialog-body ga-screen-builder">
-        <label class="ga-field-label">Screen Name *
-          <input class="ga-input" [ngModel]="newScreenName()" (ngModelChange)="newScreenName.set($event)" placeholder="e.g. User Management">
-        </label>
-        <label class="ga-field-label">Description
-          <input class="ga-input" [ngModel]="newScreenDescription()" (ngModelChange)="newScreenDescription.set($event)" placeholder="What is this screen used for?">
-        </label>
-        <div class="ga-field-builder">
-          <div class="ga-field-builder-heading">
-            <div><strong>Screen fields</strong><p>Add the columns and form fields users will see on this screen.</p></div>
-            <button class="ga-button ga-button--secondary" type="button" (click)="addScreenField()">+ Add Field</button>
+  <ng-container *ngIf="activeTab() === 'create-screen'">
+    <section class="ga-create-page">
+      <div class="ga-create-intro"><div class="ga-create-icon">＋</div><div><span class="ga-eyebrow">SCREEN DESIGNER</span><h2>Build a new workspace screen</h2><p>Configure the screen identity and fields. Your new screen will be added to the Admin menu.</p></div></div>
+      <div class="ga-create-layout">
+        <div class="ga-create-main">
+          <div class="ga-panel-heading"><div><h3>Screen details</h3><p>Start with a name and a short description.</p></div><span class="ga-step">STEP 01</span></div>
+          <div class="ga-create-details">
+            <label class="ga-field-label">Screen name *<input class="ga-input" [ngModel]="newScreenName()" (ngModelChange)="newScreenName.set($event)" placeholder="e.g. User Management"></label>
+            <label class="ga-field-label">Description<input class="ga-input" [ngModel]="newScreenDescription()" (ngModelChange)="newScreenDescription.set($event)" placeholder="What is this screen used for?"></label>
           </div>
+          <div class="ga-panel-heading ga-fields-heading"><div><h3>Screen fields</h3><p>Add the columns and form fields users will see.</p></div><button class="ga-button ga-button--secondary" type="button" (click)="addScreenField()">＋ Add Field</button></div>
           <div class="ga-field-builder-list">
             <div class="ga-field-builder-row" *ngFor="let field of screenFieldDrafts(); let i = index">
               <div class="ga-field-builder-index">{{ i + 1 }}</div>
-              <label class="ga-field-label">Field name *
-                <input class="ga-input" [ngModel]="field.label" (ngModelChange)="updateScreenField(i, { label: $event })" placeholder="e.g. Full Name">
-              </label>
-              <label class="ga-field-label">Field type
-                <select class="ga-input" [ngModel]="field.type" (ngModelChange)="setScreenFieldType(i, $event)">
-                  <option value="text">Text</option><option value="textarea">Long text</option><option value="number">Number</option><option value="date">Date</option><option value="select">Dropdown</option><option value="checkbox">Checkbox</option>
-                </select>
-              </label>
-              <label class="ga-field-label ga-field-options" *ngIf="field.type === 'select'">Dropdown options *
-                <input class="ga-input" [ngModel]="field.options" (ngModelChange)="updateScreenField(i, { options: $event })" placeholder="Active, Inactive, Pending">
-              </label>
+              <label class="ga-field-label">Field name *<input class="ga-input" [ngModel]="field.label" (ngModelChange)="updateScreenField(i, { label: $event })" placeholder="e.g. Full Name"></label>
+              <label class="ga-field-label">Field type<select class="ga-input" [ngModel]="field.type" (ngModelChange)="setScreenFieldType(i, $event)"><option value="text">Text</option><option value="textarea">Long text</option><option value="number">Number</option><option value="date">Date</option><option value="select">Dropdown</option><option value="checkbox">Checkbox</option></select></label>
+              <label class="ga-field-label ga-field-options" *ngIf="field.type === 'select'">Dropdown options *<input class="ga-input" [ngModel]="field.options" (ngModelChange)="updateScreenField(i, { options: $event })" placeholder="Active, Inactive, Pending"></label>
               <label class="ga-field-required"><input type="checkbox" [ngModel]="field.required" (ngModelChange)="updateScreenField(i, { required: $event })"> Required</label>
-              <button class="ga-remove-field" type="button" (click)="removeScreenField(i)" [disabled]="screenFieldDrafts().length === 1" aria-label="Remove field">Remove</button>
+              <button class="ga-remove-field" type="button" (click)="removeScreenField(i)" [disabled]="screenFieldDrafts().length === 1">Remove</button>
             </div>
           </div>
-          <p class="ga-field-builder-note">No special syntax required. Choose a field type from the dropdown. For dropdown fields, enter comma-separated choices.</p>
+          <p class="ga-field-builder-note">Choose field types from the dropdown. Dropdown choices should be comma-separated.</p>
+          <div class="ga-create-actions"><button class="ga-button ga-button--secondary" type="button" (click)="setTab('grouping')">Cancel</button><button class="ga-button ga-button--primary" type="button" (click)="createUserScreen()">Create Screen <span>→</span></button></div>
         </div>
+        <aside class="ga-create-aside"><div class="ga-preview-art">▤</div><h3>Designed for your workflow</h3><p>Each screen is generated from its configuration and becomes an independent destination in your Admin menu.</p><ul><li>Flexible field types</li><li>Required-field validation</li><li>Dropdown choices</li><li>Local demo persistence</li></ul><div class="ga-aside-note">Screen definitions and demo records are stored in this browser.</div></aside>
       </div>
-      <footer class="ga-dialog-footer">
-        <button class="ga-button ga-button--secondary" type="button" (click)="closeScreenBuilder()">Cancel</button>
-        <button class="ga-button ga-button--primary" type="button" (click)="createUserScreen()">Create Screen</button>
-      </footer>
     </section>
-  </div>
+  </ng-container>
 
   <div class="ga-overlay" *ngIf="recordEditorOpen()" (click)="closeCustomRecordEditor()">
     <ng-container *ngIf="customRecordScreen() as customScreen">
