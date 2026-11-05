@@ -1,0 +1,30 @@
+name: Grouping Approvals Standalone Build
+
+on:
+  push:
+    branches:
+      - feature/grouping-approvals-standalone
+    paths:
+      - 'grouping-approvals-standalone/**'
+      - '.github/workflows/grouping-approvals-standalone-build.yml'
+  pull_request:
+    paths:
+      - 'grouping-approvals-standalone/**'
+      - '.github/workflows/grouping-approvals-standalone-build.yml'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: grouping-approvals-standalone
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: grouping-approvals-standalone/package-lock.json
+      - run: npm install
+      - run: npm run build
