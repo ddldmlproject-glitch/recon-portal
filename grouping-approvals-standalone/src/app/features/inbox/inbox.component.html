@@ -1,0 +1,50 @@
+<section class="inbox-app">
+  <div class="inbox-topbar">
+    <div class="inbox-title"><div class="inbox-mark">✉</div><div><span class="inbox-kicker">WORKFLOW CENTER</span><h2>Inbox</h2><p>Requests, updates and tasks assigned to you</p></div></div>
+    <div class="inbox-top-actions">
+      <label class="inbox-search"><span>⌕</span><input [ngModel]="searchText()" (ngModelChange)="searchText.set($event)" placeholder="Search requests, tools, people..."></label>
+      <button class="inbox-notification" type="button" aria-label="Unread notifications"><span>♧</span><i *ngIf="unreadCount() > 0">{{ unreadCount() }}</i></button>
+      <button class="inbox-create" type="button" (click)="openCreate()">＋ Create Request</button>
+    </div>
+  </div>
+  <div class="inbox-folderbar">
+    <button *ngFor="let folder of folders; trackBy: trackFolder" type="button" [class.active]="activeFolder()===folder.name" (click)="setFolder(folder.name)">
+      <span class="folder-symbol">{{ folder.icon==='inbox'?'▣':folder.icon==='star'?'☆':folder.icon==='clock'?'◷':folder.icon==='bookmark'?'◆':folder.icon==='send'?'➤':folder.icon==='file'?'▤':folder.icon==='shield-alert'?'⚑':'▱' }}</span>{{ folder.name }}
+      <span class="folder-count" *ngIf="folder.name==='Inbox'">{{ unreadCount() }}</span>
+    </button>
+  </div>
+  <div class="inbox-content">
+    <div class="inbox-list-heading"><div><h3>{{ activeFolder() }}</h3><p>{{ filteredMessages().length }} {{ filteredMessages().length===1?'request':'requests' }} · Select a row to view details</p></div><span class="inbox-live"><i></i> LIVE WORKSPACE</span></div>
+    <div class="inbox-grid"><ag-grid-angular [rowData]="filteredMessages()" [columnDefs]="columnDefs" [gridOptions]="gridOptions" [theme]="gridTheme" (rowClicked)="rowClicked($event)"></ag-grid-angular></div>
+    <div class="inbox-empty" *ngIf="filteredMessages().length===0"><div>⌕</div><h3>No requests found</h3><p>There are no items in this folder matching your search.</p></div>
+  </div>
+
+  <div class="inbox-drawer-backdrop" *ngIf="selected()" (click)="closeDetails()"></div>
+  <aside class="inbox-drawer" *ngIf="selected() as item">
+    <div class="drawer-head"><div><span class="inbox-kicker">REQUEST DETAILS · {{ item.id }}</span><h3>{{ item.subject }}</h3><p>Submitted by {{ item.createdBy }} · {{ item.createdAt | date:'medium' }}</p></div><button type="button" (click)="closeDetails()">×</button></div>
+    <div class="drawer-actions"><button type="button" (click)="toggleStar(item)">{{ item.starred?'★ Starred':'☆ Star' }}</button><button type="button" (click)="toggleImportant(item)">{{ item.important?'◆ Important':'◇ Mark important' }}</button><button type="button" (click)="snooze()">◷ Snooze</button><button type="button" (click)="moveTo('Trash')">Delete</button></div>
+    <div class="drawer-body">
+      <div class="drawer-status-row"><span class="status-pill" [attr.data-status]="item.status">{{ item.status.replace('_',' ') }}</span><span class="priority-pill" [attr.data-priority]="item.priority">{{ item.priority }} priority</span></div>
+      <div class="detail-grid"><div><label>Action Type</label><strong>{{ item.actionType }}</strong></div><div><label>Tool / Report</label><strong>{{ item.tool }}</strong></div><div><label>Created By</label><strong>{{ item.createdBy }}</strong></div><div><label>Request ID</label><strong>{{ item.id }}</strong></div></div>
+      <section class="drawer-section"><h4>Request details</h4><p>{{ item.details }}</p></section>
+      <section class="drawer-section"><h4>Comments</h4><p>{{ item.comments || 'No comments provided.' }}</p></section>
+    </div>
+    <div class="drawer-footer" *ngIf="item.status==='PENDING_APPROVAL'"><button type="button" class="reject" (click)="setStatus('REJECTED')">Reject</button><button type="button" class="approve" (click)="setStatus('APPROVED')">Approve Request</button></div>
+    <div class="drawer-footer" *ngIf="item.status!=='PENDING_APPROVAL'"><button type="button" class="approve" (click)="moveTo('Inbox')">Move to Inbox</button></div>
+  </aside>
+
+  <div class="inbox-modal-backdrop" *ngIf="createOpen()" (click)="createOpen.set(false)">
+    <section class="inbox-modal" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
+      <header><div><span class="inbox-kicker">NEW WORKFLOW ITEM</span><h3>Create Request</h3><p>Submit a request for review and tracking.</p></div><button type="button" (click)="createOpen.set(false)">×</button></header>
+      <div class="request-form">
+        <label>Action Type<select [ngModel]="draft().actionType" (ngModelChange)="updateDraft('actionType',$event)"><option>Access Request</option><option>Role Change</option><option>Report Enablement</option><option>Workspace Request</option><option>Other</option></select></label>
+        <label>Tool / Report *<input [ngModel]="draft().tool" (ngModelChange)="updateDraft('tool',$event)" placeholder="Enter tool or report name"></label>
+        <label>Created By *<input [ngModel]="draft().createdBy" (ngModelChange)="updateDraft('createdBy',$event)" placeholder="Enter your name or user ID"></label>
+        <label>Priority<select [ngModel]="draft().priority" (ngModelChange)="updateDraft('priority',$event)"><option>High</option><option>Medium</option><option>Low</option></select></label>
+        <label class="form-wide">Details *<textarea rows="4" [ngModel]="draft().details" (ngModelChange)="updateDraft('details',$event)" placeholder="Describe what you need..."></textarea></label>
+        <label class="form-wide">Comments<textarea rows="3" [ngModel]="draft().comments" (ngModelChange)="updateDraft('comments',$event)" placeholder="Add additional context (optional)"></textarea></label>
+      </div>
+      <footer><button type="button" class="cancel" (click)="createOpen.set(false)">Cancel</button><button type="button" class="inbox-create" [disabled]="!draft().tool.trim()||!draft().createdBy.trim()||!draft().details.trim()" (click)="createRequest()">Submit Request</button></footer>
+    </section>
+  </div>
+</section>
