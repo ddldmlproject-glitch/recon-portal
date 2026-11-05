@@ -21,7 +21,7 @@ export const GROUPING_APPROVALS_CONFIG: GroupingApprovalsConfig = {
   ],
   triggerColumns: [
     { key: 'opsId', label: 'Ops ID', width: '120px' },
-    { key: 'opsName', label: 'Recon Name', width: '190px' },
+    { key: 'opsName', label: 'Ops Name', width: '190px' },
     { key: 'triggerType', label: 'Trigger Type', width: '140px' },
     { key: 'value', label: 'Value', width: '100px' },
     { key: 'loadStatus', label: 'Load Status', width: '120px' },
