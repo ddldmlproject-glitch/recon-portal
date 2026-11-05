@@ -18,7 +18,7 @@ export class DynamicGridComponent<TData = unknown> {
   readonly gridOptions = input<GridOptions<TData>>({});
   readonly rowAction = output<{ action: string; data: TData }>();
 
-  readonly resolvedColumns = computed(() => this.config()?.columns ?? this.columnDefs());
+  readonly resolvedColumns = computed(() => this.columnDefs().length ? this.columnDefs() : (this.config()?.columns ?? []));
   readonly resolvedGridOptions = computed<GridOptions<TData>>(() => {
     const config = this.config();
     const supplied = this.gridOptions();
