@@ -277,3 +277,58 @@ The API repository includes matching delete and decision operations as integrati
 ## CI build check
 
 A GitHub Actions workflow at `.github/workflows/grouping-approvals-standalone-build.yml` installs dependencies and runs `npm run build` for changes to this standalone project. Check the Actions tab for the build result after pushing.
+
+
+## Create new screens from the UI
+
+The standalone app includes a lightweight Screen Designer. A screen created there is registered at runtime, immediately appears as a navigation tab, and is rendered from its generated `ScreenConfig`. Its field definition and sample records are persisted in browser local storage for this demo.
+
+### Step-by-step: create a User Management screen
+
+1. Start the application with `npm start`.
+2. Open the Grouping & Approvals page.
+3. Click **+ Create Screen** in the page header.
+4. Enter **Screen Name**: `User Management`.
+5. Enter a description such as `Manage application users and their roles`.
+6. In **Field definitions**, enter one field per line:
+
+   ```text
+   User ID|text
+   Full Name|text
+   Email|text
+   Role|select|Maker,Checker,Approver
+   Status|select|Active,Inactive
+   Enabled|checkbox|optional
+   ```
+
+7. Click **Create Screen**.
+8. The new **User Management** tab appears immediately and is selected.
+9. Click **+ Add Record**. The data-entry form is generated from the fields you supplied.
+10. Enter a user and click **Save**. The record appears in the generated AG Grid.
+11. Add more records and verify the grid columns match the screen configuration.
+12. Refresh the browser. The new screen definition and records should still appear because the demo stores them in local storage.
+13. Click **Delete Screen** to remove the custom screen and its locally stored records.
+
+### Field definition syntax
+
+Use `Label|type` or `Label|type|optional`.
+
+Supported types:
+- `text`
+- `textarea`
+- `number`
+- `date`
+- `select` — third segment is a comma-separated option list, e.g. `Status|select|Active,Inactive`
+- `checkbox`
+
+Field labels must be unique within a screen. Screen names must also produce a unique screen ID. Required fields are the default; add `|optional` to make a field optional.
+
+### How it works
+
+- `UserScreenStorageService` creates a declarative `ScreenConfig`, stores screen definitions and demo records in local storage.
+- `ScreenRegistryService` registers the generated config at runtime.
+- `visibleTabs` adds registered custom screens to the navigation.
+- `DynamicScreenComponent` and `DynamicGridComponent` render the generated grid.
+- `DynamicFormComponent` renders the add-record form using the generated `FieldConfig[]`.
+
+**Important:** this is a frontend screen designer/demo, not a production screen-builder backend. Local storage is browser-specific and is not shared with other users or machines. Custom records currently support create/list only; edit/delete record actions, server-side screen-definition persistence, authorization and versioning must be connected to microservices before production. Do not store sensitive or regulated data in this demo.
