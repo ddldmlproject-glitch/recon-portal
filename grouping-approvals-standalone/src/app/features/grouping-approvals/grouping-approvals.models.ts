@@ -1,5 +1,6 @@
-export type ApprovalStatus = 'Active' | 'Inactive' | 'Pending';
+export type ApprovalStatus = 'Active' | 'Inactive' | 'Pending' | 'Rejected';
 export type TriggerStatus = 'Completed' | 'Pending' | 'Failed';
+export type ApprovalDecision = 'Approved' | 'Rejected';
 
 export interface EntitlementGroup {
   id: string;
@@ -8,6 +9,7 @@ export interface EntitlementGroup {
   owner: string;
   approvers: string[];
   reconSelection: 'All Recons' | 'Recon IDs';
+  reconIds: string[];
   allEntities: number;
   updatedBy: string;
   updatedAt: string;
@@ -15,6 +17,9 @@ export interface EntitlementGroup {
   userIds: string[];
   roles: string[];
   toolsAndReports: string[];
+  approvalComment?: string;
+  approvedBy?: string;
+  approvedAt?: string;
 }
 
 export interface ReconLoadTrigger {
@@ -30,11 +35,7 @@ export interface ReconLoadTrigger {
   requestedBy: string;
 }
 
-export interface GridColumn<T> {
-  key: keyof T;
-  label: string;
-  width?: string;
-}
+export interface GridColumn<T> { key: keyof T; label: string; width?: string; }
 
 export interface GroupingApprovalsConfig {
   title: string;
@@ -48,6 +49,8 @@ export interface GroupingApprovalsConfig {
     canManageUsers: boolean;
     canManageRoles: boolean;
     canExport: boolean;
+    canApprove: boolean;
+    canDelete: boolean;
   };
 }
 
@@ -59,6 +62,9 @@ export interface GroupUpdate {
   roles: string[];
   toolsAndReports: string[];
   reconSelection: 'All Recons' | 'Recon IDs';
+  reconIds: string[];
   allEntities: number;
   status: ApprovalStatus;
 }
+
+export interface GroupDraft extends Omit<EntitlementGroup, 'id' | 'updatedBy' | 'updatedAt'> {}
