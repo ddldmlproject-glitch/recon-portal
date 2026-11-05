@@ -236,6 +236,12 @@ export class GroupingApprovalsComponent implements OnInit {
   addScreenField(): void {
     this.screenFieldDrafts.update(fields => [...fields, { label: '', type: 'text', required: true, options: '' }]);
   }
+  setScreenFieldType(index: number, type: string): void {
+    const allowed: FieldConfig['type'][] = ['text', 'textarea', 'number', 'date', 'select', 'checkbox'];
+    if (allowed.includes(type as FieldConfig['type'])) {
+      this.updateScreenField(index, { type: type as FieldConfig['type'], options: type === 'select' ? '' : '' });
+    }
+  }
   removeScreenField(index: number): void {
     this.screenFieldDrafts.update(fields => fields.filter((_field, fieldIndex) => fieldIndex !== index));
   }
