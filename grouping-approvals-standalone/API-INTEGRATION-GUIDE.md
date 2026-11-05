@@ -1,6 +1,6 @@
-# API Integration Guide — Grouping & Approvals
+# API Integration Guide — Admin
 
-This guide explains how to connect the standalone Angular 21 application to backend microservices. It covers the built-in Entitlement Groups and Recon Load Triggers screens, plus screens created through the visual Screen Designer.
+This guide explains how to connect the standalone Angular 21 application to backend microservices. It covers the built-in Grouping and Orchestration screens, plus screens created through the visual Screen Designer.
 
 > **Important:** The application currently starts with mock data. The API paths in `src/app/core/config/api-environment.config.ts` are integration examples/placeholders. Confirm the actual base URL, endpoints, authentication, DTOs, pagination and error contract with the backend team before enabling the API repository.
 
@@ -49,12 +49,12 @@ File: `src/app/core/config/api-environment.config.ts`
 
 | Screen / action | Operation ID | Example method and path |
 |---|---|---|
-| Entitlement Groups list | `groupsList` | GET `/groups` |
+| Grouping list | `groupsList` | GET `/groups` |
 | Create group | `groupsCreate` | POST `/groups` |
 | Update group | `groupsUpdate` | PUT `/groups/:id` |
 | Delete group | `groupsDelete` | DELETE `/groups/:id` |
-| Approve/reject group | `groupsDecision` | POST `/groups/:id/decision` |
-| Recon Load Triggers list | `triggersList` | GET `/recon-load-triggers` |
+| Decision workflow group | `groupsDecision` | POST `/groups/:id/decision` |
+| Orchestration list | `triggersList` | GET `/recon-load-triggers` |
 
 These are illustrative contracts, not confirmation that those routes exist in your environment. Replace them with the routes agreed with the service owners.
 
@@ -345,8 +345,8 @@ The feature component currently catches rejected repository promises and display
 ### Mock mode
 1. Keep `GroupingApprovalsMockRepository` selected.
 2. Run `npm install`, `npm start` and open `http://localhost:4200/grouping-approvals`.
-3. Test group create/edit/delete and approve/reject flows.
-4. Open Recon Load Triggers and verify the trigger list.
+3. Test group create/edit/delete and decision workflow flows.
+4. Open Orchestration and verify the trigger list.
 5. Create a custom screen with the visual field builder, add a record and refresh. Confirm the custom definition and records persist in that browser's local storage.
 6. Remember that built-in mock data is in memory and resets on app restart; custom screen data uses local storage.
 
