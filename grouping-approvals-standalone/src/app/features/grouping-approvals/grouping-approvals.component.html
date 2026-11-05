@@ -13,6 +13,7 @@
       <span class="ga-tab-count" *ngIf="tab.id === 'grouping'">{{ groups().length }}</span>
       <span class="ga-tab-count" *ngIf="tab.id === 'orchestration'">{{ triggers().length }}</span>
     </button>
+    <button *ngFor="let customTab of userScreens()" [class.is-active]="activeTab() === customTab.config.id" (click)="setTab(customTab.config.id)">{{ customTab.config.title }}</button>
   </nav>
   <div class="ga-alert" *ngIf="errorMessage()">{{ errorMessage() }}</div>
   <div class="ga-loading" *ngIf="busy()">Processing…</div>
