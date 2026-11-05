@@ -35,6 +35,7 @@ export class GroupingApprovalsComponent implements OnInit {
   readonly activeTab = signal('grouping');
   readonly adminMenuOpen = signal(false);
   readonly groups = signal<EntitlementGroup[]>([]);
+  readonly signedInUserId = 'sso0204';
   readonly triggers = signal<OpsLoadTrigger[]>([]);
   readonly searchText = signal('');
   readonly selectedGroup = signal<EntitlementGroup | null>(null);
