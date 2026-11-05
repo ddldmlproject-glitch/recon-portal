@@ -128,7 +128,7 @@ export class InboxComponent {
   }
   private groupsForRequestCreator(creatorId: string): EntitlementGroup[] {
     const creator = creatorId.trim().toLowerCase();
-    return this.groups().filter(group => this.groupMemberIds(group).includes(creator));
+    return this.groups().filter(group => group.status === 'Active' && this.groupMemberIds(group).includes(creator));
   }
   private categoryForAction(actionType: string): RequestCategory { const value=actionType.toUpperCase(); if(value.includes('HITL'))return 'HITL_PENDING'; if(value.includes('EDIT'))return 'EDIT'; if(value.includes('DELETE'))return 'DELETE'; if(value.includes('MATCH')||value.includes('CLOSE'))return 'MATCH_CLOSE'; return 'ALL'; }
   private updateRecord(id:string,patch:Partial<RequestRecord>): void { this.records.update(rows=>rows.map(r=>r.id===id?{...r,...patch}:r)); }
