@@ -1,53 +1,38 @@
 <section class="ga-shell">
   <header class="ga-header">
-    <div><div class="ga-eyebrow">RECON PORTAL <span>/</span> ADMINISTRATION</div><h1>{{ config.title }}</h1><p>{{ config.subtitle }}</p></div>
+    <div><div class="ga-eyebrow">ADMINISTRATION</div><h1>Admin</h1><p>Manage grouping, inbox, orchestration and configurable screens.</p></div>
     <div class="ga-header-actions">
-      <button class="ga-button ga-button--secondary" (click)="loadData()" [disabled]="busy()">Refresh</button>
-      <button class="ga-button ga-button--secondary" *ngIf="config.permissions.canExport && activeTab() === 'groups'" (click)="exportGroups()">Export CSV</button>
-      <button class="ga-button ga-button--secondary" type="button" (click)="openScreenBuilder()">+ Create Screen</button>
-      <button class="ga-button ga-button--primary" *ngIf="config.permissions.canCreateGroup && activeTab() === 'groups'" (click)="openCreateGroup()">+ Create Group</button>
+      <button class="ga-button ga-button--secondary" type="button" (click)="loadData()" [disabled]="busy()">Refresh</button>
+      <button class="ga-button ga-button--secondary" type="button" *ngIf="activeTab() === 'grouping'" (click)="exportGroups()">Export CSV</button>
+      <button class="ga-button ga-button--primary" type="button" *ngIf="activeTab() === 'grouping'" (click)="openCreateGroup()">+ Create Group</button>
     </div>
   </header>
-
-  <nav class="ga-tabs" aria-label="Application screens">
-    <button *ngFor="let tab of visibleTabs()" [class.is-active]="activeTab() === tab.id" (click)="setTab(tab.id)">
+  <nav class="ga-tabs" aria-label="Admin screens">
+    <button *ngFor="let tab of adminScreens" [class.is-active]="activeTab() === tab.id" (click)="tab.id === 'create-screen' ? openScreenBuilder() : setTab(tab.id)">
       {{ tab.label }}
-      <span class="ga-tab-count">
-        {{ tab.id === 'groups' ? groups().length : tab.id === 'approvals' ? pendingGroups().length : tab.id === 'triggers' ? triggers().length : (userScreenRecords()[tab.id]).length }}
-      </span>
+      <span class="ga-tab-count" *ngIf="tab.id === 'grouping'">{{ groups().length }}</span>
+      <span class="ga-tab-count" *ngIf="tab.id === 'orchestration'">{{ triggers().length }}</span>
     </button>
   </nav>
-
-  <div class="ga-toolbar">
-    <div class="ga-search"><span>⌕</span><input type="search" placeholder="Search by name, ID or description" [ngModel]="searchText()" (ngModelChange)="searchText.set($event)"><button *ngIf="searchText()" (click)="searchText.set('')">×</button></div>
-    <span class="ga-result-count">
-      {{ activeTab() === 'groups' ? filteredGroups().length + ' groups' : activeTab() === 'approvals' ? filteredPendingGroups().length + ' pending approvals' : activeTab() === 'triggers' ? filteredTriggers().length + ' triggers' : (userScreenRecords()[activeTab()]).length + ' records' }}
-    </span>
-  </div>
-
   <div class="ga-alert" *ngIf="errorMessage()">{{ errorMessage() }}</div>
   <div class="ga-loading" *ngIf="busy()">Processing…</div>
-
-  <ng-container *ngIf="activeTab() === 'groups'">
+  <ng-container *ngIf="activeTab() === 'grouping'">
     <div class="ga-grid-wrap">
       <app-dynamic-screen [config]="groupScreen" [rowData]="filteredGroups()" [columnDefs]="groupColumnDefs" [gridOptions]="gridOptions" />
     </div>
-    <div class="ga-footnote">Manage group details, users, roles, reconciliation scope and approval status from the row actions.</div>
+    <div class="ga-footnote">Manage group details, users, roles, access scope and status from the row actions.</div>
   </ng-container>
 
-  <ng-container *ngIf="activeTab() === 'approvals'">
-    <div class="ga-grid-wrap">
-      <app-dynamic-screen [config]="groupScreen" [rowData]="filteredPendingGroups()" [columnDefs]="groupColumnDefs" [gridOptions]="gridOptions" />
-    </div>
-    <div class="ga-footnote">Only groups in Pending status can be approved or rejected. Rejection requires a reason.</div>
-  </ng-container>
-
-  <ng-container *ngIf="activeTab() === 'triggers'">
+  <ng-container *ngIf="activeTab() === 'orchestration'">
     <div class="ga-grid-wrap">
       <app-dynamic-screen [config]="triggerScreen" [rowData]="filteredTriggers()" [columnDefs]="triggerColumnDefs" [gridOptions]="gridOptions" />
     </div>
   </ng-container>
 
+
+  <ng-container *ngIf="activeTab() === 'inbox'">
+    <section class="ga-empty-screen"><div class="ga-empty-icon">✉</div><h2>Inbox</h2><p>Messages and assigned items will appear here after the Inbox service is connected.</p><span>Inbox screen ready for API integration</span></section>
+  </ng-container>
 
   <ng-container *ngIf="customRecordScreen() as customScreen">
     <div class="ga-custom-screen-toolbar">
@@ -146,25 +131,4 @@
     </section>
   </div>
 
-  <div class="ga-overlay" *ngIf="approvalTarget()" (click)="closeApproval()">
-    <section class="ga-dialog ga-dialog--approval" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
-      <header class="ga-dialog-header">
-        <div>
-          <span class="ga-eyebrow">GROUP APPROVAL</span>
-          <h2>{{ approvalDecision() }} Group</h2>
-          <p>{{ approvalTarget()?.groupName }}</p>
-        </div>
-        <button class="ga-close" type="button" (click)="closeApproval()">×</button>
-      </header>
-      <div class="ga-dialog-body">
-        <label class="ga-field-label">{{ approvalDecision() === 'Rejected' ? 'Rejection reason (required)' : 'Approval comment (optional)' }}
-          <textarea class="ga-textarea" rows="4" [ngModel]="approvalComment()" (ngModelChange)="approvalComment.set($event)" placeholder="Enter decision comments"></textarea>
-        </label>
-      </div>
-      <footer class="ga-dialog-footer">
-        <button class="ga-button ga-button--secondary" type="button" (click)="closeApproval()">Cancel</button>
-        <button class="ga-button ga-button--primary" type="button" [disabled]="busy()" (click)="submitApproval()">Confirm {{ approvalDecision() }}</button>
-      </footer>
-    </section>
-  </div>
 </section>
