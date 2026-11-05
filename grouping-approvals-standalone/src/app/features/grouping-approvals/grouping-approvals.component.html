@@ -19,11 +19,11 @@
   <div class="ga-alert" *ngIf="errorMessage()">{{ errorMessage() }}</div>
   <div class="ga-loading" *ngIf="busy()">Loading data…</div>
   <ng-container *ngIf="activeTab() === 'groups'">
-    <div class="ga-grid-wrap"><app-dynamic-grid [rowData]="filteredGroups()" [columnDefs]="groupColumnDefs" [gridOptions]="gridOptions" /></div>
+    <div class="ga-grid-wrap"><app-dynamic-screen [config]="groupScreen" [rowData]="filteredGroups()" [columnDefs]="groupColumnDefs" [gridOptions]="gridOptions" /></div>
     <div class="ga-footnote">Use the row actions to manage users, roles, tools and group details. Grid configuration is defined independently from the page template.</div>
   </ng-container>
   <ng-container *ngIf="activeTab() === 'triggers'">
-    <div class="ga-grid-wrap"><app-dynamic-grid [rowData]="filteredTriggers()" [columnDefs]="triggerColumnDefs" [gridOptions]="gridOptions" /></div>
+    <div class="ga-grid-wrap"><app-dynamic-screen [config]="triggerScreen" [rowData]="filteredTriggers()" [columnDefs]="triggerColumnDefs" [gridOptions]="gridOptions" /></div>
   </ng-container>
   <div class="ga-overlay" *ngIf="dialogMode()" (click)="closeDialog()">
     <section class="ga-dialog" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
