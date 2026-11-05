@@ -8,7 +8,7 @@ import { ScreenConfig, FieldConfig } from '../../core/config/screen-config.model
 import { ScreenRegistryService } from '../../core/engine/screen-registry.service';
 import { GROUPING_APPROVALS_CONFIG } from './grouping-approvals.config';
 import { GROUPING_APPROVALS_SCREENS } from './grouping-approvals.screen-config';
-import { EntitlementGroup, ReconLoadTrigger, GroupUpdate, ApprovalDecision } from './grouping-approvals.models';
+import { EntitlementGroup, ReconLoadTrigger, GroupUpdate, ApprovalDecision, ApprovalStatus } from './grouping-approvals.models';
 import { GROUPING_APPROVALS_REPOSITORY } from './grouping-approvals.repository';
 
 type DialogMode = 'create' | 'edit';
@@ -144,7 +144,7 @@ export class GroupingApprovalsComponent implements OnInit {
     const owner = String(value['owner'] ?? '').trim();
     if (!groupName || !owner) { this.errorMessage.set('Group name and owner are required.'); return; }
     const selected = this.selectedGroup();
-    const status = (value['status'] === 'Active' || value['status'] === 'Inactive' ? value['status'] : 'Pending');
+    const status: ApprovalStatus = value['status'] === 'Active' ? 'Active' : value['status'] === 'Inactive' ? 'Inactive' : value['status'] === 'Rejected' ? 'Rejected' : 'Pending';
     const data = {
       groupName, description: String(value['description'] ?? '').trim(), owner,
       approvers: this.parseList(value['approvers']),
