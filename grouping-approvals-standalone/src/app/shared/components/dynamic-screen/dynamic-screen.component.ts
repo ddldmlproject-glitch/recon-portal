@@ -1,5 +1,5 @@
 import { Component, input } from '@angular/core';
-import type { GridOptions } from 'ag-grid-community';
+import type { ColDef, GridOptions } from 'ag-grid-community';
 import { ScreenConfig } from '../../../core/config/screen-config.models';
 import { DynamicGridComponent } from '../dynamic-grid/dynamic-grid.component';
 
