@@ -17,4 +17,7 @@ export class GroupingApprovalsApiRepository implements GroupingApprovalsReposito
   deleteGroup(groupId: string): Promise<void> {
     return this.api.request('groupsDelete', { pathParams: { id: groupId } });
   }
+  decideGroup(groupId: string, decision: ApprovalDecision, comment: string): Promise<EntitlementGroup> {
+    return this.api.request('groupsDecision', { pathParams: { id: groupId }, body: { decision, comment } });
+  }
 }
