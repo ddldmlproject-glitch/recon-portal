@@ -6,8 +6,15 @@ export class ScreenRegistryService {
   private readonly screens = new Map<string, ScreenConfig>();
 
   register(config: ScreenConfig): void {
-    if (this.screens.has(config.id)) throw new Error(`Screen configuration "${config.id}" is already registered.`);
+    const existing = this.screens.get(config.id);
+    if (existing && existing !== config) {
+      throw new Error(`Screen configuration "${config.id}" is already registered.`);
+    }
     this.screens.set(config.id, config);
+  }
+
+  registerMany(configs: ScreenConfig[]): void {
+    for (const config of configs) this.register(config);
   }
 
   get<T = unknown>(id: string): ScreenConfig<T> {
