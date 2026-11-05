@@ -88,7 +88,7 @@
                 <input class="ga-input" [ngModel]="field.label" (ngModelChange)="updateScreenField(i, { label: $event })" placeholder="e.g. Full Name">
               </label>
               <label class="ga-field-label">Field type
-                <select class="ga-input" [ngModel]="field.type" (ngModelChange)="updateScreenField(i, { type: $event })">
+                <select class="ga-input" [ngModel]="field.type" (ngModelChange)="setScreenFieldType(i, $event)">
                   <option value="text">Text</option><option value="textarea">Long text</option><option value="number">Number</option><option value="date">Date</option><option value="select">Dropdown</option><option value="checkbox">Checkbox</option>
                 </select>
               </label>
