@@ -5,83 +5,105 @@ import { AgGridAngular } from 'ag-grid-angular';
 import type { ColDef, GridOptions, ICellRendererParams, RowClickedEvent } from 'ag-grid-community';
 import { themeQuartz } from 'ag-grid-community';
 
-type InboxFolder = 'Inbox' | 'Starred' | 'Snoozed' | 'Important' | 'Sent' | 'Drafts' | 'Spam' | 'Trash';
-type InboxStatus = 'PENDING_APPROVAL' | 'APPROVED' | 'REJECTED' | 'COMPLETED' | 'DRAFT';
-type InboxDraft = { actionType: string; tool: string; createdBy: string; details: string; comments: string; priority: 'High' | 'Medium' | 'Low' };
-interface InboxMessage {
-  id: string; subject: string; actionType: string; tool: string; createdBy: string;
-  details: string; comments: string; status: InboxStatus; priority: 'High' | 'Medium' | 'Low';
-  createdAt: string; unread: boolean; starred: boolean; important: boolean;
-  folder: InboxFolder; snoozedUntil?: string;
+type Mailbox = 'Inbox' | 'Starred' | 'Snoozed' | 'Important' | 'Sent' | 'Drafts' | 'Spam' | 'Trash';
+type RequestCategory = 'ALL' | 'MATCH_CLOSE' | 'EDIT' | 'DEPARTMENT' | 'NET' | 'DELETE' | 'SPLIT_UNSPLIT' | 'CATEGORY_REASON' | 'HITL_PENDING';
+type RequestOwnerScope = 'GROUP' | 'MINE';
+type RequestApprovalScope = 'ALL' | 'AWAITING_APPROVAL';
+interface RequestTabConfig { id: RequestCategory; label: string; enabled: boolean; order: number; }
+interface RequestRecord {
+  id: string; actionTool: string; actionType: string; requestStatus: string; sourceStatus: string;
+  createdBy: string; details: string; comments: string; createdDate: string; actionedBy: string; actionComments: string;
+  folder: Mailbox; unread: boolean; starred: boolean; important: boolean; category: RequestCategory;
 }
-@Component({
-  selector: 'app-inbox',
-  standalone: true,
-  imports: [CommonModule, FormsModule, AgGridAngular],
-  templateUrl: './inbox.component.html',
-  styleUrl: './inbox.component.scss'
-})
+type NewRequestDraft = { actionType: string; actionTool: string; createdBy: string; details: string; comments: string };
+
+@Component({ selector: 'app-inbox', standalone: true, imports: [CommonModule, FormsModule, AgGridAngular], templateUrl: './inbox.component.html', styleUrl: './inbox.component.scss' })
 export class InboxComponent {
-  readonly folders: { name: InboxFolder; icon: string }[] = [
-    { name: 'Inbox', icon: 'inbox' }, { name: 'Starred', icon: 'star' }, { name: 'Snoozed', icon: 'clock' },
-    { name: 'Important', icon: 'bookmark' }, { name: 'Sent', icon: 'send' }, { name: 'Drafts', icon: 'file' },
-    { name: 'Spam', icon: 'shield-alert' }, { name: 'Trash', icon: 'trash' }
+  readonly folders: { name: Mailbox; icon: string }[] = [
+    {name:'Inbox',icon:'▣'},{name:'Starred',icon:'☆'},{name:'Snoozed',icon:'◷'},{name:'Important',icon:'⚑'},
+    {name:'Sent',icon:'➤'},{name:'Drafts',icon:'▱'},{name:'Spam',icon:'⊘'},{name:'Trash',icon:'♲'}
   ];
-  readonly activeFolder = signal<InboxFolder>('Inbox');
-  readonly searchText = signal('');
-  readonly selected = signal<InboxMessage | null>(null);
-  readonly createOpen = signal(false);
-  readonly unreadCount = computed(() => this.messages().filter(m => m.folder === 'Inbox' && m.unread).length);
-  readonly messages = signal<InboxMessage[]>([
-    { id:'REQ-10482', subject:'Access to payment exception dashboard', actionType:'Access Request', tool:'Payment Exception Dashboard', createdBy:'Aarav Mehta', details:'Requesting read and export access to the payment exception dashboard for month-end analysis.', comments:'Needed for the November close activities.', status:'PENDING_APPROVAL', priority:'High', createdAt:'2026-11-05T09:42:00', unread:true, starred:true, important:true, folder:'Inbox' },
-    { id:'REQ-10479', subject:'Enable settlement monitoring report', actionType:'Report Enablement', tool:'Settlement Monitoring', createdBy:'Sophia Chen', details:'Please enable the settlement monitoring report for the operations team.', comments:'Manager approval attached in the request.', status:'PENDING_APPROVAL', priority:'Medium', createdAt:'2026-11-05T08:15:00', unread:true, starred:false, important:false, folder:'Inbox' },
-    { id:'REQ-10471', subject:'Update maker-checker role mapping', actionType:'Role Change', tool:'User Access Management', createdBy:'Noah Williams', details:'Update role mapping for the listed users to support the new operating model.', comments:'Please apply from the next business day.', status:'APPROVED', priority:'Medium', createdAt:'2026-11-04T16:28:00', unread:false, starred:false, important:true, folder:'Inbox' },
-    { id:'REQ-10463', subject:'New data quality workspace', actionType:'Workspace Request', tool:'Data Quality Workspace', createdBy:'Isabella Garcia', details:'Create a workspace for the data quality review team.', comments:'Initial access for five team members.', status:'COMPLETED', priority:'Low', createdAt:'2026-11-04T11:05:00', unread:false, starred:false, important:false, folder:'Inbox' },
-    { id:'REQ-10452', subject:'Temporary elevated access', actionType:'Access Request', tool:'Operations Console', createdBy:'Ethan Brown', details:'Temporary elevated access for incident investigation.', comments:'Access required for four hours.', status:'PENDING_APPROVAL', priority:'High', createdAt:'2026-11-03T14:36:00', unread:false, starred:true, important:false, folder:'Inbox' }
+  readonly activeFolder = signal<Mailbox>('Inbox');
+  readonly requestTabs = signal<RequestTabConfig[]>([
+    {id:'ALL',label:'All',enabled:true,order:0},
+    {id:'EDIT',label:'Edit Requests',enabled:true,order:1},
+    {id:'DELETE',label:'Delete Requests',enabled:true,order:2},
+    {id:'HITL_PENDING',label:'HITL Pending Requests',enabled:true,order:3}
   ]);
-  readonly filteredMessages = computed(() => {
-    const folder = this.activeFolder(), q = this.searchText().trim().toLowerCase();
-    return this.messages().filter(m => {
-      const inFolder = folder === 'Inbox' ? m.folder === 'Inbox' : folder === 'Starred' ? m.starred : folder === 'Important' ? m.important : folder === 'Snoozed' ? m.folder === 'Snoozed' : m.folder === folder;
-      return inFolder && (!q || [m.id,m.subject,m.actionType,m.tool,m.createdBy,m.status].join(' ').toLowerCase().includes(q));
+  readonly selectedRequestTab = signal<RequestCategory>('ALL');
+  readonly requestOwnerScope = signal<RequestOwnerScope>('GROUP');
+  readonly requestApprovalScope = signal<RequestApprovalScope>('AWAITING_APPROVAL');
+  readonly currentGroupUserIds = signal<string[]>(['st30839','st29418','st30127']);
+  readonly currentUserId = signal('st30839');
+  readonly gridSearch = signal('');
+  readonly globalSearch = signal('');
+  readonly showNotifications = signal(false);
+  readonly createRequestOpen = signal(false);
+  readonly newActionType = signal('SUBMIT_NET');
+  readonly newActionTool = signal('SUBMIT_NET');
+  readonly newCreatedBy = signal('');
+  readonly newDetails = signal('');
+  readonly newComments = signal('');
+  readonly selectedRecord = signal<RequestRecord | null>(null);
+  readonly records = signal<RequestRecord[]>([
+    {id:'3066382',actionTool:'SUBMIT_NET',actionType:'SUBMIT_NET',requestStatus:'PENDING_APPROVAL',sourceStatus:'SUBMITTED',createdBy:'st30839',details:'Network submission request requires review.',comments:'Submit net',createdDate:'11/05/2026 09:18 AM',actionedBy:'—',actionComments:'—',folder:'Inbox',unread:true,starred:false,important:true,category:'NET'},
+    {id:'3066371',actionTool:'EDIT_REQUEST',actionType:'EDIT',requestStatus:'PENDING_APPROVAL',sourceStatus:'IN_REVIEW',createdBy:'st29418',details:'Department access information update.',comments:'Please review department changes.',createdDate:'11/05/2026 08:42 AM',actionedBy:'—',actionComments:'—',folder:'Inbox',unread:true,starred:true,important:false,category:'EDIT'},
+    {id:'3066294',actionTool:'SPLIT_NET',actionType:'SPLIT_UNSPLIT',requestStatus:'PENDING_APPROVAL',sourceStatus:'SUBMITTED',createdBy:'st30127',details:'Split/unsplit request submitted for approval.',comments:'Split request',createdDate:'11/04/2026 03:26 PM',actionedBy:'—',actionComments:'—',folder:'Inbox',unread:true,starred:false,important:false,category:'NET'},
+    {id:'3066118',actionTool:'CATEGORY_UPDATE',actionType:'CATEGORY_REASON',requestStatus:'APPROVED',sourceStatus:'COMPLETED',createdBy:'st27642',details:'Category and reason code update completed.',comments:'Updated as requested.',createdDate:'11/04/2026 11:03 AM',actionedBy:'st30839',actionComments:'Approved',folder:'Sent',unread:false,starred:false,important:false,category:'ALL'},
+    {id:'3066092',actionTool:'DELETE_REQUEST',actionType:'DELETE',requestStatus:'PENDING_APPROVAL',sourceStatus:'SUBMITTED',createdBy:'st31882',details:'Delete request is waiting for reviewer action.',comments:'Delete request',createdDate:'11/03/2026 09:37 AM',actionedBy:'—',actionComments:'—',folder:'Inbox',unread:false,starred:false,important:true,category:'DELETE'}
+  ]);
+  readonly unreadCount = computed(() => this.records().filter(r => r.folder !== 'Trash' && r.unread).length);
+  readonly visibleRows = computed(() => {
+    const folder = this.activeFolder(); const query = (this.gridSearch() || this.globalSearch()).toLowerCase().trim();
+    return this.records().filter(r => {
+      const inFolder = folder === 'Inbox' ? r.folder === 'Inbox' : folder === 'Starred' ? r.starred : folder === 'Important' ? r.important : r.folder === folder;
+      const inCategory = this.selectedRequestTab() === 'ALL' || r.category === this.selectedRequestTab() || (this.selectedRequestTab() === 'EDIT' && r.actionType.toUpperCase().includes('EDIT')) || (this.selectedRequestTab() === 'DELETE' && r.actionType.toUpperCase().includes('DELETE')) || (this.selectedRequestTab() === 'HITL_PENDING' && r.requestStatus.toUpperCase().includes('HITL_PENDING'));
+      const inOwner = this.requestOwnerScope() === 'MINE' ? r.createdBy.toLowerCase() === this.currentUserId().toLowerCase() : this.currentGroupUserIds().some(id => id.toLowerCase() === r.createdBy.toLowerCase());
+      const inApproval = this.requestApprovalScope() === 'ALL' || r.requestStatus === 'PENDING_APPROVAL';
+      const text = [r.id,r.actionTool,r.actionType,r.requestStatus,r.sourceStatus,r.createdBy,r.details,r.comments].join(' ').toLowerCase();
+      return inFolder && inCategory && inOwner && inApproval && (!query || text.includes(query));
     });
   });
-  readonly columnDefs: ColDef<InboxMessage>[] = [
-    { headerName:'', field:'starred', width:48, maxWidth:48, sortable:false, filter:false, cellRenderer: (p: ICellRendererParams<InboxMessage>) => p.value ? '★' : '☆', cellClass:'inbox-star-cell' },
-    { field:'id', headerName:'Request ID', minWidth:118, maxWidth:135 },
-    { field:'subject', headerName:'Subject', minWidth:230, flex:2, cellRenderer: (p: ICellRendererParams<InboxMessage>) => p.data ? (p.data.unread ? '●  ' : '') + p.value : p.value },
-    { field:'actionType', headerName:'Action Type', minWidth:145 },
-    { field:'tool', headerName:'Tool / Report', minWidth:175, flex:1 },
-    { field:'createdBy', headerName:'Created By', minWidth:135 },
-    { field:'priority', headerName:'Priority', minWidth:95 },
-    { field:'status', headerName:'Status', minWidth:150, cellClass:'inbox-status-cell' },
-    { field:'createdAt', headerName:'Received', minWidth:155, valueFormatter: p => p.value ? new Date(p.value).toLocaleString() : '' }
+  readonly pendingCount = computed(() => this.visibleRows().filter(r => r.requestStatus === 'PENDING_APPROVAL').length);
+  readonly totalCount = computed(() => this.visibleRows().length);
+  readonly defaultColDef: ColDef<RequestRecord> = { sortable:true, filter:true, resizable:true, minWidth:115, flex:1 };
+  readonly columnDefs: ColDef<RequestRecord>[] = [
+    {headerName:'Request ID',field:'id',minWidth:110,maxWidth:125,cellClass:'request-id-cell'},
+    {headerName:'Action Tool',field:'actionTool',minWidth:130},
+    {headerName:'Action Type',field:'actionType',minWidth:125},
+    {headerName:'Request Status',field:'requestStatus',minWidth:160,cellRenderer:(p: ICellRendererParams<RequestRecord>) => `<span class="grid-status ${p.value==='APPROVED'?'status-approved':'status-pending'}">${String(p.value ?? '').replaceAll('_',' ')}</span>`},
+    {headerName:'Source Status',field:'sourceStatus',minWidth:125},
+    {headerName:'Created By',field:'createdBy',minWidth:110},
+    {headerName:'Details',field:'details',minWidth:210,flex:2},
+    {headerName:'Comments',field:'comments',minWidth:165,flex:1.5},
+    {headerName:'Created Date',field:'createdDate',minWidth:165},
+    {headerName:'Actioned By',field:'actionedBy',minWidth:105},
+    {headerName:'Action Comments',field:'actionComments',minWidth:150,flex:1.3}
   ];
-  readonly gridOptions: GridOptions<InboxMessage> = {
-    animateRows:true, pagination:true, paginationPageSize:10, paginationPageSizeSelector:[10,20,50],
-    rowHeight:52, headerHeight:42, suppressCellFocus:true, getRowClass:p => p.data?.unread ? 'inbox-row-unread' : ''
-  };
-  readonly gridTheme = themeQuartz.withParams({ spacing:7, fontSize:12, borderRadius:5, headerFontSize:11, rowHoverColor:'#f0f7fc' });
-  readonly draft = signal<InboxDraft>({ actionType:'Access Request', tool:'', createdBy:'', details:'', comments:'', priority:'Medium' });
-  setFolder(folder: InboxFolder): void { this.activeFolder.set(folder); this.selected.set(null); }
-  openMessage(message: InboxMessage): void {
-    this.messages.update(rows => rows.map(m => m.id === message.id ? { ...m, unread:false } : m));
-    this.selected.set({ ...message, unread:false });
+  readonly gridOptions: GridOptions<RequestRecord> = { animateRows:true, pagination:true, paginationPageSize:10, paginationPageSizeSelector:[10,20,50], rowHeight:48, headerHeight:42, suppressCellFocus:true, getRowClass:p => p.data?.unread ? 'request-row-unread' : '' };
+  readonly gridTheme = themeQuartz.withParams({ spacing:7, fontSize:12, borderRadius:5, headerFontSize:11, rowHoverColor:'#f2f6ff' });
+  setFolder(folder: Mailbox): void { this.activeFolder.set(folder); this.selectedRequestTab.set('ALL'); this.selectedRecord.set(null); this.gridSearch.set(''); }
+  selectRequestTab(category: RequestCategory): void { this.selectedRequestTab.set(category); this.gridSearch.set(''); }
+  setRequestOwnerScope(scope: RequestOwnerScope): void { this.requestOwnerScope.set(scope); this.gridSearch.set(''); }
+  setRequestApprovalScope(scope: RequestApprovalScope): void { this.requestApprovalScope.set(scope); this.gridSearch.set(''); }
+  markAllRead(): void { this.records.update(rows => rows.map(r => ({...r,unread:false}))); }
+  openNotifications(): void { this.showNotifications.update(v => !v); }
+  openCreateRequest(): void { this.newActionType.set('SUBMIT_NET'); this.newActionTool.set('SUBMIT_NET'); this.newCreatedBy.set(''); this.newDetails.set(''); this.newComments.set(''); this.createRequestOpen.set(true); }
+  closeCreateRequest(): void { this.createRequestOpen.set(false); }
+  submitCreateRequest(event: Event): void {
+    event.preventDefault(); const actionType=this.newActionType(); const id=String(Math.max(3066400,...this.records().map(r=>Number(r.id)||0))+1);
+    const record: RequestRecord={id,actionTool:this.newActionTool().trim()||actionType,actionType,requestStatus:'PENDING_APPROVAL',sourceStatus:'SUBMITTED',createdBy:this.newCreatedBy().trim(),details:this.newDetails().trim(),comments:this.newComments().trim(),createdDate:new Date().toLocaleString(),actionedBy:'—',actionComments:'—',folder:'Inbox',unread:true,starred:false,important:false,category:this.categoryForAction(actionType)};
+    this.records.update(rows=>[record,...rows]); this.activeFolder.set('Inbox'); this.selectedRequestTab.set('ALL'); this.requestApprovalScope.set('ALL'); this.createRequestOpen.set(false); this.selectedRecord.set(record);
   }
-  toggleStar(message: InboxMessage): void { this.messages.update(rows => rows.map(m => m.id === message.id ? { ...m, starred:!m.starred } : m)); if(this.selected()?.id===message.id) this.selected.update(v=>v?{...v,starred:!v.starred}:v); }
-  toggleImportant(message: InboxMessage): void { this.messages.update(rows => rows.map(m => m.id === message.id ? { ...m, important:!m.important } : m)); }
-  setStatus(status: InboxStatus): void { const selected=this.selected(); if(!selected)return; this.messages.update(rows=>rows.map(m=>m.id===selected.id?{...m,status,unread:false}:m)); this.selected.update(m=>m?{...m,status}:m); }
-  moveTo(folder: InboxFolder): void { const selected=this.selected(); if(!selected)return; this.messages.update(rows=>rows.map(m=>m.id===selected.id?{...m,folder}:m)); this.selected.set(null); }
-  snooze(): void { this.moveTo('Snoozed'); }
-  openCreate(): void { this.draft.set({actionType:'Access Request',tool:'',createdBy:'',details:'',comments:'',priority:'Medium'}); this.createOpen.set(true); }
-  createRequest(): void {
-    const d=this.draft(); if(!d.tool.trim()||!d.createdBy.trim()||!d.details.trim()) return;
-    const id='REQ-'+(10500+this.messages().length+1);
-    const created: InboxMessage={id,subject:d.tool.trim()+' — '+d.actionType,actionType:d.actionType,tool:d.tool.trim(),createdBy:d.createdBy.trim(),details:d.details.trim(),comments:d.comments.trim(),status:'PENDING_APPROVAL',priority:d.priority,createdAt:new Date().toISOString(),unread:false,starred:false,important:false,folder:'Sent'};
-    this.messages.update(rows=>[created,...rows]); this.createOpen.set(false); this.setFolder('Sent'); this.selected.set(created);
-  }
-  updateDraft<K extends keyof InboxDraft>(key: K, value: InboxDraft[K]): void { this.draft.update(d=>({...d,[key]:value})); }
-  closeDetails(): void { this.selected.set(null); }
-  rowClicked(event: RowClickedEvent<InboxMessage>): void { if(event.data)this.openMessage(event.data); }
-  trackFolder(_index:number, folder:{name:InboxFolder}):string { return folder.name; }
+  rowClicked(event: RowClickedEvent<RequestRecord>): void { if(event.data) this.openRecord(event.data); }
+  openRecord(record: RequestRecord): void { this.records.update(rows=>rows.map(r=>r.id===record.id?{...r,unread:false}:r)); this.selectedRecord.set({...record,unread:false}); }
+  toggleStar(record: RequestRecord): void { this.updateRecord(record.id,{starred:!record.starred}); this.selectedRecord.update(v=>v?{...v,starred:!v.starred}:v); }
+  toggleImportant(record: RequestRecord): void { this.updateRecord(record.id,{important:!record.important}); this.selectedRecord.update(v=>v?{...v,important:!v.important}:v); }
+  approve(record: RequestRecord): void { this.updateRecord(record.id,{requestStatus:'APPROVED',sourceStatus:'COMPLETED',actionedBy:'You',actionComments:'Approved'}); this.selectedRecord.update(v=>v?{...v,requestStatus:'APPROVED',sourceStatus:'COMPLETED',actionedBy:'You',actionComments:'Approved'}:v); }
+  reject(record: RequestRecord): void { this.updateRecord(record.id,{requestStatus:'REJECTED',sourceStatus:'REJECTED',actionedBy:'You',actionComments:'Rejected'}); this.selectedRecord.update(v=>v?{...v,requestStatus:'REJECTED',sourceStatus:'REJECTED',actionedBy:'You',actionComments:'Rejected'}:v); }
+  moveToTrash(record: RequestRecord): void { if(!confirm(`Move request ${record.id} to Trash?`)) return; this.updateRecord(record.id,{folder:'Trash',unread:false}); this.selectedRecord.set(null); }
+  moveToInbox(record: RequestRecord): void { this.updateRecord(record.id,{folder:'Inbox'}); this.selectedRecord.set(null); }
+  closeDetails(): void { this.selectedRecord.set(null); }
+  private categoryForAction(actionType: string): RequestCategory { const value=actionType.toUpperCase(); if(value.includes('HITL'))return 'HITL_PENDING'; if(value.includes('EDIT'))return 'EDIT'; if(value.includes('DELETE'))return 'DELETE'; if(value.includes('MATCH')||value.includes('CLOSE'))return 'MATCH_CLOSE'; return 'ALL'; }
+  private updateRecord(id:string,patch:Partial<RequestRecord>): void { this.records.update(rows=>rows.map(r=>r.id===id?{...r,...patch}:r)); }
 }
