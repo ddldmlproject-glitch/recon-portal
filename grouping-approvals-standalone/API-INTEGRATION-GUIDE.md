@@ -66,7 +66,7 @@ Create group request example:
 
 ```json
 {
-  "groupName": "USER_MAKER",
+  "groupName": "USER_REGHUBOPS1",
   "description": "ReghubOps1 access",
   "owner": "user123",
   "approvers": ["approver1"],
