@@ -1,10 +1,10 @@
-# Grouping & Approvals — Configuration-driven Angular 21 standalone application
+# Grouping & Approvals — Angular 21 configuration-driven standalone application
 
-A standalone Angular application for the Grouping & Approvals domain. The application is structured so that screen definitions, form metadata, grid columns, actions and API operation mappings are kept separate from feature presentation and backend persistence.
+A standalone Angular application demonstrating a metadata-driven UI architecture. Angular owns screen configuration, rendering, forms, validation, navigation and interaction dispatch. Repository adapters isolate the UI from persistence: the local demo uses mock data, while a microservice adapter is provided as an integration starting point.
 
-## Run locally
+## 1. Run the application
 
-Requirements: Node.js version supported by Angular 21 and npm.
+Requirements: a Node.js version supported by Angular 21 and npm.
 
 ```bash
 cd grouping-approvals-standalone
@@ -12,65 +12,235 @@ npm install
 npm start
 ```
 
-Open http://localhost:4200.
+Open http://localhost:4200/grouping-approvals.
 
-Build:
+To validate compilation:
+
 ```bash
 npm run build
 ```
 
-## Architecture
+The mock provider is selected by default. Its data is in memory and resets when the browser application is restarted.
+
+## 2. What happens when the Groups screen opens?
+
+The current runtime flow is:
+
+1. `GroupingApprovalsComponent` imports `GROUPING_APPROVALS_SCREENS` from `grouping-approvals.screen-config.ts`.
+2. The component registers those definitions using `ScreenRegistryService.registerMany()`.
+3. The component retrieves the `groups` and `triggers` definitions from the registry.
+4. The template passes the selected `ScreenConfig`, row data and optional feature-specific column overrides to `DynamicScreenComponent`.
+5. `DynamicScreenComponent` checks `config.layout`. For `grid`, it passes `config.grid` to `DynamicGridComponent`.
+6. `DynamicGridComponent` reads the configured column definitions, page size and row-selection settings and renders AG Grid.
+7. The feature component loads records through `GroupingApprovalsRepository`. It does not ask the screen renderer to own persistence.
+
+In short:
 
 ```text
-src/app/
-  core/
-    api/          API operation contracts, environment token and HttpClient adapter
-    config/       Typed screen and API configuration models
-    engine/       Screen registry, form engine, action engine and permission engine
-  shared/
-    components/
-      dynamic-grid/  Reusable AG Grid wrapper
-  features/
-    grouping-approvals/
-      models, screen config, mock repository, API repository and feature UI
+GROUPING_APPROVALS_SCREENS
+          |
+          v
+ScreenRegistryService
+          |
+          v
+GroupingApprovalsComponent selects "groups"
+          |
+          v
+DynamicScreenComponent reads layout = "grid"
+          |
+          v
+DynamicGridComponent reads grid.columns / pageSize / selectable
+          |
+          v
+AG Grid renders configured columns + supplied row data
 ```
 
-### Configuration-first design
+The screen renderer is intentionally separate from the repository. Configuration describes the UI; the repository supplies data.
 
-- `ScreenConfig` describes a screen layout, data source, grid metadata, fields, tabs and actions.
-- `FieldConfig` describes form controls, defaults, options and validation metadata.
-- `GridConfig` describes AG Grid column definitions and grid behavior.
-- `ActionConfig` refers to a registered Angular handler by ID. Config is declarative; it must not contain executable JavaScript or HTML.
-- `ScreenRegistryService` provides typed registration and lookup for screen definitions.
-- `FormEngineService` creates Angular reactive forms from field metadata.
-- `PermissionEngineService` provides a UI permission check. Backend services must still enforce authorization.
-- `ActionEngineService` dispatches registered Angular handlers.
+## 3. Where to change the screen
 
-### AG Grid
+Open:
 
-The reusable `DynamicGridComponent` wraps AG Grid Community. Current package versions are aligned at 36.3.0, which supports Angular 20–22 and TypeScript 5.8.3+. Community modules are registered once in `app.config.ts`.
+`src/app/features/grouping-approvals/grouping-approvals.screen-config.ts`
 
-### Persistence and microservices
+The `GROUPING_APPROVALS_SCREENS` array currently contains two screen definitions:
 
-The UI depends on `GroupingApprovalsRepository`, not directly on HTTP. Two implementations are provided:
+- `id: 'groups'`: Entitlement Groups.
+- `id: 'triggers'`: Recon Load Triggers.
 
-- `GroupingApprovalsMockRepository`: current local demo provider; data is in-memory and resets when the application reloads.
-- `GroupingApprovalsApiRepository`: HttpClient-backed adapter using operation IDs from `API_ENVIRONMENT_CONFIG`.
+A grid screen definition has this shape:
 
-The app currently selects the mock repository in `app.config.ts`. When backend contracts are ready, change the `GROUPING_APPROVALS_REPOSITORY` provider to `GroupingApprovalsApiRepository`. Update the base URL, endpoint paths, request/response DTOs and authentication integration to match the actual microservice contracts. The example `/api` paths are placeholders, not live service endpoints.
+```typescript
+{
+  id: 'users',
+  title: 'User Management',
+  description: 'Manage users',
+  layout: 'grid',
+  dataSource: {
+    resource: 'users',
+    operation: 'usersList'
+  },
+  grid: {
+    id: 'users-grid',
+    rowId: 'userId',
+    pageSize: 20,
+    selectable: true,
+    quickFilter: true,
+    columns: [
+      { field: 'userId', headerName: 'User ID', minWidth: 140 },
+      { field: 'userName', headerName: 'User Name', minWidth: 180 },
+      { field: 'email', headerName: 'Email', minWidth: 220 },
+      { field: 'status', headerName: 'Status', minWidth: 110 }
+    ]
+  },
+  actions: [
+    { id: 'create-user', label: 'Create User', kind: 'create' }
+  ]
+}
+```
 
-## Reuse inside an existing MFE
+The current feature page uses feature-specific AG Grid column overrides for the Groups row-action renderer. If no override is passed, the dynamic grid uses `config.grid.columns` directly.
 
-The project folder is a separate Angular CLI application. For MFE integration, copy the feature folder and its required shared/core dependencies, or extract those folders into a shared library. Import the standalone `GroupingApprovalsComponent` from the MFE route. Align Angular and AG Grid versions with the host MFE and use the host's authentication, HTTP interceptors and design-system theme.
+To add another screen:
+1. Define its model/DTO.
+2. Add its `ScreenConfig` to the feature's configuration array.
+3. Register the config (the feature currently registers the full array in its constructor).
+4. Add a route or navigation entry that selects the screen ID.
+5. Implement the feature's data/repository methods.
+6. Pass its config and records to `app-dynamic-screen`.
 
-## Current functional scope
+Do not create a new grid component for every feature.
 
-- Group list and recon trigger list displayed with AG Grid.
-- Config-defined grid columns, sorting, filtering, resizing, pagination and row selection.
-- Create and edit group dialogs with recon, user, role and tools/report sections.
-- CSV export for groups.
-- Mock and API repository implementations with a provider switch.
+## 4. Configuration types
 
-## Not yet production-complete
+Open `src/app/core/config/screen-config.models.ts`.
 
-The present commit establishes the configuration-driven foundation and migrates the current group/trigger tables to AG Grid. The full User CRUD, role-permission matrix, tool catalog, report builder, recon-ID selection, delete workflow, approval state machine, backend DTO alignment, authentication integration and automated test suite still require detailed business requirements and real microservice contracts. No build or runtime test has been run in this remote GitHub editing session; run `npm install` and `npm run build` locally before treating it as build-verified.
+- `ScreenConfig`: screen identity, title, layout, data source, fields, grid, tabs and actions.
+- `GridConfig`: row ID, columns, page size and selection behavior.
+- `FieldConfig`: field key, label, input type, default, options and validation metadata.
+- `ActionConfig`: action ID, label, kind, permission, confirmation and handler ID.
+- `FeatureConfig`: a feature grouping of screen definitions.
+
+Supported layout values are currently `grid`, `form` and `master-detail`. The dynamic screen renderer currently has a working grid renderer. Form metadata and the reusable form component are available, while form and master-detail layouts still need to be connected to feature workflows before they are production-ready.
+
+## 5. Dynamic form example
+
+Reusable form renderer:
+
+`src/app/shared/components/dynamic-form/dynamic-form.component.ts`
+
+It accepts a `FieldConfig[]`, uses `FormEngineService` to build an Angular reactive form, renders text/textarea/number/date/select/checkbox/multi-select controls and emits valid values through `submitted`.
+
+Example field configuration:
+
+```typescript
+const userFields: FieldConfig[] = [
+  {
+    key: 'userId',
+    label: 'User ID',
+    type: 'text',
+    required: true,
+    validators: [
+      { type: 'minLength', value: 3, message: 'Enter at least 3 characters.' }
+    ]
+  },
+  {
+    key: 'email',
+    label: 'Email',
+    type: 'text',
+    required: true,
+    validators: [
+      { type: 'email', message: 'Enter a valid email address.' }
+    ]
+  },
+  {
+    key: 'status',
+    label: 'Status',
+    type: 'select',
+    defaultValue: 'Active',
+    options: [
+      { label: 'Active', value: 'Active' },
+      { label: 'Inactive', value: 'Inactive' }
+    ]
+  }
+];
+```
+
+Use it inside a standalone component by importing `DynamicFormComponent`:
+
+```html
+<app-dynamic-form
+  [fields]="userFields"
+  [initialValue]="selectedUser"
+  (submitted)="saveUser($event)">
+</app-dynamic-form>
+```
+
+The parent handles the emitted values and calls its repository. The form renderer does not call a microservice directly.
+
+## 6. How to test the current application manually
+
+1. Run `npm install`, then `npm start`.
+2. Open `http://localhost:4200/grouping-approvals`.
+3. Confirm Entitlement Groups shows four mock records and Recon Load Triggers shows three.
+4. Change a grid column's `headerName` in `grouping-approvals.screen-config.ts`, save, and confirm the heading changes after Angular rebuilds.
+5. Change a grid column's `minWidth` or add a column definition, save, and confirm the grid reflects it.
+6. Change `pageSize` in the grid config and verify the pagination page size.
+7. Search for `1001_CHECKER`; verify the displayed rows filter.
+8. Open Create Group, enter a unique group name and owner, save, and confirm the new row appears.
+9. Edit a group and change its users, roles or tools; save and verify the row remains updated.
+10. Switch to Recon Load Triggers and verify the three sample records.
+11. Use Export CSV and verify the downloaded file contains the filtered group data.
+12. Refresh the browser and note that mock changes reset. This is expected because the mock repository is in-memory.
+
+### A simple configuration experiment
+
+To prove the grid is rendered from config:
+1. Open `grouping-approvals.screen-config.ts`.
+2. Change the Groups column header from `Group Owner` to `Configured Owner`.
+3. Save the file.
+4. Wait for the Angular dev server to rebuild.
+5. Refresh if the browser does not update automatically.
+6. The column heading should now read `Configured Owner` without changing the page HTML.
+
+This test demonstrates config-driven grid rendering.
+
+## 7. Data and microservice integration
+
+The feature depends on `GroupingApprovalsRepository`, not directly on HttpClient.
+
+Current implementations:
+
+- `GroupingApprovalsMockRepository`: local demo records and in-memory create/update.
+- `GroupingApprovalsApiRepository`: HttpClient-backed adapter using operation IDs in `API_ENVIRONMENT_CONFIG`.
+
+The application currently selects the mock implementation in `src/app/app.config.ts`:
+
+```typescript
+{
+  provide: GROUPING_APPROVALS_REPOSITORY,
+  useClass: GroupingApprovalsMockRepository
+}
+```
+
+When the backend contracts are finalized, switch the provider to `GroupingApprovalsApiRepository` and update the API base URL, endpoint paths, request/response DTOs, error mapping and authentication integration. The example `/api` paths are placeholders, not live endpoints.
+
+The API repository currently illustrates list/create/update operations; delete and the complete approval lifecycle still need to be added to the repository contract and UI.
+
+## 8. Important current limitations
+
+This branch is an implementation foundation, not a completed production approvals platform.
+
+- Grid screens are rendered through the dynamic screen and grid components.
+- The Create/Edit Group dialog is still feature-specific HTML; it has not yet been migrated to the reusable DynamicFormComponent.
+- The reusable dynamic form component exists, but it is not yet the renderer for the Group dialog.
+- Action and permission engines exist as foundations; the feature's current buttons are not all dispatched through ActionEngineService.
+- User CRUD, role-permission matrix, recon-ID selector, tool/report catalog, delete confirmation, approval state machine and audit history are not complete.
+- API URLs and payload contracts must be aligned with the actual microservices.
+- UI permission checks do not replace backend authorization.
+
+Before using this as production code, run the build locally, add unit/component tests, connect real service contracts and complete the outstanding workflows.
+
+## 9. Reuse in an existing MFE
+
+This is a separate Angular CLI application. To embed the feature in an MFE, move or package the required `core`, `shared` and feature folders as a library, align Angular/AG Grid versions with the host, and import the standalone feature component into the host route. Use the host authentication, interceptors and design-system theme.
