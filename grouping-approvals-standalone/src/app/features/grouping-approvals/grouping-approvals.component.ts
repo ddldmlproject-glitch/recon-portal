@@ -36,6 +36,7 @@ export class GroupingApprovalsComponent implements OnInit {
   readonly dialogMode = signal<DialogMode | null>(null);
   readonly busy = signal(false);
   readonly errorMessage = signal('');
+  readonly initialFormValue = signal<Record<string, unknown>>({});
   readonly approvalComment = signal('');
   readonly approvalTarget = signal<EntitlementGroup | null>(null);
 
@@ -120,8 +121,8 @@ export class GroupingApprovalsComponent implements OnInit {
   }
 
   setTab(id: string): void { this.activeTab.set(id); this.searchText.set(''); }
-  openCreateGroup(): void { this.selectedGroup.set(null); this.dialogMode.set('create'); this.errorMessage.set(''); }
-  openEditGroup(group: EntitlementGroup): void { this.selectedGroup.set(group); this.dialogMode.set('edit'); this.errorMessage.set(''); }
+  openCreateGroup(): void { this.selectedGroup.set(null); this.initialFormValue.set(this.formValue()); this.dialogMode.set('create'); this.errorMessage.set(''); }
+  openEditGroup(group: EntitlementGroup): void { this.selectedGroup.set(group); this.initialFormValue.set(this.formValue(group)); this.dialogMode.set('edit'); this.errorMessage.set(''); }
   closeDialog(): void { this.dialogMode.set(null); this.selectedGroup.set(null); }
 
   private parseList(value: unknown): string[] {
