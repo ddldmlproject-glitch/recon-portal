@@ -1,9 +1,9 @@
 import { InjectionToken } from '@angular/core';
-import { EntitlementGroup, ReconLoadTrigger, GroupUpdate, ApprovalDecision } from './grouping-approvals.models';
+import { EntitlementGroup, OpsLoadTrigger, GroupUpdate, ApprovalDecision } from './grouping-approvals.models';
 
 export interface GroupingApprovalsRepository {
   getGroups(): Promise<EntitlementGroup[]>;
-  getTriggers(): Promise<ReconLoadTrigger[]>;
+  getTriggers(): Promise<OpsLoadTrigger[]>;
   createGroup(group: Omit<EntitlementGroup, 'id' | 'updatedBy' | 'updatedAt'>): Promise<EntitlementGroup>;
   saveGroup(groupId: string, update: GroupUpdate): Promise<EntitlementGroup>;
   deleteGroup(groupId: string): Promise<void>;
