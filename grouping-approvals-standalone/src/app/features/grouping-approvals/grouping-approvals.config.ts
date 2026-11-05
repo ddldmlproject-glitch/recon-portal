@@ -1,12 +1,13 @@
 import { GroupingApprovalsConfig } from './grouping-approvals.models';
 
 export const GROUPING_APPROVALS_CONFIG: GroupingApprovalsConfig = {
-  title: 'Grouping & Approvals',
-  subtitle: 'Manage entitlement groups, user access and reconciliation permissions',
+  title: 'Admin',
+  subtitle: 'Manage group access, inbox messages, orchestration and configurable screens',
   tabs: [
-    { id: 'groups', label: 'Entitlement Groups' },
-    { id: 'approvals', label: 'Pending Approvals' },
-    { id: 'triggers', label: 'Recon Load Triggers' }
+    { id: 'grouping', label: 'Grouping' },
+    { id: 'inbox', label: 'Inbox' },
+    { id: 'orchestration', label: 'Orchestration' },
+    { id: 'create-screen', label: 'Create Screen' }
   ],
   groupColumns: [
     { key: 'groupName', label: 'Group Name', width: '190px' },
@@ -34,7 +35,7 @@ export const GROUPING_APPROVALS_CONFIG: GroupingApprovalsConfig = {
     canManageUsers: true,
     canManageRoles: true,
     canExport: true,
-    canApprove: true,
+    canApprove: false,
     canDelete: true
   }
 };
