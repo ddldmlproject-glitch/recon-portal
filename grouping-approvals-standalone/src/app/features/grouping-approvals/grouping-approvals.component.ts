@@ -2,7 +2,9 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import type { ColDef, GridOptions, ICellRendererParams } from 'ag-grid-community';
-import { DynamicGridComponent } from '../../shared/components/dynamic-grid/dynamic-grid.component';
+import { DynamicScreenComponent } from '../../shared/components/dynamic-screen/dynamic-screen.component';
+import { ScreenConfig } from '../../core/config/screen-config.models';
+import { ScreenRegistryService } from '../../core/engine/screen-registry.service';
 import { GROUPING_APPROVALS_CONFIG } from './grouping-approvals.config';
 import { GROUPING_APPROVALS_SCREENS } from './grouping-approvals.screen-config';
 import { EntitlementGroup, ReconLoadTrigger, GroupUpdate } from './grouping-approvals.models';
@@ -14,7 +16,7 @@ type Section = 'recons' | 'users' | 'roles' | 'tools';
 @Component({
   selector: 'app-grouping-approvals',
   standalone: true,
-  imports: [CommonModule, FormsModule, DynamicGridComponent],
+  imports: [CommonModule, FormsModule, DynamicScreenComponent],
   templateUrl: './grouping-approvals.component.html',
   styleUrl: './grouping-approvals.component.scss'
 })
@@ -22,6 +24,9 @@ export class GroupingApprovalsComponent implements OnInit {
   readonly config = GROUPING_APPROVALS_CONFIG;
   readonly screens = GROUPING_APPROVALS_SCREENS;
   private readonly repository = inject(GROUPING_APPROVALS_REPOSITORY);
+  private readonly screenRegistry = inject(ScreenRegistryService);
+  readonly groupScreen: ScreenConfig<EntitlementGroup>;
+  readonly triggerScreen: ScreenConfig<ReconLoadTrigger>;
 
   readonly activeTab = signal('groups');
   readonly groups = signal<EntitlementGroup[]>([]);
@@ -100,6 +105,12 @@ export class GroupingApprovalsComponent implements OnInit {
     rowSelection: { mode: 'multiRow' },
     suppressCellFocus: false
   };
+
+  constructor() {
+    this.screenRegistry.registerMany(this.screens);
+    this.groupScreen = this.screenRegistry.get<EntitlementGroup>('groups');
+    this.triggerScreen = this.screenRegistry.get<ReconLoadTrigger>('triggers');
+  }
 
   async ngOnInit(): Promise<void> { await this.loadData(); }
 
