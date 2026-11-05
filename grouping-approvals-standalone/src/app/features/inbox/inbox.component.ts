@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, computed, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AgGridAngular } from 'ag-grid-angular';
-import type { ColDef, GridOptions, RowClickedEvent } from 'ag-grid-community';
+import type { ColDef, GridOptions, ICellRendererParams, RowClickedEvent } from 'ag-grid-community';
 import { themeQuartz } from 'ag-grid-community';
 
 type InboxFolder = 'Inbox' | 'Starred' | 'Snoozed' | 'Important' | 'Sent' | 'Drafts' | 'Spam' | 'Trash';
@@ -47,9 +47,9 @@ export class InboxComponent {
     });
   });
   readonly columnDefs: ColDef<InboxMessage>[] = [
-    { headerName:'', field:'starred', width:48, maxWidth:48, sortable:false, filter:false, cellRenderer: p => p.value ? '★' : '☆', cellClass:'inbox-star-cell' },
+    { headerName:'', field:'starred', width:48, maxWidth:48, sortable:false, filter:false, cellRenderer: (p: ICellRendererParams<InboxMessage>) => p.value ? '★' : '☆', cellClass:'inbox-star-cell' },
     { field:'id', headerName:'Request ID', minWidth:118, maxWidth:135 },
-    { field:'subject', headerName:'Subject', minWidth:230, flex:2, cellRenderer: p => p.data ? (p.data.unread ? '●  ' : '') + p.value : p.value },
+    { field:'subject', headerName:'Subject', minWidth:230, flex:2, cellRenderer: (p: ICellRendererParams<InboxMessage>) => p.data ? (p.data.unread ? '●  ' : '') + p.value : p.value },
     { field:'actionType', headerName:'Action Type', minWidth:145 },
     { field:'tool', headerName:'Tool / Report', minWidth:175, flex:1 },
     { field:'createdBy', headerName:'Created By', minWidth:135 },
