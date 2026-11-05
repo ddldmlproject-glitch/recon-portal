@@ -126,7 +126,7 @@ export class GroupingApprovalsComponent implements OnInit {
   closeDialog(): void { this.dialogMode.set(null); this.selectedGroup.set(null); }
 
   private parseList(value: unknown): string[] {
-    return String(value ?? '').split(/[\\n,;]/).map(item => item.trim()).filter(Boolean);
+    return String(value ?? '').split(/[\n,;]/).map(item => item.trim()).filter(Boolean);
   }
 
   private formValue(group?: EntitlementGroup): Record<string, unknown> {
@@ -134,7 +134,7 @@ export class GroupingApprovalsComponent implements OnInit {
       groupName: group?.groupName ?? '', owner: group?.owner ?? '', description: group?.description ?? '',
       approvers: group?.approvers.join(', ') ?? '', reconSelection: group?.reconSelection ?? 'All Recons',
       reconIds: group?.reconIds?.join(', ') ?? '', allEntities: group ? group.allEntities === 1 : true,
-      status: group?.status ?? 'Pending', userIds: group?.userIds.join('\\n') ?? '',
+      status: group?.status ?? 'Pending', userIds: group?.userIds.join('\n') ?? '',
       roles: group?.roles.join('\\n') ?? '', toolsAndReports: group?.toolsAndReports.join('\\n') ?? ''
     };
   }
@@ -211,7 +211,7 @@ export class GroupingApprovalsComponent implements OnInit {
   exportGroups(): void {
     const headers = ['Group Name','Description','Owner','Approvers','Recon Selection','Recon IDs','Users','Roles','Tools and Reports','Status','Updated By','Updated Date'];
     const rows = this.filteredGroups().map(g => [g.groupName,g.description,g.owner,g.approvers.join('; '),g.reconSelection,g.reconIds.join('; '),g.userIds.join('; '),g.roles.join('; '),g.toolsAndReports.join('; '),g.status,g.updatedBy,g.updatedAt]);
-    const csv = [headers,...rows].map(row => row.map(value => `"${String(value ?? '').replaceAll('"','""')}"`).join(',')).join('\\r\\n');
+    const csv = [headers,...rows].map(row => row.map(value => `"${String(value ?? '').replaceAll('"','""')}"`).join(',')).join('\r\n');
     const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
     const anchor = document.createElement('a'); anchor.href = url; anchor.download = 'entitlement-groups.csv'; anchor.click();
     URL.revokeObjectURL(url);
