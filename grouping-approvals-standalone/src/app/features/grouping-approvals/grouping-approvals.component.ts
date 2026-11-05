@@ -13,6 +13,7 @@ import { GROUPING_APPROVALS_REPOSITORY } from './grouping-approvals.repository';
 import { UserScreenStorageService, UserCreatedScreen } from '../../core/engine/user-screen-storage.service';
 
 type DialogMode = 'create' | 'edit';
+type ScreenFieldDraft = { label: string; type: FieldConfig['type']; required: boolean; options: string };
 
 @Component({
   selector: 'app-grouping-approvals',
@@ -47,7 +48,7 @@ export class GroupingApprovalsComponent implements OnInit {
   readonly recordEditorOpen = signal(false);
   readonly newScreenName = signal('');
   readonly newScreenDescription = signal('');
-  readonly newScreenFields = signal('Name|text\\nDescription|textarea|optional\\nStatus|select|Active,Inactive');
+  readonly screenFieldDrafts = signal<ScreenFieldDraft[]>([{ label: 'Name', type: 'text', required: true, options: '' }]);
   readonly customRecordValue = signal<Record<string, unknown>>({});
   readonly customRecordScreen = computed(() => this.userScreens().find(item => item.config.id === this.activeTab()) ?? null);
   readonly visibleTabs = computed(() => [...this.config.tabs, ...this.userScreens().map(item => ({ id: item.config.id, label: item.config.title }))]);
@@ -227,32 +228,43 @@ export class GroupingApprovalsComponent implements OnInit {
 
   openScreenBuilder(): void {
     this.newScreenName.set(''); this.newScreenDescription.set('');
-    this.newScreenFields.set('Name|text\\nDescription|textarea|optional\\nStatus|select|Active,Inactive');
+    this.screenFieldDrafts.set([{ label: 'Name', type: 'text', required: true, options: '' }]);
+    this.errorMessage.set('');
     this.screenBuilderOpen.set(true);
   }
   closeScreenBuilder(): void { this.screenBuilderOpen.set(false); }
+  addScreenField(): void {
+    this.screenFieldDrafts.update(fields => [...fields, { label: '', type: 'text', required: true, options: '' }]);
+  }
+  removeScreenField(index: number): void {
+    this.screenFieldDrafts.update(fields => fields.filter((_field, fieldIndex) => fieldIndex !== index));
+  }
+  updateScreenField(index: number, patch: Partial<ScreenFieldDraft>): void {
+    this.screenFieldDrafts.update(fields => fields.map((field, fieldIndex) => fieldIndex === index ? { ...field, ...patch } : field));
+  }
   createUserScreen(): void {
     const title = this.newScreenName().trim();
     if (!title) { this.errorMessage.set('Enter a screen name.'); return; }
     const fields: FieldConfig[] = [];
-    const lines = this.newScreenFields().split(/\\r?\\n/).map(line => line.trim()).filter(Boolean);
-    for (const [index, line] of lines.entries()) {
-      const [rawLabel, rawType = 'text', rawOptions = ''] = line.split('|').map(value => value.trim());
-      const label = rawLabel?.trim();
-      const type = rawType.toLowerCase() as FieldConfig['type'];
-      if (!label || !['text','textarea','number','date','select','checkbox'].includes(type)) {
-        this.errorMessage.set(`Invalid field on line ${index + 1}. Use Label|text, textarea, number, date, select or checkbox.`); return;
-      }
+    const drafts = this.screenFieldDrafts();
+    if (!drafts.length) { this.errorMessage.set('Add at least one field.'); return; }
+    for (const [index, draft] of drafts.entries()) {
+      const label = draft.label.trim();
+      if (!label) { this.errorMessage.set(`Enter a label for field ${index + 1}.`); return; }
       const key = label.replace(/[^a-zA-Z0-9]+(.)/g, (_match, char: string) => char.toUpperCase()).replace(/[^a-zA-Z0-9]/g, '');
-      if (!key || fields.some(field => field.key === key)) { this.errorMessage.set(`Field name "${label}" is empty or duplicated.`); return; }
+      if (!key || fields.some(field => field.key.toLowerCase() === key.toLowerCase())) {
+        this.errorMessage.set(`Field name "${label}" is empty or duplicated.`); return;
+      }
+      const options = draft.options.split(',').map(option => option.trim()).filter(Boolean);
+      if (draft.type === 'select' && !options.length) {
+        this.errorMessage.set(`Add at least one option for "${label}".`); return;
+      }
       fields.push({
-        key, label, type, required: !line.toLowerCase().includes('|optional'),
+        key, label, type: draft.type, required: draft.required,
         placeholder: `Enter ${label.toLowerCase()}`,
-        ...(type === 'select' ? { options: rawOptions.split(',').map(option => option.trim()).filter(Boolean).map(value => ({ label: value, value })) } : {})
+        ...(draft.type === 'select' ? { options: options.map(value => ({ label: value, value })) } : {})
       });
-      if (type === 'select' && !rawOptions.trim()) { this.errorMessage.set(`Provide comma-separated options for select field "${label}".`); return; }
     }
-    if (!fields.length) { this.errorMessage.set('Add at least one field definition.'); return; }
     const id = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
     if (!id || this.screenRegistry.has(id) || this.userScreens().some(item => item.config.id === id)) {
       this.errorMessage.set('A screen with this name already exists. Choose a different name.'); return;
