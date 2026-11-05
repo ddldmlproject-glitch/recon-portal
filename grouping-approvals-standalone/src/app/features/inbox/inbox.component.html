@@ -67,7 +67,7 @@
         <div class="empty-state" *ngIf="visibleRows().length===0"><div>⌕</div><strong>No requests found</strong><p>Try changing the mailbox, request filters, or search terms.</p></div>
         <footer class="panel-footer"><span>Showing <strong>{{ visibleRows().length }}</strong> sample records</span><span>Enterprise request management</span></footer>
       </section>
-      <footer class="page-footer">© 2026 Recon Portal <span>Inbox module</span><small>MOCK DATA · NO API CONNECTED</small></footer>
+      <footer class="page-footer">© 2026 ReghubOps <span>Inbox module</span><small>MOCK DATA · NO API CONNECTED</small></footer>
     </main>
   </div>
 
@@ -85,8 +85,11 @@
     <div class="drawer-actions">
       <button class="secondary-button" type="button" (click)="toggleStar(record)">{{ record.starred?'★ Starred':'☆ Add star' }}</button>
       <button class="secondary-button" type="button" (click)="toggleImportant(record)">{{ record.important?'⚑ Important':'⚐ Mark important' }}</button>
-      <button class="primary-button" type="button" *ngIf="record.requestStatus==='PENDING_APPROVAL'" (click)="approve(record)">Approve request</button>
-      <button class="danger-button" type="button" *ngIf="record.requestStatus==='PENDING_APPROVAL'" (click)="reject(record)">Reject</button>
+      <ng-container *ngIf="canApprove(record)">
+        <button class="primary-button" type="button" (click)="approve(record)">Approve request</button>
+        <button class="danger-button" type="button" (click)="reject(record)">Reject</button>
+      </ng-container>
+      <p class="approval-hint" *ngIf="record.requestStatus==='PENDING_APPROVAL' && !canApprove(record)">Only a designated approver in your shared group can action this request.</p>
       <button class="danger-button full" type="button" (click)="moveToTrash(record)">Move to Trash</button>
       <button class="secondary-button full" type="button" *ngIf="record.folder==='Trash'" (click)="moveToInbox(record)">Restore to Inbox</button>
     </div>
@@ -98,7 +101,7 @@
       <form class="request-form" (submit)="submitCreateRequest($event)">
         <label>Action Type *<select [value]="newActionType()" (change)="newActionType.set($any($event.target).value)"><option>SUBMIT_NET</option><option>EDIT</option><option>DELETE</option><option>HITL_PENDING</option><option>OTHER</option></select></label>
         <label>Action Tool *<input required [value]="newActionTool()" (input)="newActionTool.set($any($event.target).value)" placeholder="Enter action tool"></label>
-        <label>Created By *<input required [value]="newCreatedBy()" (input)="newCreatedBy.set($any($event.target).value)" placeholder="Enter user ID"></label>
+        <label>Created By<input [value]="currentUserId()" readonly aria-readonly="true"></label>
         <label class="wide">Details *<textarea required rows="3" [value]="newDetails()" (input)="newDetails.set($any($event.target).value)" placeholder="Describe the request"></textarea></label>
         <label class="wide">Comments<textarea rows="2" [value]="newComments()" (input)="newComments.set($any($event.target).value)" placeholder="Optional comments"></textarea></label>
         <footer><button type="button" class="secondary-button" (click)="closeCreateRequest()">Cancel</button><button type="submit" class="primary-button">Create request</button></footer>
