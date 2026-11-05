@@ -281,54 +281,31 @@ A GitHub Actions workflow at `.github/workflows/grouping-approvals-standalone-bu
 
 ## Create new screens from the UI
 
-The standalone app includes a lightweight Screen Designer. A screen created there is registered at runtime, immediately appears as a navigation tab, and is rendered from its generated `ScreenConfig`. Its field definition and sample records are persisted in browser local storage for this demo.
+The standalone app includes a visual Screen Designer. Users do not need to type field-definition syntax.
 
-### Step-by-step: create a User Management screen
+### Step-by-step
 
-1. Start the application with `npm start`.
-2. Open the Grouping & Approvals page.
-3. Click **+ Create Screen** in the page header.
-4. Enter **Screen Name**: `User Management`.
-5. Enter a description such as `Manage application users and their roles`.
-6. In **Field definitions**, enter one field per line:
+1. Start the app with `npm start` and open `http://localhost:4200/grouping-approvals`.
+2. Click **+ Create Screen**.
+3. Enter the screen name and description.
+4. Under **Screen fields**, click **+ Add Field**.
+5. Enter a field name, choose its type (Text, Long text, Number, Date, Dropdown or Checkbox), and choose whether it is required.
+6. For a Dropdown field, enter comma-separated choices, for example `Active, Inactive, Pending`.
+7. Add more fields or remove fields as needed.
+8. Click **Create Screen**. The new tab appears immediately.
+9. Open the new tab and click **+ Add Record** to enter data through the generated form.
+10. Refresh the browser to verify that the screen definition and its demo records are retained in that browser's local storage.
 
-   ```text
-   User ID|text
-   Full Name|text
-   Email|text
-   Role|select|Maker,Checker,Approver
-   Status|select|Active,Inactive
-   Enabled|checkbox|optional
-   ```
+The field builder generates the `FieldConfig[]` and `ScreenConfig` used by the dynamic form and grid. Screen definitions and custom records are currently browser-local demo data; they are not saved to a microservice or shared with other users.
 
-7. Click **Create Screen**.
-8. The new **User Management** tab appears immediately and is selected.
-9. Click **+ Add Record**. The data-entry form is generated from the fields you supplied.
-10. Enter a user and click **Save**. The record appears in the generated AG Grid.
-11. Add more records and verify the grid columns match the screen configuration.
-12. Refresh the browser. The new screen definition and records should still appear because the demo stores them in local storage.
-13. Click **Delete Screen** to remove the custom screen and its locally stored records.
+### API integration instructions
 
-### Field definition syntax
+See **[API Integration Guide](./API-INTEGRATION-GUIDE.md)** for the end-to-end integration procedure, including:
+- Existing Groups and Recon Load Triggers API operation mapping.
+- Configuring the API base URL and switching from mock to API repository.
+- Creating a new API-backed feature screen, model, repository contract and API adapter.
+- Connecting screen metadata and generated forms to a backend resource.
+- Proposed production API design for persisting user-created screen definitions and records.
+- Authentication, authorization, validation, error handling and testing checklists.
 
-Use `Label|type` or `Label|type|optional`.
-
-Supported types:
-- `text`
-- `textarea`
-- `number`
-- `date`
-- `select` — third segment is a comma-separated option list, e.g. `Status|select|Active,Inactive`
-- `checkbox`
-
-Field labels must be unique within a screen. Screen names must also produce a unique screen ID. Required fields are the default; add `|optional` to make a field optional.
-
-### How it works
-
-- `UserScreenStorageService` creates a declarative `ScreenConfig`, stores screen definitions and demo records in local storage.
-- `ScreenRegistryService` registers the generated config at runtime.
-- `visibleTabs` adds registered custom screens to the navigation.
-- `DynamicScreenComponent` and `DynamicGridComponent` render the generated grid.
-- `DynamicFormComponent` renders the add-record form using the generated `FieldConfig[]`.
-
-**Important:** this is a frontend screen designer/demo, not a production screen-builder backend. Local storage is browser-specific and is not shared with other users or machines. Custom records currently support create/list only; edit/delete record actions, server-side screen-definition persistence, authorization and versioning must be connected to microservices before production. Do not store sensitive or regulated data in this demo.
+**Important:** creating a screen in the current visual designer only creates a frontend configuration and local-storage demo. It does not automatically create backend APIs. Production API-backed custom screens require the server-side screen-definition service, an allow-listed resource/repository registry, record CRUD operations, schema validation and authorization described in the integration guide.
