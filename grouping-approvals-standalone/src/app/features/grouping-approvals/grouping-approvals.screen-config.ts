@@ -7,9 +7,6 @@ const groupColumns: ColDef<EntitlementGroup>[] = [
   { field: 'description', headerName: 'Description', minWidth: 240, flex: 2 },
   { field: 'owner', headerName: 'Group Owner', minWidth: 130 },
   { field: 'approvers', headerName: 'Group Approvers', minWidth: 160, valueFormatter: p => p.value?.join(', ') ?? '' },
-  { field: 'reconSelection', headerName: 'Recon Selection', minWidth: 135 },
-  { field: 'reconIds', headerName: 'Recon IDs', minWidth: 150, valueFormatter: p => p.value?.join(', ') ?? '' },
-  { field: 'allEntities', headerName: 'All Entities', minWidth: 110, valueFormatter: p => p.value ? 'Yes' : 'No' },
   { field: 'status', headerName: 'Status', minWidth: 110 },
   { field: 'updatedBy', headerName: 'Updated By', minWidth: 120 },
   { field: 'updatedAt', headerName: 'Updated Date', minWidth: 160 }
