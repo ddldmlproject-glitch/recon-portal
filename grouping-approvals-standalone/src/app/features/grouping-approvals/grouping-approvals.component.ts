@@ -135,7 +135,7 @@ export class GroupingApprovalsComponent implements OnInit {
       approvers: group?.approvers.join(', ') ?? '', reconSelection: group?.reconSelection ?? 'All Recons',
       reconIds: group?.reconIds?.join(', ') ?? '', allEntities: group ? group.allEntities === 1 : true,
       status: group?.status ?? 'Pending', userIds: group?.userIds.join('\n') ?? '',
-      roles: group?.roles.join('\\n') ?? '', toolsAndReports: group?.toolsAndReports.join('\\n') ?? ''
+      roles: group?.roles.join('\n') ?? '', toolsAndReports: group?.toolsAndReports.join('\n') ?? ''
     };
   }
 
