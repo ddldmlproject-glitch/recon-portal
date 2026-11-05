@@ -47,7 +47,7 @@
 
 
   <ng-container *ngIf="activeTab() === 'inbox'">
-    <app-inbox [groups]="groups()" [currentUserId]="signedInUserId" />
+    <app-inbox [groups]="groups()" />
   </ng-container>
 
   <ng-container *ngIf="customRecordScreen() as customScreen">
