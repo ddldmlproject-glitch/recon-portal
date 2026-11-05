@@ -5,6 +5,7 @@ export const GROUPING_APPROVALS_CONFIG: GroupingApprovalsConfig = {
   subtitle: 'Manage entitlement groups, user access and reconciliation permissions',
   tabs: [
     { id: 'groups', label: 'Entitlement Groups' },
+    { id: 'approvals', label: 'Pending Approvals' },
     { id: 'triggers', label: 'Recon Load Triggers' }
   ],
   groupColumns: [
@@ -32,6 +33,8 @@ export const GROUPING_APPROVALS_CONFIG: GroupingApprovalsConfig = {
     canEditGroup: true,
     canManageUsers: true,
     canManageRoles: true,
-    canExport: true
+    canExport: true,
+    canApprove: true,
+    canDelete: true
   }
 };
