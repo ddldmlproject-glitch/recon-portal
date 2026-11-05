@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { ApiClientService } from '../../core/api/api-client.service';
-import { EntitlementGroup, ReconLoadTrigger, GroupUpdate } from './grouping-approvals.models';
+import { EntitlementGroup, ReconLoadTrigger, GroupUpdate, ApprovalDecision } from './grouping-approvals.models';
 import { GroupingApprovalsRepository } from './grouping-approvals.repository';
 
 @Injectable()
