@@ -98,7 +98,8 @@
     </section>
   </div>
 
-  <div class="ga-overlay" *ngIf="recordEditorOpen() && customRecordScreen() as customScreen" (click)="closeCustomRecordEditor()">
+  <div class="ga-overlay" *ngIf="recordEditorOpen()" (click)="closeCustomRecordEditor()">
+    <ng-container *ngIf="customRecordScreen() as customScreen">
     <section class="ga-dialog" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
       <header class="ga-dialog-header">
         <div><span class="ga-eyebrow">DYNAMIC DATA ENTRY</span><h2>Add {{ customScreen.config.title }} Record</h2><p>Fields are rendered from the saved screen configuration.</p></div>
@@ -109,6 +110,7 @@
       </div>
       <footer class="ga-dialog-footer"><button class="ga-button ga-button--secondary" type="button" (click)="closeCustomRecordEditor()">Cancel</button></footer>
     </section>
+    </ng-container>
   </div>
 
   <div class="ga-overlay" *ngIf="dialogMode()" (click)="closeDialog()">
