@@ -48,7 +48,7 @@ export class GroupingApprovalsComponent implements OnInit {
     { key: 'reconSelection', label: 'Recon Selection', type: 'select', defaultValue: 'All Recons', options: [{ label: 'All Recons', value: 'All Recons' }, { label: 'Specific Recon IDs', value: 'Recon IDs' }] },
     { key: 'reconIds', label: 'Recon IDs', type: 'textarea', placeholder: 'R-10021, R-10022' , visibleWhen: { field: 'reconSelection', equals: 'Recon IDs' } },
     { key: 'allEntities', label: 'All Entities', type: 'checkbox', defaultValue: true },
-    { key: 'status', label: 'Status', type: 'select', defaultValue: 'Pending', options: [{ label: 'Pending approval', value: 'Pending' }, { label: 'Active', value: 'Active' }, { label: 'Inactive', value: 'Inactive' }] },
+    { key: 'status', label: 'Status', type: 'select', defaultValue: 'Pending', options: [{ label: 'Pending approval', value: 'Pending' }, { label: 'Active', value: 'Active' }, { label: 'Inactive', value: 'Inactive' }, { label: 'Rejected', value: 'Rejected' }] },
     { key: 'userIds', label: 'Assigned User IDs', type: 'textarea', placeholder: 'One user ID per line or comma separated' },
     { key: 'roles', label: 'Assigned Roles', type: 'textarea', placeholder: 'Maker, Checker, Reviewer' },
     { key: 'toolsAndReports', label: 'Tools and Reports', type: 'textarea', placeholder: 'Recon Summary, Break Report' }
