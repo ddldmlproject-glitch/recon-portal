@@ -15,7 +15,7 @@ import { DynamicGridComponent } from '../dynamic-grid/dynamic-grid.component';
     @switch (config().layout) {
       @case ('grid') {
         @if (config().grid; as gridConfig) {
-          <app-dynamic-grid [config]="gridConfig" [rowData]="rowData()" [gridOptions]="gridOptions()" />
+          <app-dynamic-grid [config]="gridConfig" [columnDefs]="columnDefs()" [rowData]="rowData()" [gridOptions]="gridOptions()" />
         } @else {
           <div class="screen-message">Grid layout requires a grid configuration.</div>
         }
