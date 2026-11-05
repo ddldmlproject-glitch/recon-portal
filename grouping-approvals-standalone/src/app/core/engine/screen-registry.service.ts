@@ -3,9 +3,11 @@ import { ScreenConfig } from '../config/screen-config.models';
 
 @Injectable({ providedIn: 'root' })
 export class ScreenRegistryService {
-  private readonly screens = new Map<string, ScreenConfig>();
+  // ScreenConfig is generic over row data. The registry stores configurations
+  // for multiple row types, so use any at this heterogeneous registry boundary.
+  private readonly screens = new Map<string, ScreenConfig<any>>();
 
-  register(config: ScreenConfig): void {
+  register(config: ScreenConfig<any>): void {
     const existing = this.screens.get(config.id);
     if (existing && existing !== config) {
       throw new Error(`Screen configuration "${config.id}" is already registered.`);
@@ -13,7 +15,7 @@ export class ScreenRegistryService {
     this.screens.set(config.id, config);
   }
 
-  registerMany(configs: ScreenConfig[]): void {
+  registerMany(configs: ScreenConfig<any>[]): void {
     for (const config of configs) this.register(config);
   }
 
@@ -24,5 +26,5 @@ export class ScreenRegistryService {
   }
 
   has(id: string): boolean { return this.screens.has(id); }
-  list(): ScreenConfig[] { return [...this.screens.values()]; }
+  list(): ScreenConfig<any>[] { return [...this.screens.values()]; }
 }
