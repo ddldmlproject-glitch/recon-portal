@@ -21,7 +21,25 @@ type NewRequestDraft = { actionType: string; actionTool: string; createdBy: stri
 @Component({ selector: 'app-inbox', standalone: true, imports: [CommonModule, FormsModule, AgGridAngular], templateUrl: './inbox.component.html', styleUrl: './inbox.component.scss' })
 export class InboxComponent {
   readonly groups = input<EntitlementGroup[]>([]);
-  readonly currentUserId = input('sso0204');
+  readonly currentUserId = signal('sso0204');
+  readonly demoUsers = [
+    { id: 'sso0204', label: 'sso0204 — Group owner / approver' },
+    { id: 'ys51579', label: 'ys51579 — Group approver' },
+    { id: 'GR30775', label: 'GR30775 — Group member' },
+    { id: 'SA30754', label: 'SA30754 — Group member' },
+    { id: 'jr14112', label: 'jr14112 — Group member' },
+    { id: 'ms25678', label: 'ms25678 — Group member' },
+    { id: 'rk76239', label: 'rk76239 — Group member' },
+    { id: 'sc98371', label: 'sc98371 — Group member' },
+    { id: 's91333', label: 's91333 — Group owner' },
+    { id: 'mk12001', label: 'mk12001 — Group member' },
+    { id: 'mk12002', label: 'mk12002 — Group member' },
+    { id: 'dm11327', label: 'dm11327 — Group owner' },
+    { id: 'latam001', label: 'latam001 — Group member' },
+    { id: 'st30814', label: 'st30814 — Pending group owner' },
+    { id: 'ops1001', label: 'ops1001 — Pending group member' },
+    { id: 'ops1002', label: 'ops1002 — Pending group member' }
+  ];
   readonly folders: { name: Mailbox; icon: string }[] = [
     {name:'Inbox',icon:'▣'},{name:'Starred',icon:'☆'},{name:'Snoozed',icon:'◷'},{name:'Important',icon:'⚑'},
     {name:'Sent',icon:'➤'},{name:'Drafts',icon:'▱'},{name:'Spam',icon:'⊘'},{name:'Trash',icon:'♲'}
@@ -86,6 +104,18 @@ export class InboxComponent {
   ];
   readonly gridOptions: GridOptions<RequestRecord> = { animateRows:true, pagination:true, paginationPageSize:10, paginationPageSizeSelector:[10,20,50], rowHeight:48, headerHeight:42, suppressCellFocus:true, getRowClass:p => p.data?.unread ? 'request-row-unread' : '' };
   readonly gridTheme = themeQuartz.withParams({ spacing:7, fontSize:12, borderRadius:5, headerFontSize:11, rowHoverColor:'#f2f6ff' });
+  setDemoUser(userId: string): void {
+    const selectedUser = this.demoUsers.find(user => user.id === userId);
+    if (!selectedUser) return;
+    this.currentUserId.set(selectedUser.id);
+    this.newCreatedBy.set(selectedUser.id);
+    this.selectedRecord.set(null);
+    this.gridSearch.set('');
+    this.globalSearch.set('');
+    this.requestOwnerScope.set('GROUP');
+    this.requestApprovalScope.set('AWAITING_APPROVAL');
+    this.activeFolder.set('Inbox');
+  }
   setFolder(folder: Mailbox): void { this.activeFolder.set(folder); this.selectedRequestTab.set('ALL'); this.selectedRecord.set(null); this.gridSearch.set(''); }
   selectRequestTab(category: RequestCategory): void { this.selectedRequestTab.set(category); this.gridSearch.set(''); }
   setRequestOwnerScope(scope: RequestOwnerScope): void { this.requestOwnerScope.set(scope); this.gridSearch.set(''); }
