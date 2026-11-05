@@ -54,7 +54,7 @@ File: `src/app/core/config/api-environment.config.ts`
 | Update group | `groupsUpdate` | PUT `/groups/:id` |
 | Delete group | `groupsDelete` | DELETE `/groups/:id` |
 | Decision workflow group | `groupsDecision` | POST `/groups/:id/decision` |
-| Orchestration list | `triggersList` | GET `/recon-load-triggers` |
+| Orchestration list | `triggersList` | GET `/ops-load-triggers` |
 
 These are illustrative contracts, not confirmation that those routes exist in your environment. Replace them with the routes agreed with the service owners.
 
@@ -67,16 +67,16 @@ Create group request example:
 ```json
 {
   "groupName": "USER_MAKER",
-  "description": "Maker access",
+  "description": "ReghubOps1 access",
   "owner": "user123",
   "approvers": ["approver1"],
-  "reconSelection": "Recon IDs",
-  "reconIds": ["R-10021"],
+  "opsScope": "Ops IDs",
+  "opsIds": ["R-10021"],
   "allEntities": 0,
   "status": "Pending",
-  "userIds": ["maker1"],
-  "roles": ["Maker"],
-  "toolsAndReports": ["Recon Summary"]
+  "userIds": ["reghubops11"],
+  "roles": ["ReghubOps1"],
+  "toolsAndReports": ["ReghubOps Summary"]
 }
 ```
 
@@ -104,7 +104,7 @@ export const API_ENVIRONMENT_CONFIG: ApiEnvironmentConfig = {
     groupsUpdate: { id: 'groupsUpdate', method: 'PUT', path: '/groups/:id' },
     groupsDelete: { id: 'groupsDelete', method: 'DELETE', path: '/groups/:id' },
     groupsDecision: { id: 'groupsDecision', method: 'POST', path: '/groups/:id/decision' },
-    triggersList: { id: 'triggersList', method: 'GET', path: '/recon-load-triggers' }
+    triggersList: { id: 'triggersList', method: 'GET', path: '/ops-load-triggers' }
   }
 };
 ```
