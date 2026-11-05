@@ -8,7 +8,7 @@ import { ScreenConfig, FieldConfig } from '../../core/config/screen-config.model
 import { ScreenRegistryService } from '../../core/engine/screen-registry.service';
 import { GROUPING_APPROVALS_CONFIG } from './grouping-approvals.config';
 import { GROUPING_APPROVALS_SCREENS } from './grouping-approvals.screen-config';
-import { EntitlementGroup, ReconLoadTrigger, GroupUpdate, ApprovalStatus } from './grouping-approvals.models';
+import { EntitlementGroup, OpsLoadTrigger, GroupUpdate, ApprovalStatus } from './grouping-approvals.models';
 import { GROUPING_APPROVALS_REPOSITORY } from './grouping-approvals.repository';
 import { UserScreenStorageService, UserCreatedScreen } from '../../core/engine/user-screen-storage.service';
 import { InboxComponent } from '../inbox/inbox.component';
@@ -30,12 +30,12 @@ export class GroupingApprovalsComponent implements OnInit {
   private readonly screenRegistry = inject(ScreenRegistryService);
   private readonly userScreenStorage = inject(UserScreenStorageService);
   readonly groupScreen: ScreenConfig<EntitlementGroup>;
-  readonly triggerScreen: ScreenConfig<ReconLoadTrigger>;
+  readonly triggerScreen: ScreenConfig<OpsLoadTrigger>;
 
   readonly activeTab = signal('grouping');
   readonly adminMenuOpen = signal(false);
   readonly groups = signal<EntitlementGroup[]>([]);
-  readonly triggers = signal<ReconLoadTrigger[]>([]);
+  readonly triggers = signal<OpsLoadTrigger[]>([]);
   readonly searchText = signal('');
   readonly selectedGroup = signal<EntitlementGroup | null>(null);
   readonly dialogMode = signal<DialogMode | null>(null);
@@ -59,19 +59,19 @@ export class GroupingApprovalsComponent implements OnInit {
     { key: 'owner', label: 'Group Owner', type: 'text', required: true, placeholder: 'Enter owner user ID' },
     { key: 'description', label: 'Description', type: 'textarea', placeholder: 'Describe the group purpose' },
     { key: 'approvers', label: 'Group Approvers', type: 'textarea', placeholder: 'Enter IDs separated by commas or new lines' },
-    { key: 'reconSelection', label: 'Recon Selection', type: 'select', defaultValue: 'All Recons', options: [{ label: 'All Recons', value: 'All Recons' }, { label: 'Specific Recon IDs', value: 'Recon IDs' }] },
-    { key: 'reconIds', label: 'Recon IDs', type: 'textarea', placeholder: 'R-10021, R-10022' , visibleWhen: { field: 'reconSelection', equals: 'Recon IDs' } },
+    { key: 'opsScope', label: 'Ops Scope', type: 'select', defaultValue: 'All Ops', options: [{ label: 'All Ops', value: 'All Ops' }, { label: 'Specific Ops IDs', value: 'Ops IDs' }] },
+    { key: 'opsIds', label: 'Ops IDs', type: 'textarea', placeholder: 'R-10021, R-10022' , visibleWhen: { field: 'opsScope', equals: 'Ops IDs' } },
     { key: 'allEntities', label: 'All Entities', type: 'checkbox', defaultValue: true },
     { key: 'status', label: 'Status', type: 'select', defaultValue: 'Pending', options: [{ label: 'Pending approval', value: 'Pending' }, { label: 'Active', value: 'Active' }, { label: 'Inactive', value: 'Inactive' }, { label: 'Rejected', value: 'Rejected' }] },
     { key: 'userIds', label: 'Assigned User IDs', type: 'textarea', placeholder: 'One user ID per line or comma separated' },
-    { key: 'roles', label: 'Assigned Roles', type: 'textarea', placeholder: 'Maker, Checker, Reviewer' },
-    { key: 'toolsAndReports', label: 'Tools and Reports', type: 'textarea', placeholder: 'Recon Summary, Break Report' }
+    { key: 'roles', label: 'Assigned Roles', type: 'textarea', placeholder: 'ReghubOps1, ReghubOps2, Reviewer' },
+    { key: 'toolsAndReports', label: 'Tools and Reports', type: 'textarea', placeholder: 'ReghubOps Summary, Break Report' }
   ];
 
   readonly filteredGroups = computed(() => {
     const q = this.searchText().trim().toLowerCase();
     const rows = this.groups();
-    return q ? rows.filter(g => [g.groupName, g.description, g.owner, ...g.userIds, ...g.roles, ...g.reconIds].join(' ').toLowerCase().includes(q)) : rows;
+    return q ? rows.filter(g => [g.groupName, g.description, g.owner, ...g.userIds, ...g.roles, ...g.opsIds].join(' ').toLowerCase().includes(q)) : rows;
   });
   readonly filteredTriggers = computed(() => {
     const q = this.searchText().trim().toLowerCase();
@@ -101,7 +101,7 @@ export class GroupingApprovalsComponent implements OnInit {
       }
     }
   ];
-  readonly triggerColumnDefs: ColDef<ReconLoadTrigger>[] = this.screens[1].grid!.columns as ColDef<ReconLoadTrigger>[];
+  readonly triggerColumnDefs: ColDef<OpsLoadTrigger>[] = this.screens[1].grid!.columns as ColDef<OpsLoadTrigger>[];
   readonly gridOptions: GridOptions = {
     animateRows: true, pagination: true, paginationPageSize: 20,
     paginationPageSizeSelector: [10, 20, 50, 100],
@@ -115,7 +115,7 @@ export class GroupingApprovalsComponent implements OnInit {
     this.userScreens.set(savedScreens);
     this.userScreenRecords.set(this.userScreenStorage.loadRecords());
     this.groupScreen = this.screenRegistry.get<EntitlementGroup>('groups');
-    this.triggerScreen = this.screenRegistry.get<ReconLoadTrigger>('triggers');
+    this.triggerScreen = this.screenRegistry.get<OpsLoadTrigger>('triggers');
   }
 
   async ngOnInit(): Promise<void> { await this.loadData(); }
@@ -144,8 +144,8 @@ export class GroupingApprovalsComponent implements OnInit {
   private formValue(group?: EntitlementGroup): Record<string, unknown> {
     return {
       groupName: group?.groupName ?? '', owner: group?.owner ?? '', description: group?.description ?? '',
-      approvers: group?.approvers.join(', ') ?? '', reconSelection: group?.reconSelection ?? 'All Recons',
-      reconIds: group?.reconIds?.join(', ') ?? '', allEntities: group ? group.allEntities === 1 : true,
+      approvers: group?.approvers.join(', ') ?? '', opsScope: group?.opsScope ?? 'All Ops',
+      opsIds: group?.opsIds?.join(', ') ?? '', allEntities: group ? group.allEntities === 1 : true,
       status: group?.status ?? 'Pending', userIds: group?.userIds.join('\n') ?? '',
       roles: group?.roles.join('\n') ?? '', toolsAndReports: group?.toolsAndReports.join('\n') ?? ''
     };
@@ -160,8 +160,8 @@ export class GroupingApprovalsComponent implements OnInit {
     const data = {
       groupName, description: String(value['description'] ?? '').trim(), owner,
       approvers: this.parseList(value['approvers']),
-      reconSelection: value['reconSelection'] === 'Recon IDs' ? 'Recon IDs' as const : 'All Recons' as const,
-      reconIds: this.parseList(value['reconIds']), allEntities: value['allEntities'] ? 1 : 0,
+      opsScope: value['opsScope'] === 'Ops IDs' ? 'Ops IDs' as const : 'All Ops' as const,
+      opsIds: this.parseList(value['opsIds']), allEntities: value['allEntities'] ? 1 : 0,
       status, userIds: this.parseList(value['userIds']), roles: this.parseList(value['roles']),
       toolsAndReports: this.parseList(value['toolsAndReports'])
     };
@@ -174,7 +174,7 @@ export class GroupingApprovalsComponent implements OnInit {
         const update: GroupUpdate = {
           description: data.description, owner: data.owner, approvers: data.approvers,
           userIds: data.userIds, roles: data.roles, toolsAndReports: data.toolsAndReports,
-          reconSelection: data.reconSelection, reconIds: data.reconIds,
+          opsScope: data.opsScope, opsIds: data.opsIds,
           allEntities: data.allEntities, status: data.status
         };
         const saved = await this.repository.saveGroup(selected.id, update);
@@ -282,8 +282,8 @@ export class GroupingApprovalsComponent implements OnInit {
   }
 
   exportGroups(): void {
-    const headers = ['Group Name','Description','Owner','Approvers','Recon Selection','Recon IDs','Users','Roles','Tools and Reports','Status','Updated By','Updated Date'];
-    const rows = this.filteredGroups().map(g => [g.groupName,g.description,g.owner,g.approvers.join('; '),g.reconSelection,g.reconIds.join('; '),g.userIds.join('; '),g.roles.join('; '),g.toolsAndReports.join('; '),g.status,g.updatedBy,g.updatedAt]);
+    const headers = ['Group Name','Description','Owner','Approvers','Ops Scope','Ops IDs','Users','Roles','Tools and Reports','Status','Updated By','Updated Date'];
+    const rows = this.filteredGroups().map(g => [g.groupName,g.description,g.owner,g.approvers.join('; '),g.opsScope,g.opsIds.join('; '),g.userIds.join('; '),g.roles.join('; '),g.toolsAndReports.join('; '),g.status,g.updatedBy,g.updatedAt]);
     const csv = [headers,...rows].map(row => row.map(value => `"${String(value ?? '').replaceAll('"','""')}"`).join(',')).join('\r\n');
     const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
     const anchor = document.createElement('a'); anchor.href = url; anchor.download = 'entitlement-groups.csv'; anchor.click();
