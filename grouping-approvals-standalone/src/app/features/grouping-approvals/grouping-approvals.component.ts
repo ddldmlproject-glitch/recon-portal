@@ -63,6 +63,11 @@ export class GroupingApprovalsComponent implements OnInit {
     return q ? this.triggers().filter(t => Object.values(t).join(' ').toLowerCase().includes(q)) : this.triggers();
   });
   readonly pendingGroups = computed(() => this.groups().filter(group => group.status === 'Pending'));
+  readonly filteredPendingGroups = computed(() => {
+    const q = this.searchText().trim().toLowerCase();
+    const rows = this.pendingGroups();
+    return q ? rows.filter(group => [group.groupName, group.owner, group.description].join(' ').toLowerCase().includes(q)) : rows;
+  });
 
   readonly groupColumnDefs: ColDef<EntitlementGroup>[] = [
     ...this.screens[0].grid!.columns as ColDef<EntitlementGroup>[],
