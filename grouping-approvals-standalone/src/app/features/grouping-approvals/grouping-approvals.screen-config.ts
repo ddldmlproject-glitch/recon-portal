@@ -13,7 +13,7 @@ const groupColumns: ColDef<EntitlementGroup>[] = [
 ];
 const triggerColumns: ColDef<OpsLoadTrigger>[] = [
   { field: 'opsId', headerName: 'Ops ID', minWidth: 120 },
-  { field: 'opsName', headerName: 'Recon Name', minWidth: 190, flex: 2 },
+  { field: 'opsName', headerName: 'Ops Name', minWidth: 190, flex: 2 },
   { field: 'triggerType', headerName: 'Trigger Type', minWidth: 130 },
   { field: 'value', headerName: 'Value', minWidth: 100 },
   { field: 'loadStatus', headerName: 'Load Status', minWidth: 120 },
