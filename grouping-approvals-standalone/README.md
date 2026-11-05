@@ -244,3 +244,36 @@ Before using this as production code, run the build locally, add unit/component 
 ## 9. Reuse in an existing MFE
 
 This is a separate Angular CLI application. To embed the feature in an MFE, move or package the required `core`, `shared` and feature folders as a library, align Angular/AG Grid versions with the host, and import the standalone feature component into the host route. Use the host authentication, interceptors and design-system theme.
+
+
+## Group lifecycle and approval demo
+
+The standalone demo now supports:
+- Create and edit entitlement groups using the reusable `DynamicFormComponent` and field metadata.
+- Required group name/owner validation, select controls, checkbox, text areas and conditional Recon IDs field.
+- User IDs, roles and tools/reports assignment as list-based group attributes.
+- Recon scope: all recons or a specified list of Recon IDs.
+- Delete with a browser confirmation.
+- Pending Approvals tab. Pending groups can be approved or rejected; rejection requires a reason.
+- CSV export of the currently filtered group list.
+- Recon Load Triggers listing.
+- Mock repository implementations for create, read, update, delete and approval decisions.
+
+### Test the full demo flow
+
+1. Open Entitlement Groups and click **Create Group**.
+2. Enter a unique name and owner. Set Recon Selection to **Specific Recon IDs** and enter values such as `R-10021, R-10022`.
+3. Enter approvers, user IDs, roles and tools/reports; choose Pending approval and save.
+4. Verify the new record appears in the group grid and Pending Approvals count increases.
+5. Open **Pending Approvals**. Use the row's **Approve** action and confirm. The group should move to Active and disappear from the pending list.
+6. Create another group and use **Reject**. Enter a rejection reason; the record should move to Rejected.
+7. Edit an existing group, change its owner/users/roles/tools/recon scope, save and verify the row updates.
+8. Delete a test group and confirm the browser prompt. Verify it disappears from the grid.
+9. Search for a group, export CSV, and verify the downloaded file.
+10. Refresh the browser. Mock changes reset because the repository is in-memory.
+
+The API repository includes matching delete and decision operations as integration examples. The `/groups/:id/decision` route is a placeholder until your backend team confirms the real service contract.
+
+## CI build check
+
+A GitHub Actions workflow at `.github/workflows/grouping-approvals-standalone-build.yml` installs dependencies and runs `npm run build` for changes to this standalone project. Check the Actions tab for the build result after pushing.
