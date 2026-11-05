@@ -33,5 +33,6 @@ import { DynamicGridComponent } from '../dynamic-grid/dynamic-grid.component';
 export class DynamicScreenComponent<TData = unknown> {
   readonly config = input.required<ScreenConfig<TData>>();
   readonly rowData = input<TData[]>([]);
+  readonly columnDefs = input<ColDef<TData>[]>([]);
   readonly gridOptions = input<GridOptions<TData>>({});
 }
