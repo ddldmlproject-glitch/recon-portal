@@ -252,7 +252,7 @@ The standalone demo now supports:
 - Create and edit entitlement groups using the reusable `DynamicFormComponent` and field metadata.
 - Required group name/owner validation, select controls, checkbox, text areas and conditional Ops IDs field.
 - User IDs, roles and tools/reports assignment as list-based group attributes.
-- Recon scope: all ops or a specified list of Ops IDs.
+- Ops scope: all ops or a specified list of Ops IDs.
 - Delete with a browser confirmation.
 - Inbox tab. Pending groups can be reviewed; rejection requires a reason.
 - CSV export of the currently filtered group list.
