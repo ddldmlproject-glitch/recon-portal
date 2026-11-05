@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, effect, input, output } from '@angular/core';
+import { Component, computed, effect, input, output, signal } from '@angular/core';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { FieldConfig } from '../../../core/config/screen-config.models';
 import { FormEngineService } from '../../../core/engine/form-engine.service';
@@ -60,15 +60,17 @@ export class DynamicFormComponent {
   readonly initialValue = input<Record<string, unknown>>({});
   readonly submitted = output<Record<string, unknown>>();
   readonly form: FormGroup = new FormGroup({});
+  private readonly formRevision = signal(0);
   private readonly engine = new FormEngineService();
 
   readonly visibleFields = computed(() => this.fields().filter(field => {
+    this.formRevision();
     if (!field.visibleWhen) return true;
     return this.form.get(field.visibleWhen.field)?.value === field.visibleWhen.equals;
   }));
 
   constructor() {
-    effect(() => {
+    effect(onCleanup => {
       const fields = this.fields();
       const initial = this.initialValue();
       const built = this.engine.build(fields, initial);
@@ -76,6 +78,8 @@ export class DynamicFormComponent {
       // Keep the public form controls at the root for straightforward formControlName binding.
       for (const key of Object.keys(this.form.controls)) this.form.removeControl(key);
       for (const [key, control] of Object.entries(built.controls)) this.form.addControl(key, control);
+      const subscription = this.form.valueChanges.subscribe(() => this.formRevision.update(value => value + 1));
+      onCleanup(() => subscription.unsubscribe());
     });
   }
 
