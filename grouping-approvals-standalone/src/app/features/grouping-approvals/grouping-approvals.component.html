@@ -4,15 +4,16 @@
     <div class="ga-header-actions">
       <button class="ga-button ga-button--secondary" (click)="loadData()" [disabled]="busy()">Refresh</button>
       <button class="ga-button ga-button--secondary" *ngIf="config.permissions.canExport && activeTab() === 'groups'" (click)="exportGroups()">Export CSV</button>
+      <button class="ga-button ga-button--secondary" type="button" (click)="openScreenBuilder()">+ Create Screen</button>
       <button class="ga-button ga-button--primary" *ngIf="config.permissions.canCreateGroup && activeTab() === 'groups'" (click)="openCreateGroup()">+ Create Group</button>
     </div>
   </header>
 
-  <nav class="ga-tabs" aria-label="Grouping and approvals sections">
-    <button *ngFor="let tab of config.tabs" [class.is-active]="activeTab() === tab.id" (click)="setTab(tab.id)">
+  <nav class="ga-tabs" aria-label="Application screens">
+    <button *ngFor="let tab of visibleTabs()" [class.is-active]="activeTab() === tab.id" (click)="setTab(tab.id)">
       {{ tab.label }}
       <span class="ga-tab-count">
-        {{ tab.id === 'groups' ? groups().length : tab.id === 'approvals' ? pendingGroups().length : triggers().length }}
+        {{ tab.id === 'groups' ? groups().length : tab.id === 'approvals' ? pendingGroups().length : tab.id === 'triggers' ? triggers().length : (userScreenRecords()[tab.id] ?? []).length }}
       </span>
     </button>
   </nav>
@@ -20,7 +21,7 @@
   <div class="ga-toolbar">
     <div class="ga-search"><span>⌕</span><input type="search" placeholder="Search by name, ID or description" [ngModel]="searchText()" (ngModelChange)="searchText.set($event)"><button *ngIf="searchText()" (click)="searchText.set('')">×</button></div>
     <span class="ga-result-count">
-      {{ activeTab() === 'groups' ? filteredGroups().length + ' groups' : activeTab() === 'approvals' ? filteredPendingGroups().length + ' pending approvals' : filteredTriggers().length + ' triggers' }}
+      {{ activeTab() === 'groups' ? filteredGroups().length + ' groups' : activeTab() === 'approvals' ? filteredPendingGroups().length + ' pending approvals' : activeTab() === 'triggers' ? filteredTriggers().length + ' triggers' : (userScreenRecords()[activeTab()] ?? []).length + ' records' }}
     </span>
   </div>
 
@@ -46,6 +47,69 @@
       <app-dynamic-screen [config]="triggerScreen" [rowData]="filteredTriggers()" [columnDefs]="triggerColumnDefs" [gridOptions]="gridOptions" />
     </div>
   </ng-container>
+
+
+  <ng-container *ngIf="customRecordScreen() as customScreen">
+    <div class="ga-custom-screen-toolbar">
+      <div><h2>{{ customScreen.config.title }}</h2><p>{{ customScreen.config.description || 'User-created configuration-driven screen' }}</p></div>
+      <div class="ga-header-actions">
+        <button class="ga-button ga-button--secondary" type="button" (click)="deleteUserScreen()">Delete Screen</button>
+        <button class="ga-button ga-button--primary" type="button" (click)="openCustomRecordEditor()">+ Add Record</button>
+      </div>
+    </div>
+    <div class="ga-grid-wrap">
+      <app-dynamic-screen [config]="customScreen.config" [rowData]="userScreenRecords()[customScreen.config.id] ?? []" />
+    </div>
+    <div class="ga-footnote">This screen was generated from its configuration. Screen definition and records are saved in this browser's local storage for this standalone demo.</div>
+  </ng-container>
+
+  <div class="ga-overlay" *ngIf="screenBuilderOpen()" (click)="closeScreenBuilder()">
+    <section class="ga-dialog" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
+      <header class="ga-dialog-header">
+        <div><span class="ga-eyebrow">SCREEN CONFIGURATION</span><h2>Create New Screen</h2><p>Define a screen and its fields. It will be added to the application navigation immediately.</p></div>
+        <button class="ga-close" type="button" (click)="closeScreenBuilder()">×</button>
+      </header>
+      <div class="ga-dialog-body ga-screen-builder">
+        <label class="ga-field-label">Screen Name *
+          <input class="ga-input" [ngModel]="newScreenName()" (ngModelChange)="newScreenName.set($event)" placeholder="e.g. User Management">
+        </label>
+        <label class="ga-field-label">Description
+          <input class="ga-input" [ngModel]="newScreenDescription()" (ngModelChange)="newScreenDescription.set($event)" placeholder="What is this screen used for?">
+        </label>
+        <label class="ga-field-label">Field definitions *
+          <textarea class="ga-textarea ga-field-spec" rows="7" [ngModel]="newScreenFields()" (ngModelChange)="newScreenFields.set($event)"></textarea>
+        </label>
+        <div class="ga-builder-help">
+          One field per line: Label|type or Label|type|optional.
+          Supported types: text, textarea, number, date, select, checkbox.
+          For select fields, provide options: Status|select|Active,Inactive,Pending.
+          Example:
+          User ID|text
+          Full Name|text
+          Email|text
+          Role|select|Maker,Checker,Approver
+          Enabled|checkbox|optional
+        </div>
+      </div>
+      <footer class="ga-dialog-footer">
+        <button class="ga-button ga-button--secondary" type="button" (click)="closeScreenBuilder()">Cancel</button>
+        <button class="ga-button ga-button--primary" type="button" (click)="createUserScreen()">Create Screen</button>
+      </footer>
+    </section>
+  </div>
+
+  <div class="ga-overlay" *ngIf="recordEditorOpen() && customRecordScreen() as customScreen" (click)="closeCustomRecordEditor()">
+    <section class="ga-dialog" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
+      <header class="ga-dialog-header">
+        <div><span class="ga-eyebrow">DYNAMIC DATA ENTRY</span><h2>Add {{ customScreen.config.title }} Record</h2><p>Fields are rendered from the saved screen configuration.</p></div>
+        <button class="ga-close" type="button" (click)="closeCustomRecordEditor()">×</button>
+      </header>
+      <div class="ga-dialog-body">
+        <app-dynamic-form [fields]="customScreen.config.fields ?? []" [initialValue]="customRecordValue()" (submitted)="saveCustomRecord($event)" />
+      </div>
+      <footer class="ga-dialog-footer"><button class="ga-button ga-button--secondary" type="button" (click)="closeCustomRecordEditor()">Cancel</button></footer>
+    </section>
+  </div>
 
   <div class="ga-overlay" *ngIf="dialogMode()" (click)="closeDialog()">
     <section class="ga-dialog" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
