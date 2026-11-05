@@ -13,7 +13,7 @@
     <main class="inbox-main">
       <div class="inbox-top-search">
         <label><span>⌕</span><input [value]="globalSearch()" (input)="globalSearch.set($any($event.target).value)" placeholder="Search requests, IDs, comments..." aria-label="Search all requests"></label>
-        <div class="top-actions">
+        <div class="top-actions">\n          <label class="demo-user-switcher"><span>Demo user</span><select [value]="currentUserId()" (change)="setDemoUser($any($event.target).value)" aria-label="Select demo user"><option *ngFor="let user of demoUsers" [value]="user.id">{{ user.label }}</option></select></label>
           <button class="mark-read-button" type="button" (click)="markAllRead()">✓ Mark all read</button>
           <div class="notification-wrap">
             <button class="notification-button" type="button" aria-label="Notifications" (click)="openNotifications()"><span>♧</span><i *ngIf="unreadCount()">{{ unreadCount() }}</i></button>
@@ -28,7 +28,7 @@
 
       <div class="inbox-heading">
         <div><span class="eyebrow">REQUEST MANAGEMENT</span><h2>{{ activeFolder() }}</h2><p>Review and manage operational requests in one place.</p></div>
-        <span class="workspace-tag"><i></i> STANDALONE WORKSPACE</span>
+        <span class="workspace-tag"><i></i> SIGNED IN: {{ currentUserId() }}</span>
       </div>
 
       <nav class="request-tabs" aria-label="Request categories">
@@ -60,7 +60,7 @@
             <button class="refresh-button" type="button" title="Refresh table" (click)="gridSearch.set('')">↻</button>
           </div>
         </div>
-        <div class="grid-meta"><span><strong>{{ visibleRows().length }}</strong> requests <span>·</span> Sample workspace data</span><span class="demo-indicator"><i></i> DEMO DATA</span></div>
+        <div class="grid-meta"><span><strong>{{ visibleRows().length }}</strong> requests <span>·</span> Demo workspace data</span><span class="demo-indicator"><i></i> DEMO DATA</span></div>
         <div class="grid-wrap">
           <ag-grid-angular [rowData]="visibleRows()" [columnDefs]="columnDefs" [defaultColDef]="defaultColDef" [gridOptions]="gridOptions" [theme]="gridTheme" (rowClicked)="rowClicked($event)"></ag-grid-angular>
         </div>
