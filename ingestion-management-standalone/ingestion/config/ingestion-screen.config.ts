@@ -1,5 +1,5 @@
 import type { ColDef } from 'ag-grid-community';
-import { IngestionDocument, IngestionFilter, IngestionStatus } from '../models/ingestion-document.model';
+import type { IngestionDocument, IngestionFilter, IngestionStatus } from '../models/ingestion-document.model';
 
 export interface IngestionScreenConfig {
   title: string;

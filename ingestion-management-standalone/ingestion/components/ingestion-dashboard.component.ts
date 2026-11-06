@@ -2,10 +2,12 @@ import { CommonModule, DatePipe } from '@angular/common';
 import { Component, EventEmitter, OnInit, Output, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AgGridAngular } from 'ag-grid-angular';
-import { GridOptions, themeQuartz } from 'ag-grid-community';
+import { themeQuartz } from 'ag-grid-community';
+import type { GridOptions } from 'ag-grid-community';
 import { INGESTION_SCREEN_CONFIG } from '../config/ingestion-screen.config';
-import { IngestionDocument, IngestionFilter, IngestionStatus, UploadDocumentCommand } from '../models/ingestion-document.model';
-import { INGESTION_REPOSITORY, IngestionRepository } from '../services/ingestion.repository';
+import type { IngestionDocument, IngestionFilter, IngestionStatus, UploadDocumentCommand } from '../models/ingestion-document.model';
+import { INGESTION_REPOSITORY } from '../services/ingestion.repository';
+import type { IngestionRepository } from '../services/ingestion.repository';
 import { IngestionMockRepository } from '../services/ingestion-mock.repository';
 
 @Component({
@@ -36,8 +38,7 @@ export class IngestionDashboardComponent implements OnInit {
 
   readonly metrics = computed(() => this.config.metrics.map(metric => ({
     ...metric,
-    value: metric.id === 'total'
-      ? this.documents().length
+    value: metric.id === 'total' ? this.documents().length
       : this.documents().filter(row => row.status === metric.status).length
   })));
 

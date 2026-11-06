@@ -1,5 +1,5 @@
 import { InjectionToken } from '@angular/core';
-import { IngestionDocument, UploadDocumentCommand } from '../models/ingestion-document.model';
+import type { IngestionDocument, UploadDocumentCommand } from '../models/ingestion-document.model';
 
 /** Repository contract: the UI is independent of HTTP and mock data implementations. */
 export interface IngestionRepository {

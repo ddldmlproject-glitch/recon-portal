@@ -1,4 +1,4 @@
-import { IngestionDocument } from '../models/ingestion-document.model';
+import type { IngestionDocument } from '../models/ingestion-document.model';
 
 const date = (daysAgo: number): string => {
   const value = new Date();

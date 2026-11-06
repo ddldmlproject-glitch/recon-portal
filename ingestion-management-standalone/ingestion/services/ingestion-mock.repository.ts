@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { INGESTION_MOCK_DATA } from '../data/ingestion-mock-data';
-import { IngestionDocument, UploadDocumentCommand } from '../models/ingestion-document.model';
-import { IngestionRepository } from './ingestion.repository';
+import type { IngestionDocument, UploadDocumentCommand } from '../models/ingestion-document.model';
+import type { IngestionRepository } from './ingestion.repository';
 
 const STORAGE_KEY = 'reghubops.ingestion.documents.v2';
 

@@ -2,8 +2,8 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { INGESTION_API_CONFIG, INGESTION_API_CONFIG_TOKEN } from '../config/ingestion-api.config';
-import { ApiResponse, IngestionDocument, UploadDocumentCommand } from '../models/ingestion-document.model';
-import { IngestionRepository } from './ingestion.repository';
+import type { ApiResponse, IngestionDocument, UploadDocumentCommand } from '../models/ingestion-document.model';
+import type { IngestionRepository } from './ingestion.repository';
 
 /** HTTP implementation. API response objects are typed before reaching the component. */
 @Injectable()
