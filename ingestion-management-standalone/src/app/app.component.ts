@@ -1,5 +1,5 @@
 import { Component, signal } from '@angular/core';
-import { IngestionDashboardComponent } from '../../../ingestion/components/ingestion-dashboard.component';
+import { IngestionDashboardComponent } from '../../ingestion/components/ingestion-dashboard.component';
 
 @Component({
   selector: 'app-root',
