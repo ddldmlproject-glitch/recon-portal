@@ -12,28 +12,50 @@
         "build": {
           "builder": "@angular/build:application",
           "options": {
+            "outputPath": "dist/reghubops-admin",
             "browser": "src/main.ts",
             "index": "src/index.html",
             "tsConfig": "tsconfig.app.json",
-            "styles": ["src/styles.scss"]
+            "assets": [
+              "public"
+            ],
+            "styles": [
+              "src/styles.scss"
+            ]
           },
           "configurations": {
             "production": {
               "budgets": [
-                { "type": "initial", "maximumWarning": "1mb", "maximumError": "2mb" },
-                { "type": "anyComponentStyle", "maximumWarning": "12kb", "maximumError": "20kb" }
+                {
+                  "type": "initial",
+                  "maximumWarning": "1mb",
+                  "maximumError": "2mb"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "12kb",
+                  "maximumError": "20kb"
+                }
               ],
               "outputHashing": "all"
             },
-            "development": { "optimization": false, "extractLicenses": false, "sourceMap": true }
+            "development": {
+              "optimization": false,
+              "extractLicenses": false,
+              "sourceMap": true
+            }
           },
           "defaultConfiguration": "production"
         },
         "serve": {
           "builder": "@angular/build:dev-server",
           "configurations": {
-            "production": { "buildTarget": "grouping-approvals-standalone:build:production" },
-            "development": { "buildTarget": "grouping-approvals-standalone:build:development" }
+            "production": {
+              "buildTarget": "grouping-approvals-standalone:build:production"
+            },
+            "development": {
+              "buildTarget": "grouping-approvals-standalone:build:development"
+            }
           },
           "defaultConfiguration": "development"
         }
