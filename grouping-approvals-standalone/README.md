@@ -309,3 +309,40 @@ See **[API Integration Guide](./API-INTEGRATION-GUIDE.md)** for the end-to-end i
 - Authentication, authorization, validation, error handling and testing checklists.
 
 **Important:** creating a screen in the current visual designer only creates a frontend configuration and local-storage demo. It does not automatically create backend APIs. Production API-backed custom screens require the server-side screen-definition service, an allow-listed resource/repository registry, record CRUD operations, schema validation and authorization described in the integration guide.
+
+
+## Standalone application and deployment
+
+This folder is the complete independently bootstrapped ReghubOps Admin application. It is not an Angular library or a Module Federation remote. It owns its Angular bootstrap (src/main.ts), root component, router, providers, styles, dependencies and production build.
+
+### Run locally
+
+From the repository root:
+
+```bash
+cd grouping-approvals-standalone
+npm install
+npm start
+```
+
+Open http://localhost:4200/grouping-approvals. The application root redirects to the Grouping screen.
+
+### Create a production build
+
+```bash
+npm run build
+```
+
+The production output is written to dist/reghubops-admin/browser. Deploy the contents of that browser directory to a static web host that supports Angular SPA route fallback.
+
+### Static hosting
+
+- Netlify: public/_redirects redirects application routes to /index.html.
+- Vercel: the included vercel.json rewrites application paths to /index.html.
+- Nginx or another web server: configure unknown application paths to serve index.html while continuing to serve real static assets normally.
+
+For a deployment under a URL sub-path rather than the domain root, build with the appropriate Angular --base-href value and configure the host fallback for that sub-path.
+
+### Runtime and data boundary
+
+The application currently starts with mock repositories. Grouping and Inbox demo data is not a shared backend database; in-memory records reset when the app is restarted, while user-created screen definitions and records use browser local storage. Connect the real authentication provider and backend APIs before production use. A frontend-only standalone build does not provide server-side authorization or durable shared data.
