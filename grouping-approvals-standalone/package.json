@@ -1,10 +1,11 @@
 {
-  "name": "grouping-approvals-standalone",
+  "name": "reghubops-admin-standalone",
   "version": "2.0.0",
   "private": true,
   "scripts": {
     "start": "ng serve --host 0.0.0.0",
-    "build": "ng build",
+    "build": "ng build --configuration production",
+    "build:development": "ng build --configuration development",
     "watch": "ng build --watch --configuration development"
   },
   "dependencies": {
