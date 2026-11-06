@@ -1,0 +1,40 @@
+<main class="preview-shell">
+  @if (!showIngestion()) {
+    <section class="preview-content">
+      <div class="brand-row">
+        <div class="brand-mark">R</div>
+        <div>
+          <strong>Recon Portal</strong>
+          <span>LOCAL FEATURE PREVIEW</span>
+        </div>
+      </div>
+
+      <div class="intro">
+        <p class="eyebrow">KNOWLEDGE OPERATIONS</p>
+        <h1>Feature workspace</h1>
+        <p class="intro-copy">
+          Use this local preview to test the Ingestion Management feature independently
+          before integrating it into your existing Angular MFE.
+        </p>
+      </div>
+
+      <article class="feature-launch-card">
+        <div class="feature-icon">IN</div>
+        <div class="feature-copy">
+          <p class="card-eyebrow">FEATURE PREVIEW</p>
+          <h2>Ingestion Management</h2>
+          <p>Upload sample documents, review ingestion status, search records and test removal workflows.</p>
+        </div>
+        <button type="button" class="launch-button" (click)="showIngestion.set(true)">
+          Open feature <span aria-hidden="true">→</span>
+        </button>
+      </article>
+
+      <p class="preview-note">
+        Demo mode · Uses local mock data stored in this browser. No backend upload or vector-store changes occur.
+      </p>
+    </section>
+  } @else {
+    <ing-dashboard (close)="showIngestion.set(false)"></ing-dashboard>
+  }
+</main>
