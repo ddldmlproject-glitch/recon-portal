@@ -13,7 +13,8 @@
     <main class="inbox-main">
       <div class="inbox-top-search">
         <label><span>⌕</span><input [value]="globalSearch()" (input)="globalSearch.set($any($event.target).value)" placeholder="Search requests, IDs, comments..." aria-label="Search all requests"></label>
-        <div class="top-actions">\n          <label class="demo-user-switcher"><span>Demo user</span><select [value]="currentUserId()" (change)="setDemoUser($any($event.target).value)" aria-label="Select demo user"><option *ngFor="let user of demoUsers" [value]="user.id">{{ user.label }}</option></select></label>
+        <div class="top-actions">
+          <label class="demo-user-switcher"><span>Demo user</span><select [value]="currentUserId()" (change)="setDemoUser($any($event.target).value)" aria-label="Select demo user"><option *ngFor="let user of demoUsers" [value]="user.id">{{ user.label }}</option></select></label>
           <button class="mark-read-button" type="button" (click)="markAllRead()">✓ Mark all read</button>
           <div class="notification-wrap">
             <button class="notification-button" type="button" aria-label="Notifications" (click)="openNotifications()"><span>♧</span><i *ngIf="unreadCount()">{{ unreadCount() }}</i></button>
