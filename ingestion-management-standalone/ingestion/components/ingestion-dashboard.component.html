@@ -1,0 +1,70 @@
+<section class="ingestion-feature">
+  <header class="feature-header">
+    <button class="back-to-workspace" type="button" (click)="close.emit()">← Back to workspace</button>
+    <div class="feature-breadcrumb">Workspace / <strong>{{ config.title }}</strong></div>
+    <span class="feature-environment">INGESTION WORKSPACE</span>
+  </header>
+
+  <main class="page-content">
+    <div class="page-heading">
+      <div><div class="eyebrow">KNOWLEDGE OPERATIONS · DOCUMENT LIFECYCLE</div><h1>{{ config.title }}</h1><p>{{ config.description }}</p></div>
+      <button class="primary-button" type="button" (click)="openUpload()">＋ Upload document</button>
+    </div>
+
+    <div class="metric-grid">
+      @for (metric of metrics(); track metric.id) {
+        <article class="metric-card"><span>{{ metric.label }}</span><strong>{{ metric.value }}</strong><small>{{ metric.caption }}</small></article>
+      }
+    </div>
+
+    <section class="repository-panel">
+      <div class="repository-heading"><div><h2>Document repository</h2><p>Records are rendered from typed API/domain objects and screen configuration.</p></div><button class="secondary-button" type="button" (click)="refresh()">↻ Refresh</button></div>
+      <div class="toolbar-row">
+        <div class="filter-tabs">
+          @for (filter of config.filters; track filter.id) {
+            <button type="button" class="filter-tab" [class.selected]="activeFilter() === filter.id" (click)="activeFilter.set(filter.id)">{{ filter.label }} <span>{{ countFor(filter.id) }}</span></button>
+          }
+        </div>
+        <input class="search-box" type="search" placeholder="Search documents..." [ngModel]="search()" (ngModelChange)="search.set($event)" />
+      </div>
+      @if (loading()) { <p class="loading">Loading documents...</p> }
+      <ag-grid-angular class="ingestion-grid" [rowData]="filteredDocuments()" [columnDefs]="config.columns" [gridOptions]="gridOptions" [theme]="gridTheme" />
+      @if (!loading() && filteredDocuments().length === 0) { <p class="empty-state">No documents match this filter.</p> }
+    </section>
+  </main>
+
+  @if (uploadOpen()) {
+    <div class="modal-backdrop" (click)="uploadOpen.set(false)">
+      <section class="modal-card" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
+        <h2>Upload document</h2>
+        <label class="field-label">Choose file</label>
+        <input type="file" [accept]="'.' + config.upload.extensions.join(',.')" (change)="onFileSelected($event)" />
+        <label class="field-label" for="ingestion-category">Category</label>
+        <select id="ingestion-category" [ngModel]="category()" (ngModelChange)="category.set($event)">
+          @for (item of config.upload.categories; track item) { <option [value]="item">{{ item }}</option> }
+        </select>
+        <small>Allowed: {{ config.upload.extensions.join(', ').toUpperCase() }} · Max {{ config.upload.maxSizeMb }} MB</small>
+        @if (error()) { <p class="error">{{ error() }}</p> }
+        <div class="modal-actions"><button class="secondary-button" type="button" (click)="uploadOpen.set(false)">Cancel</button><button class="primary-button" type="button" [disabled]="busy()" (click)="upload()">{{ busy() ? 'Uploading...' : 'Add to queue' }}</button></div>
+      </section>
+    </div>
+  }
+
+  @if (selectedDocument(); as document) {
+    <div class="drawer-backdrop" (click)="selectedDocument.set(null)">
+      <aside class="details-drawer" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
+        <button class="close-button" type="button" (click)="selectedDocument.set(null)">×</button>
+        <h2>{{ document.fileName }}</h2>
+        <dl><div><dt>Document ID</dt><dd>{{ document.documentId }}</dd></div><div><dt>Category</dt><dd>{{ document.documentCategory }}</dd></div><div><dt>Uploaded by</dt><dd>{{ document.uploadedBy }}</dd></div><div><dt>Uploaded at</dt><dd>{{ document.uploadedAt | date:'medium' }}</dd></div><div><dt>Status</dt><dd>{{ statusLabel(document.status) }}</dd></div><div><dt>Chunks</dt><dd>{{ document.chunks }}</dd></div><div><dt>Description</dt><dd>{{ document.description }}</dd></div></dl>
+        @if (document.status !== 'REMOVED') {
+          <label class="field-label" for="remove-reason">Removal reason</label>
+          <textarea id="remove-reason" [ngModel]="removeReason()" (ngModelChange)="removeReason.set($event)"></textarea>
+          <button class="danger-button" type="button" [disabled]="busy()" (click)="removeSelected()">Remove from knowledge base</button>
+        }
+        @if (document.removalReason) { <p class="removed-note">Reason: {{ document.removalReason }}</p> }
+      </aside>
+    </div>
+  }
+
+  @if (message()) { <div class="toast-message" role="status">{{ message() }} <button type="button" (click)="message.set('')">×</button></div> }
+</section>
