@@ -55,10 +55,12 @@ export class InboxComponent {
         const row = params.data;
         const wrapper = document.createElement('div');
         wrapper.className = 'inbox-grid-actions';
-        if (!row || row.status !== 'Pending' || !this.isAssignedApprover(row)) {
+        // Keep the Actions cell empty once a request is no longer pending.
+        if (!row || row.status !== 'Pending') return wrapper;
+        if (!this.isAssignedApprover(row)) {
           const label = document.createElement('span');
           label.className = 'inbox-action-unavailable';
-          label.textContent = row?.status === 'Pending' ? 'Not assigned' : '—';
+          label.textContent = 'Not assigned';
           wrapper.append(label);
           return wrapper;
         }
