@@ -77,7 +77,7 @@ export interface GroupingApprovalsConfig {
   permissions: { canCreateGroup: boolean; canEditGroup: boolean; canManageUsers: boolean; canManageRoles: boolean; canExport: boolean; canApprove: boolean; canDelete: boolean; };
 }
 export interface GroupUpdate {
-  description: string; owner: string; approvers: string[]; userIds: string[]; roles: string[];
+  groupName: string; description: string; owner: string; approvers: string[]; userIds: string[]; roles: string[];
   toolsAndReports: string[]; opsScope: 'All Ops' | 'Ops IDs'; opsIds: string[];
   allEntities: number; status: ApprovalStatus;
 }
