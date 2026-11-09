@@ -49,7 +49,7 @@ export class InboxComponent {
       valueGetter: params => params.data?.approvers.join(', ') ?? '—'
     },
     {
-      headerName: 'Actions', colId: 'approvalActions', pinned: 'right', minWidth: 170,
+      headerName: 'Actions', colId: 'approvalActions', pinned: 'right', minWidth: 205,
       sortable: false, filter: false, resizable: false,
       cellRenderer: (params: ICellRendererParams<GroupApprovalRequest>) => {
         const row = params.data;
@@ -66,7 +66,9 @@ export class InboxComponent {
           const button = document.createElement('button');
           button.type = 'button';
           button.className = decision === 'Approved' ? 'inbox-grid-approve' : 'inbox-grid-reject';
-          button.textContent = decision === 'Approved' ? '✓ Approve' : '× Reject';
+          button.textContent = decision === 'Approved' ? '✓  Approve' : '×  Reject';
+          button.setAttribute('aria-label', decision === 'Approved' ? 'Approve group request' : 'Reject group request');
+          button.title = decision === 'Approved' ? 'Approve group request' : 'Reject group request';
           button.addEventListener('click', event => {
             event.stopPropagation();
             this.decision.emit({ groupId: row.groupId, decision, comment: '' });
