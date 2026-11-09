@@ -48,7 +48,6 @@ export class GroupingApprovalsComponent implements OnInit {
     { key: 'opsScope', label: 'Ops Scope', type: 'select', defaultValue: 'All Ops', options: [{ label: 'All Ops', value: 'All Ops' }, { label: 'Specific Ops IDs', value: 'Ops IDs' }] },
     { key: 'opsIds', label: 'Ops IDs', type: 'textarea', placeholder: 'R-10021, R-10022' , visibleWhen: { field: 'opsScope', equals: 'Ops IDs' } },
     { key: 'allEntities', label: 'All Entities', type: 'checkbox', defaultValue: true },
-    { key: 'status', label: 'Status', type: 'select', defaultValue: 'Pending', options: [{ label: 'Pending approval', value: 'Pending' }, { label: 'Active', value: 'Active' }, { label: 'Inactive', value: 'Inactive' }, { label: 'Rejected', value: 'Rejected' }] },
     { key: 'userIds', label: 'Assigned User IDs', type: 'textarea', placeholder: 'One user ID per line or comma separated' },
     { key: 'roles', label: 'Assigned Roles', type: 'textarea', placeholder: 'ReghubOps1, ReghubOps2, Reviewer' },
     { key: 'toolsAndReports', label: 'Tools and Reports', type: 'textarea', placeholder: 'ReghubOps Summary, Break Report' }
@@ -138,7 +137,7 @@ export class GroupingApprovalsComponent implements OnInit {
     const owner = String(value['owner'] ?? '').trim();
     if (!groupName || !owner) { this.errorMessage.set('Group name and owner are required.'); return; }
     const selected = this.selectedGroup();
-    const status: ApprovalStatus = value['status'] === 'Active' ? 'Active' : value['status'] === 'Inactive' ? 'Inactive' : value['status'] === 'Rejected' ? 'Rejected' : 'Pending';
+    const status: ApprovalStatus = selected?.status ?? 'Pending';
     const data = {
       groupName, description: String(value['description'] ?? '').trim(), owner,
       approvers: this.parseList(value['approvers']),
@@ -165,6 +164,16 @@ export class GroupingApprovalsComponent implements OnInit {
       this.closeDialog();
     } catch (error) {
       this.errorMessage.set(error instanceof Error ? error.message : 'Unable to save group.');
+    } finally { this.busy.set(false); }
+  }
+
+  async handleInboxDecision(event: { groupId: string; decision: 'Approved' | 'Rejected'; comment: string }): Promise<void> {
+    this.busy.set(true); this.errorMessage.set('');
+    try {
+      const updated = await this.repository.decideGroup(event.groupId, event.decision, event.comment);
+      this.groups.update(rows => rows.map(row => row.id === updated.id ? updated : row));
+    } catch (error) {
+      this.errorMessage.set(error instanceof Error ? error.message : 'Unable to update the group approval.');
     } finally { this.busy.set(false); }
   }
 
