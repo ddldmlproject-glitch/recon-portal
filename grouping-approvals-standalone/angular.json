@@ -16,9 +16,7 @@
             "browser": "src/main.ts",
             "index": "src/index.html",
             "tsConfig": "tsconfig.app.json",
-            "assets": [
-              "public"
-            ],
+            "assets": [],
             "styles": [
               "src/styles.scss"
             ]
