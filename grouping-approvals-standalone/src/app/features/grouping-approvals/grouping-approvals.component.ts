@@ -53,7 +53,7 @@ export class GroupingApprovalsComponent implements OnInit {
     { key: 'toolsAndReports', label: 'Tools and Reports', type: 'textarea', placeholder: 'ReghubOps Summary, Break Report' }
   ];
 
-  readonly filteredGroups = computed(() => {
+  readonly activeGroupFormFields = computed(() => this.dialogMode() === 'edit'\n    ? this.groupFormFields.filter(field => !['opsScope', 'opsIds', 'roles', 'toolsAndReports'].includes(field.key))\n    : this.groupFormFields);\n\n  readonly filteredGroups = computed(() => {
     const q = this.searchText().trim().toLowerCase();
     const rows = this.groups();
     return q ? rows.filter(g => [g.groupName, g.description, g.owner, ...g.userIds, ...g.roles, ...g.opsIds].join(' ').toLowerCase().includes(q)) : rows;
@@ -154,8 +154,8 @@ export class GroupingApprovalsComponent implements OnInit {
       } else {
         const update: GroupUpdate = {
           description: data.description, owner: data.owner, approvers: data.approvers,
-          userIds: data.userIds, roles: data.roles, toolsAndReports: data.toolsAndReports,
-          opsScope: data.opsScope, opsIds: data.opsIds,
+          userIds: data.userIds, roles: selected.roles, toolsAndReports: selected.toolsAndReports,
+          opsScope: selected.opsScope, opsIds: selected.opsIds,
           allEntities: data.allEntities, status: data.status
         };
         const saved = await this.repository.saveGroup(selected.id, update);
