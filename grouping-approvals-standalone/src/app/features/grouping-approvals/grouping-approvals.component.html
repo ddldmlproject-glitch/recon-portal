@@ -56,7 +56,7 @@
   </ng-container>
 
   <ng-container *ngIf="activeTab() === 'inbox'">
-    <app-inbox [groups]="groups()" />
+    <app-inbox [groups]="groups()" (decision)="handleInboxDecision($event)" />
   </ng-container>
 
   <div class="ga-overlay" *ngIf="dialogMode()" (click)="closeDialog()">
