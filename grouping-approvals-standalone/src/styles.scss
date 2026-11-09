@@ -16,3 +16,76 @@
 html, body { min-height: 100%; margin: 0; }
 body { background: #f2f5f8; color: var(--citi-text-primary); font-family: Inter, Arial, sans-serif; }
 button, input, textarea { font: inherit; }
+
+/* Inbox AG Grid action renderer is created outside Angular component encapsulation. */
+.inbox-grid .inbox-grid-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  width: 100%;
+  height: 100%;
+  padding: 0 4px;
+}
+.inbox-grid .inbox-grid-actions button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 86px;
+  min-height: 31px;
+  padding: 0 12px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  font-family: Inter, Arial, sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: .15px;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color .16s ease, border-color .16s ease, box-shadow .16s ease, transform .16s ease;
+}
+.inbox-grid .inbox-grid-actions .inbox-grid-approve {
+  color: #fff;
+  border-color: #086da8;
+  background: linear-gradient(180deg, #1288c8 0%, #0872b1 100%);
+  box-shadow: 0 2px 4px rgba(5, 101, 158, .16);
+}
+.inbox-grid .inbox-grid-actions .inbox-grid-approve:hover {
+  border-color: #055b91;
+  background: linear-gradient(180deg, #0878b8 0%, #055f98 100%);
+  box-shadow: 0 4px 9px rgba(5, 101, 158, .22);
+  transform: translateY(-1px);
+}
+.inbox-grid .inbox-grid-actions .inbox-grid-reject {
+  color: #a63834;
+  border-color: #e4c4c1;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(80, 35, 35, .05);
+}
+.inbox-grid .inbox-grid-actions .inbox-grid-reject:hover {
+  color: #8e2d29;
+  border-color: #c87872;
+  background: #fff4f3;
+  box-shadow: 0 3px 8px rgba(163, 56, 52, .12);
+  transform: translateY(-1px);
+}
+.inbox-grid .inbox-grid-actions button:focus-visible {
+  outline: 2px solid #1594d0;
+  outline-offset: 2px;
+}
+.inbox-grid .inbox-grid-actions .inbox-action-unavailable {
+  display: inline-flex;
+  align-items: center;
+  min-height: 27px;
+  padding: 0 10px;
+  border: 1px solid #e6ebf0;
+  border-radius: 6px;
+  background: #f7f9fb;
+  color: #8996a3;
+  font-size: 10px;
+  font-weight: 650;
+}
+@media (prefers-reduced-motion: reduce) {
+  .inbox-grid .inbox-grid-actions button { transition: none; }
+}
