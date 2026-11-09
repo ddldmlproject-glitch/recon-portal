@@ -13,8 +13,6 @@ export const GROUPING_APPROVALS_CONFIG: GroupingApprovalsConfig = {
     { key: 'description', label: 'Description' },
     { key: 'owner', label: 'Group Owner', width: '140px' },
     { key: 'approvers', label: 'Group Approvers', width: '160px' },
-    { key: 'opsScope', label: 'Ops Scope', width: '130px' },
-    { key: 'allEntities', label: 'All Entities', width: '100px' },
     { key: 'updatedBy', label: 'Updated By', width: '120px' },
     { key: 'updatedAt', label: 'Updated Date', width: '150px' }
   ],
@@ -29,7 +27,7 @@ export const GROUPING_APPROVALS_CONFIG: GroupingApprovalsConfig = {
     { key: 'updatedAt', label: 'Updated Date', width: '150px' }
   ],
   permissions: {
-    canCreateGroup: true,
+    canCreateGroup: false,
     canEditGroup: true,
     canManageUsers: true,
     canManageRoles: true,
