@@ -27,7 +27,7 @@ export const GROUPING_APPROVALS_CONFIG: GroupingApprovalsConfig = {
     { key: 'updatedAt', label: 'Updated Date', width: '150px' }
   ],
   permissions: {
-    canCreateGroup: false,
+    canCreateGroup: true,
     canEditGroup: true,
     canManageUsers: true,
     canManageRoles: true,
