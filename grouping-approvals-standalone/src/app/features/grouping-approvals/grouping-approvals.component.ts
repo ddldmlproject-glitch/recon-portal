@@ -182,7 +182,7 @@ export class GroupingApprovalsComponent implements OnInit {
   }
 
   async deleteGroup(group: EntitlementGroup): Promise<void> {
-    if (!window.confirm(`Delete entitlement group "${group.groupName}"? This cannot be undone.`)) return;
+    if (!window.confirm(`Delete group "${group.groupName}"? This cannot be undone.`)) return;
     this.busy.set(true); this.errorMessage.set('');
     try {
       await this.repository.deleteGroup(group.id);
@@ -197,7 +197,7 @@ export class GroupingApprovalsComponent implements OnInit {
     const rows = this.filteredGroups().map(g => [g.groupName,g.description,g.owner,g.approvers.join('; '),g.opsScope,g.opsIds.join('; '),g.userIds.join('; '),g.roles.join('; '),g.toolsAndReports.join('; '),g.status,g.updatedBy,g.updatedAt]);
     const csv = [headers,...rows].map(row => row.map(value => `"${String(value ?? '').replaceAll('"','""')}"`).join(',')).join('\r\n');
     const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
-    const anchor = document.createElement('a'); anchor.href = url; anchor.download = 'entitlement-groups.csv'; anchor.click();
+    const anchor = document.createElement('a'); anchor.href = url; anchor.download = 'groups.csv'; anchor.click();
     URL.revokeObjectURL(url);
   }
 }
