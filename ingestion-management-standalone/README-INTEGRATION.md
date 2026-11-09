@@ -17,7 +17,7 @@ npm start
 
 Open the local URL printed by Angular CLI (normally `http://localhost:4200`). Select **Open feature** to open Ingestion Management. Use **Back to workspace** to return to the preview landing page.
 
-The preview uses `IngestionMockRepository` and browser localStorage. It demonstrates the UI and mock workflow only; it does not send file contents to a backend, call an LLM, create embeddings, or update a real vector store. The records grid includes Edit and Delete actions. Edit updates document category and description and can optionally replace the source PDF/XLS/XLSX file. Replacing a file updates its metadata and restarts the mock Processing workflow. Delete marks a record as Removed and keeps its audit row in the Removed filter.
+The preview uses `IngestionMockRepository` and browser localStorage. It demonstrates the UI and mock workflow only; it does not send file contents to a backend, call an LLM, create embeddings, or update a real vector store. The records grid includes Edit and Delete actions. Edit can replace the source PDF/XLS/XLSX file; the mock stores the new file name/type/size and simulates reprocessing, but it does not persist the selected file bytes across browser sessions. The real API adapter sends the selected file as multipart FormData to the configured update endpoint. Edit updates document category and description and can optionally replace the source PDF/XLS/XLSX file. Replacing a file updates its metadata and restarts the mock Processing workflow. Delete marks a record as Removed and keeps its audit row in the Removed filter.
 
 ## Reusable object-oriented feature structure
 
