@@ -18,7 +18,7 @@ const TRIGGERS: OpsLoadTrigger[] = [
 export class GroupingApprovalsMockRepository implements GroupingApprovalsRepository {
   private groups = structuredClone(GROUPS);
   private triggers = structuredClone(TRIGGERS);
-  async getGroups(): Promise<EntitlementGroup[]> { return structuredClone(this.groups); }
+  async getGroups(): Promise<EntitlementGroup[]> { return structuredClone(this.groups.filter(group => group.groupName !== 'LATAM_VIEW_ONLY_FOM')); }
   async getTriggers(): Promise<OpsLoadTrigger[]> { return structuredClone(this.triggers); }
   async createGroup(draft: Omit<EntitlementGroup, 'id' | 'updatedBy' | 'updatedAt'>): Promise<EntitlementGroup> {
     if (this.groups.some(g => g.groupName.toLowerCase() === draft.groupName.toLowerCase())) throw new Error('A group with this name already exists.');
