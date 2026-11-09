@@ -1,6 +1,5 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
-import { FormsModule } from '@angular/forms';
 import type { ColDef, GridOptions, ICellRendererParams } from 'ag-grid-community';
 import { DynamicScreenComponent } from '../../shared/components/dynamic-screen/dynamic-screen.component';
 import { DynamicFormComponent } from '../../shared/components/dynamic-form/dynamic-form.component';
@@ -17,7 +16,7 @@ type DialogMode = 'create' | 'edit';
 @Component({
   selector: 'app-grouping-approvals',
   standalone: true,
-  imports: [CommonModule, FormsModule, DynamicScreenComponent, DynamicFormComponent, InboxComponent],
+  imports: [CommonModule, DynamicScreenComponent, DynamicFormComponent, InboxComponent],
   templateUrl: './grouping-approvals.component.html',
   styleUrl: './grouping-approvals.component.scss'
 })
@@ -113,6 +112,7 @@ export class GroupingApprovalsComponent implements OnInit {
     } finally { this.busy.set(false); }
   }
 
+  setTab(id: string): void { this.activeTab.set(id); this.searchText.set(''); this.adminMenuOpen.set(false); }
   toggleAdminMenu(): void { this.adminMenuOpen.update(open => !open); }
   closeAdminMenu(): void { this.adminMenuOpen.set(false); }
   openCreateGroup(): void { this.selectedGroup.set(null); this.initialFormValue.set(this.formValue()); this.dialogMode.set('create'); this.errorMessage.set(''); }
