@@ -62,7 +62,7 @@
       <header class="ga-dialog-header">
         <div>
           <span class="ga-eyebrow">CONFIGURATION-DRIVEN FORM</span>
-          <h2>{{ dialogMode() === 'create' ? 'Create Entitlement Group' : 'Edit Entitlement Group' }}</h2>
+          <h2>{{ dialogMode() === 'create' ? 'Create Group' : 'Edit Group' }}</h2>
           <p>{{ selectedGroup()?.groupName || 'Define group details and access configuration.' }}</p>
         </div>
         <button class="ga-close" type="button" (click)="closeDialog()">×</button>
