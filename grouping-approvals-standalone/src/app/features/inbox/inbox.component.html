@@ -1,17 +1,23 @@
 <section class="approval-inbox">
   <header class="inbox-heading">
-    <div><span class="inbox-eyebrow">GROUP ACCESS WORKFLOW</span><h2>Group Approval Inbox</h2><p>Every group created in Groups is listed here with its current approval status.</p></div>
+    <div><span class="inbox-eyebrow">GROUP ACCESS WORKFLOW</span><h2>Group Approval Inbox</h2><p>Review requests assigned to you, requests you own, or all group requests.</p></div>
     <label class="inbox-search"><span>⌕</span><input type="search" [value]="searchText()" (input)="searchText.set($any($event.target).value)" placeholder="Search groups, owners, users or roles"></label>
   </header>
+  <nav class="inbox-views" aria-label="Inbox request filters">
+    <button type="button" [class.active]="activeView() === 'my-group'" (click)="setView('my-group')">My Group</button>
+    <button type="button" [class.active]="activeView() === 'my-request'" (click)="setView('my-request')">My Request</button>
+    <button type="button" [class.active]="activeView() === 'all'" (click)="setView('all')">All</button>
+    <span class="inbox-user">Signed in: {{ currentUserId() }}</span>
+  </nav>
   <div class="inbox-summary">
-    <article><span>Total group requests</span><strong>{{ requests().length }}</strong></article>
+    <article><span>Group requests</span><strong>{{ viewRequests().length }}</strong></article>
     <article><span>Awaiting approval</span><strong>{{ pendingCount() }}</strong></article>
     <article><span>Approved / active</span><strong>{{ approvedCount() }}</strong></article>
   </div>
   <div class="inbox-grid">
     <ag-grid-angular [rowData]="filteredRequests()" [columnDefs]="columns" [gridOptions]="gridOptions" [theme]="theme"></ag-grid-angular>
   </div>
-  <p class="inbox-empty" *ngIf="filteredRequests().length === 0">No group requests match your search.</p>
+  <p class="inbox-empty" *ngIf="filteredRequests().length === 0">No group requests match this view or search.</p>
 
   <div class="inbox-backdrop" *ngIf="selectedRequest()" (click)="closeDetails()"></div>
   <aside class="inbox-drawer" *ngIf="selectedRequest() as request">
@@ -20,6 +26,7 @@
     <dl>
       <div><dt>Group ID</dt><dd>{{ request.groupId }}</dd></div>
       <div><dt>Owner / Requested by</dt><dd>{{ request.owner }}</dd></div>
+      <div><dt>Assigned To</dt><dd>{{ request.approvers.join(', ') || '—' }}</dd></div>
       <div><dt>Description</dt><dd>{{ request.description || '—' }}</dd></div>
       <div><dt>Approvers</dt><dd>{{ request.approvers.join(', ') || '—' }}</dd></div>
       <div><dt>Assigned users</dt><dd>{{ request.userIds.join(', ') || '—' }}</dd></div>
@@ -29,10 +36,11 @@
       <div *ngIf="request.approvedBy"><dt>Actioned by</dt><dd>{{ request.approvedBy }}</dd></div>
       <div *ngIf="request.approvalComment"><dt>Approval comment</dt><dd>{{ request.approvalComment }}</dd></div>
     </dl>
-    <label class="inbox-comment" *ngIf="request.status === 'Pending'">Approval comments<textarea rows="3" [value]="comment()" (input)="comment.set($any($event.target).value)" placeholder="Add a decision comment"></textarea></label>
-    <footer *ngIf="request.status === 'Pending'">
+    <label class="inbox-comment" *ngIf="request.status === 'Pending' && isAssignedApprover(request)">Approval comments<textarea rows="3" [value]="comment()" (input)="comment.set($any($event.target).value)" placeholder="Add a decision comment"></textarea></label>
+    <footer *ngIf="request.status === 'Pending' && isAssignedApprover(request)">
       <button class="reject-button" type="button" (click)="reject()">Reject</button>
       <button class="approve-button" type="button" (click)="approve()">Approve group</button>
     </footer>
+    <p class="inbox-permission-note" *ngIf="request.status === 'Pending' && !isAssignedApprover(request)">This request is not assigned to your SSO ID, so you cannot approve or reject it.</p>
   </aside>
 </section>
