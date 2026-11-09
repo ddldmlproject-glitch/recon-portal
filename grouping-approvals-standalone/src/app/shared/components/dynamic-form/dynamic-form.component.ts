@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, effect, input, output, signal } from '@angular/core';
+import { Component, OnChanges, SimpleChanges, computed, input, output, signal } from '@angular/core';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { FieldConfig } from '../../../core/config/screen-config.models';
 import { FormEngineService } from '../../../core/engine/form-engine.service';
@@ -55,7 +55,7 @@ import { FormEngineService } from '../../../core/engine/form-engine.service';
     @media(max-width:600px){.field-grid{grid-template-columns:1fr}.field--wide{grid-column:auto}}
   `]
 })
-export class DynamicFormComponent {
+export class DynamicFormComponent implements OnChanges {
   readonly fields = input.required<FieldConfig[]>();
   readonly initialValue = input<Record<string, unknown>>({});
   readonly submitted = output<Record<string, unknown>>();
@@ -69,20 +69,22 @@ export class DynamicFormComponent {
     return this.form.get(field.visibleWhen.field)?.value === field.visibleWhen.equals;
   }));
 
-  constructor() {
-    effect(onCleanup => {
-      const fields = this.fields();
-      const initial = this.initialValue();
-      const built = this.engine.build(fields, initial);
-      // Rebuild controls whenever the selected record or visible field set changes.
-      // Reset after rebuilding so edit mode always displays the latest selected row values.
-      for (const key of Object.keys(this.form.controls)) this.form.removeControl(key);
-      for (const [key, control] of Object.entries(built.controls)) this.form.addControl(key, control);
-      this.form.reset(initial, { emitEvent: false });
-      this.form.updateValueAndValidity({ emitEvent: false });
-      const subscription = this.form.valueChanges.subscribe(() => this.formRevision.update(value => value + 1));
-      onCleanup(() => subscription.unsubscribe());
-    });
+  ngOnChanges(_changes: SimpleChanges): void {
+    const fields = this.fields();
+    const initial = this.initialValue() ?? {};
+    const built = this.engine.build(fields, initial);
+
+    // Recreate the controls from the selected row every time the dialog inputs change.
+    for (const key of Object.keys(this.form.controls)) this.form.removeControl(key);
+    for (const [key, control] of Object.entries(built.controls)) {
+      this.form.addControl(key, control);
+    }
+
+    // Explicitly patch values after controls exist; this keeps edit mode populated
+    // even when the form component is reused for a different selected row.
+    this.form.patchValue(initial, { emitEvent: false });
+    this.form.updateValueAndValidity({ emitEvent: false });
+    this.formRevision.update(value => value + 1);
   }
 
   submit(): void {
