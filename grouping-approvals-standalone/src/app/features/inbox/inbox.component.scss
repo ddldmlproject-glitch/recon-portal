@@ -11,3 +11,30 @@
 .inbox-action-unavailable{color:#9aa6b1;font-size:10px}
 .inbox-permission-note{margin-top:15px;padding:10px;border-radius:5px;background:#fff6e8;color:#8a641f;font-size:11px}
 @media(max-width:700px){.inbox-views{flex-wrap:wrap}.inbox-user{width:100%;margin:3px 0;padding:5px}}
+
+/* Refined enterprise approval actions */
+.inbox-views{gap:6px;padding:5px;border-color:#e5eaf0;background:linear-gradient(180deg,#fff,#f9fbfd);box-shadow:0 2px 8px rgba(26,48,72,.035)}
+.inbox-views button{min-width:94px;padding:9px 16px;border:1px solid transparent;border-radius:6px;transition:background .18s ease,color .18s ease,border-color .18s ease,box-shadow .18s ease}
+.inbox-views button:hover{background:#f0f6fb;color:#075f96}
+.inbox-views button.active{border-color:#cfe4f3;background:#eaf4fb;color:#075f96;box-shadow:inset 0 0 0 1px rgba(7,95,150,.025)}
+.inbox-user{display:flex;align-items:center;gap:9px;margin-left:auto;padding:4px 10px;border:1px solid #e5ebf1;border-radius:7px;background:#fff}
+.inbox-user-dot{width:8px;height:8px;border-radius:50%;background:#18a66a;box-shadow:0 0 0 3px #e6f7ef}
+.inbox-user span:last-child{display:grid;gap:2px}
+.inbox-user small{font-size:8px;letter-spacing:.7px;font-weight:800;color:#8997a5}
+.inbox-user strong{font-size:11px;color:#2b4054}
+.inbox-grid-actions{display:flex;align-items:center;gap:7px;height:100%;padding:3px 0}
+.inbox-grid-actions button{display:inline-flex;align-items:center;justify-content:center;gap:5px;min-width:76px;min-height:29px;padding:0 10px;border-radius:6px;font-size:10px;font-weight:750;letter-spacing:.1px;transition:all .16s ease;box-shadow:0 1px 2px rgba(22,40,60,.06)}
+.inbox-grid-approve{border:1px solid #0878b9;background:linear-gradient(180deg,#1288ca,#0672b2);color:#fff}
+.inbox-grid-approve:hover{border-color:#05669f;background:linear-gradient(180deg,#0878b9,#055f98);box-shadow:0 3px 9px rgba(5,112,177,.2);transform:translateY(-1px)}
+.inbox-grid-reject{border:1px solid #e3c4c2;background:#fff;color:#ad403b}
+.inbox-grid-reject:hover{border-color:#c96a63;background:#fff5f4;color:#96312c;box-shadow:0 3px 9px rgba(173,64,59,.1);transform:translateY(-1px)}
+.inbox-grid-actions button:focus-visible,.inbox-views button:focus-visible,.inbox-drawer button:focus-visible{outline:2px solid #1591d0;outline-offset:2px}
+.inbox-action-unavailable{display:inline-flex;align-items:center;min-height:25px;padding:0 8px;border:1px solid #e7ebef;border-radius:5px;background:#f7f9fb;color:#8c99a5;font-size:9px;font-weight:650}
+.inbox-drawer footer{position:sticky;bottom:-22px;margin:18px -22px -22px;padding:14px 22px;background:rgba(255,255,255,.96);border-top:1px solid #e9eef3;backdrop-filter:blur(8px)}
+.inbox-drawer footer button{min-height:38px;padding:0 17px;border-radius:7px;font-size:11px;font-weight:750;transition:all .16s ease}
+.approve-button{border:1px solid #0878b9;background:linear-gradient(180deg,#1288ca,#0672b2);color:#fff;box-shadow:0 2px 5px rgba(5,112,177,.15)}
+.approve-button:hover{background:linear-gradient(180deg,#0878b9,#055f98);box-shadow:0 4px 11px rgba(5,112,177,.2)}
+.reject-button{border:1px solid #e3c4c2;background:#fff;color:#ad403b}
+.reject-button:hover{border-color:#c96a63;background:#fff5f4;color:#96312c}
+.inbox-permission-note{border:1px solid #f2dfb9;border-radius:7px;font-weight:600;line-height:1.5}
+@media(max-width:700px){.inbox-user{margin:5px 0 0}.inbox-views button{flex:1;min-width:0}}
