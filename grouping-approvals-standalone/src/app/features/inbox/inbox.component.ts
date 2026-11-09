@@ -66,7 +66,7 @@ export class InboxComponent {
           const button = document.createElement('button');
           button.type = 'button';
           button.className = decision === 'Approved' ? 'inbox-grid-approve' : 'inbox-grid-reject';
-          button.textContent = decision === 'Approved' ? 'Approve' : 'Reject';
+          button.textContent = decision === 'Approved' ? '✓ Approve' : '× Reject';
           button.addEventListener('click', event => {
             event.stopPropagation();
             this.decision.emit({ groupId: row.groupId, decision, comment: '' });
