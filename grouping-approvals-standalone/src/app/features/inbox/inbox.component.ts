@@ -4,6 +4,7 @@ import { AgGridAngular } from 'ag-grid-angular';
 import type { ColDef, GridOptions, ICellRendererParams } from 'ag-grid-community';
 import { themeQuartz } from 'ag-grid-community';
 import { ApprovalDecision, EntitlementGroup, GroupApprovalRequest } from '../grouping-approvals/grouping-approvals.models';
+import { GROUPING_APPROVALS_SCREENS } from '../grouping-approvals/grouping-approvals.screen-config';
 
 @Component({
   selector: 'app-inbox',
@@ -29,14 +30,7 @@ export class InboxComponent {
   });
   readonly pendingCount = computed(() => this.requests().filter(request => request.status === 'Pending').length);
   readonly approvedCount = computed(() => this.requests().filter(request => request.status === 'Active').length);
-  readonly columns: ColDef<GroupApprovalRequest>[] = [
-    { field: 'groupName', headerName: 'Group Name', minWidth: 190, pinned: 'left' },
-    { field: 'owner', headerName: 'Requested By', minWidth: 130 },
-    { field: 'description', headerName: 'Description', minWidth: 220, flex: 2 },
-    { field: 'approvers', headerName: 'Approvers', minWidth: 150, valueFormatter: p => p.value?.join(', ') ?? '' },
-    { field: 'status', headerName: 'Request Status', minWidth: 130, cellClass: p => p.value === 'Pending' ? 'inbox-status-pending' : p.value === 'Rejected' ? 'inbox-status-rejected' : 'inbox-status-approved' },
-    { field: 'createdAt', headerName: 'Created / Updated', minWidth: 165 }
-  ];
+  readonly columns: ColDef<GroupApprovalRequest>[] = GROUPING_APPROVALS_SCREENS[1].grid!.columns as ColDef<GroupApprovalRequest>[];
   readonly gridOptions: GridOptions<GroupApprovalRequest> = {
     animateRows: true, pagination: true, paginationPageSize: 10,
     paginationPageSizeSelector: [10, 20, 50], rowHeight: 46,
