@@ -38,3 +38,13 @@
 .reject-button:hover{border-color:#c96a63;background:#fff5f4;color:#96312c}
 .inbox-permission-note{border:1px solid #f2dfb9;border-radius:7px;font-weight:600;line-height:1.5}
 @media(max-width:700px){.inbox-user{margin:5px 0 0}.inbox-views button{flex:1;min-width:0}}
+
+/* Clearer, balanced action controls in the inbox grid */
+.inbox-grid-actions{gap:9px;padding:0 4px}
+.inbox-grid-actions button{min-width:88px;min-height:32px;padding:0 12px;border-radius:7px;font-size:11px;font-weight:750;letter-spacing:.15px;box-shadow:0 1px 2px rgba(20,40,60,.07)}
+.inbox-grid-approve{border:1px solid #0872ad;background:#0879b8;color:#fff}
+.inbox-grid-approve:hover{background:#05669e;border-color:#056096;box-shadow:0 3px 8px rgba(5,102,158,.2);transform:translateY(-1px)}
+.inbox-grid-reject{border:1px solid #e0c4c2;background:#fff;color:#a33c36}
+.inbox-grid-reject:hover{background:#fff4f3;border-color:#c87871;color:#8f2f2a;box-shadow:0 3px 8px rgba(163,60,54,.1);transform:translateY(-1px)}
+.inbox-grid-actions button:focus-visible{outline:2px solid #168dcc;outline-offset:2px}
+.inbox-action-unavailable{min-height:27px;padding:0 10px;border-radius:6px;font-size:10px}
