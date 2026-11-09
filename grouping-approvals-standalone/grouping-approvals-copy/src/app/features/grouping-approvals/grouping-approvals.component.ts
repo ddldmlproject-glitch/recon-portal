@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
-import type { ColDef, GridOptions, ICellRendererParams } from 'ag-grid-community';
+import type { ColDef, GridOptions, ICellRendererParams } from '@ag-grid-community/core';
 import { DynamicScreenComponent } from '../../shared/components/dynamic-screen/dynamic-screen.component';
 import { DynamicFormComponent } from '../../shared/components/dynamic-form/dynamic-form.component';
 import { ScreenConfig, FieldConfig } from '../../core/config/screen-config.models';
@@ -93,8 +93,8 @@ export class GroupingApprovalsComponent implements OnInit {
   readonly triggerColumnDefs: ColDef<OpsLoadTrigger>[] = this.screens[2].grid!.columns as ColDef<OpsLoadTrigger>[];
   readonly gridOptions: GridOptions = {
     animateRows: true, pagination: true, paginationPageSize: 20,
-    paginationPageSizeSelector: [10, 20, 50, 100],
-    rowSelection: { mode: 'multiRow' }, suppressCellFocus: false
+    
+    rowSelection: 'multiple', suppressCellFocus: false
   };
 
   constructor() {
