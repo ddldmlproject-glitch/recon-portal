@@ -1,0 +1,98 @@
+%PDF-1.4
+%ASCII-PDF
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R /F2 5 0 R >> >> /Contents 6 0 R >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>
+endobj
+6 0 obj
+<< /Length 2636 >>
+stream
+0.09 0.23 0.34 rg
+0 700 612 92 re f
+1 1 1 rg
+BT /F2 21 Tf 48 748 Td (Knowledge Intake - API Guide) Tj ET
+BT /F1 9 Tf 49 726 Td (Fictional API reference | Version 1.0) Tj ET
+0.94 0.97 0.98 rg
+48 625 516 58 re f
+0.78 0.85 0.89 RG
+0.7 w
+48 625 516 58 re S
+0.19 0.29 0.36 rg
+BT /F2 8 Tf 58 665 Td (Document ID:) Tj ET
+0.24 0.32 0.38 rg
+BT /F1 8 Tf 150 665 Td (SAMPLE-API-003) Tj ET
+0.19 0.29 0.36 rg
+BT /F2 8 Tf 58 651 Td (Owner:) Tj ET
+0.24 0.32 0.38 rg
+BT /F1 8 Tf 150 651 Td (Demo Integration Team) Tj ET
+0.19 0.29 0.36 rg
+BT /F2 8 Tf 58 637 Td (Category:) Tj ET
+0.24 0.32 0.38 rg
+BT /F1 8 Tf 150 637 Td (API Specification) Tj ET
+0.03 0.42 0.65 rg
+BT /F2 12 Tf 50 600 Td (1. Example API endpoints) Tj ET
+0.16 0.24 0.30 rg
+BT /F1 8.5 Tf 50 583 Td (GET /api/ingestion/documents - list repository records.) Tj ET
+0.16 0.24 0.30 rg
+BT /F1 8.5 Tf 50 565.5 Td (POST /api/ingestion/documents - upload a document using multipart form data.) Tj ET
+0.16 0.24 0.30 rg
+BT /F1 8.5 Tf 50 548.0 Td (PATCH /api/ingestion/documents/{id} - update metadata or replace a source file.) Tj ET
+0.16 0.24 0.30 rg
+BT /F1 8.5 Tf 50 530.5 Td (DELETE /api/ingestion/documents/{id} - soft-remove the record with a reason.) Tj ET
+0.03 0.42 0.65 rg
+BT /F2 12 Tf 50 508.0 Td (2. Metadata update example) Tj ET
+0.16 0.24 0.30 rg
+BT /F1 8.5 Tf 50 491.0 Td (JSON body: { "documentCategory": "Architecture", "description": "Updated sample architecture) Tj ET
+0.16 0.24 0.30 rg
+BT /F1 8.5 Tf 50 477.5 Td (reference" }) Tj ET
+0.03 0.42 0.65 rg
+BT /F2 12 Tf 50 455.0 Td (3. File replacement example) Tj ET
+0.16 0.24 0.30 rg
+BT /F1 8.5 Tf 50 438.0 Td (Send multipart fields named file, documentCategory, and description. The exact path, method,) Tj ET
+0.16 0.24 0.30 rg
+BT /F1 8.5 Tf 50 424.5 Td (authorization, and response envelope must be confirmed with the backend team.) Tj ET
+0.03 0.42 0.65 rg
+BT /F2 12 Tf 50 402.0 Td (4. Example response fields) Tj ET
+0.16 0.24 0.30 rg
+BT /F1 8.5 Tf 50 385.0 Td (documentId: SAMPLE-API-003; fileName: sample-api-integration-guide.pdf; fileType: PDF; fileSize:) Tj ET
+0.16 0.24 0.30 rg
+BT /F1 8.5 Tf 50 371.5 Td (123456; status: INGESTED; chunks: 12.) Tj ET
+0.03 0.42 0.65 rg
+BT /F2 12 Tf 50 349.0 Td (5. Test scenario) Tj ET
+0.16 0.24 0.30 rg
+BT /F1 8.5 Tf 50 332.0 Td (Use this PDF to test upload and then replace it with sample-technical-specification.pdf. Verify the) Tj ET
+0.16 0.24 0.30 rg
+BT /F1 8.5 Tf 50 318.5 Td (displayed name, file size, and status.) Tj ET
+0.84 0.88 0.91 RG
+0.5 w
+48 48 m 564 48 l S
+0.39 0.48 0.54 rg
+BT /F1 7 Tf 50 32 Td (SAMPLE TEST DOCUMENT - FICTIONAL CONTENT) Tj ET
+BT /F1 7 Tf 490 32 Td (Page 1) Tj ET
+endstream
+endobj
+xref
+0 7
+0000000000 65535 f 
+0000000020 00000 n 
+0000000069 00000 n 
+0000000126 00000 n 
+0000000262 00000 n 
+0000000332 00000 n 
+0000000407 00000 n 
+trailer
+<< /Size 7 /Root 1 0 R >>
+startxref
+3095
+%%EOF

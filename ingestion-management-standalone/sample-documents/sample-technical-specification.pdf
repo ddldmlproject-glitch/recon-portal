@@ -1,0 +1,100 @@
+%PDF-1.4
+%ASCII-PDF
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R /F2 5 0 R >> >> /Contents 6 0 R >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>
+endobj
+6 0 obj
+<< /Length 2760 >>
+stream
+0.09 0.23 0.34 rg
+0 700 612 92 re f
+1 1 1 rg
+BT /F2 21 Tf 48 748 Td (Document Intake - Technical Spec) Tj ET
+BT /F1 9 Tf 49 726 Td (Fictional technical specification | Version 1.0) Tj ET
+0.94 0.97 0.98 rg
+48 625 516 58 re f
+0.78 0.85 0.89 RG
+0.7 w
+48 625 516 58 re S
+0.19 0.29 0.36 rg
+BT /F2 8 Tf 58 665 Td (Document ID:) Tj ET
+0.24 0.32 0.38 rg
+BT /F1 8 Tf 150 665 Td (SAMPLE-TS-001) Tj ET
+0.19 0.29 0.36 rg
+BT /F2 8 Tf 58 651 Td (Owner:) Tj ET
+0.24 0.32 0.38 rg
+BT /F1 8 Tf 150 651 Td (Demo Platform Team) Tj ET
+0.19 0.29 0.36 rg
+BT /F2 8 Tf 58 637 Td (Category:) Tj ET
+0.24 0.32 0.38 rg
+BT /F1 8 Tf 150 637 Td (Technical Specification) Tj ET
+0.03 0.42 0.65 rg
+BT /F2 12 Tf 50 600 Td (1. Purpose) Tj ET
+0.16 0.24 0.30 rg
+BT /F1 8.5 Tf 50 583 Td (The Demo Knowledge Intake Service receives approved business documents, records metadata, and) Tj ET
+0.16 0.24 0.30 rg
+BT /F1 8.5 Tf 50 569.5 Td (places each item in a processing queue. This fictional specification is provided only for testing) Tj ET
+0.16 0.24 0.30 rg
+BT /F1 8.5 Tf 50 556.0 Td (an ingestion interface.) Tj ET
+0.03 0.42 0.65 rg
+BT /F2 12 Tf 50 533.5 Td (2. Functional requirements) Tj ET
+0.16 0.24 0.30 rg
+BT /F1 8.5 Tf 50 516.5 Td (TS-01: Accept PDF, XLS, and XLSX files only.) Tj ET
+0.16 0.24 0.30 rg
+BT /F1 8.5 Tf 50 499.0 Td (TS-02: Reject files larger than 25 MB.) Tj ET
+0.16 0.24 0.30 rg
+BT /F1 8.5 Tf 50 481.5 Td (TS-03: Capture file name, category, submitter, and upload timestamp.) Tj ET
+0.16 0.24 0.30 rg
+BT /F1 8.5 Tf 50 464.0 Td (TS-04: Display Processing, Ingested, Failed, or Removed status.) Tj ET
+0.16 0.24 0.30 rg
+BT /F1 8.5 Tf 50 446.5 Td (TS-05: Retain a removal reason for audit history.) Tj ET
+0.03 0.42 0.65 rg
+BT /F2 12 Tf 50 424.0 Td (3. Processing lifecycle) Tj ET
+0.16 0.24 0.30 rg
+BT /F1 8.5 Tf 50 407.0 Td (A newly submitted document starts in Processing. A successful process changes the status to) Tj ET
+0.16 0.24 0.30 rg
+BT /F1 8.5 Tf 50 393.5 Td (Ingested. A validation or processing error changes the status to Failed. Removal marks the record) Tj ET
+0.16 0.24 0.30 rg
+BT /F1 8.5 Tf 50 380.0 Td (as Removed while retaining its audit information.) Tj ET
+0.03 0.42 0.65 rg
+BT /F2 12 Tf 50 357.5 Td (4. Test scenario) Tj ET
+0.16 0.24 0.30 rg
+BT /F1 8.5 Tf 50 340.5 Td (Upload this PDF using the Technical Specification category. Edit the record and replace this source) Tj ET
+0.16 0.24 0.30 rg
+BT /F1 8.5 Tf 50 327.0 Td (with sample-business-requirements.pdf. Verify that the file name and size change and that mock) Tj ET
+0.16 0.24 0.30 rg
+BT /F1 8.5 Tf 50 313.5 Td (processing runs again.) Tj ET
+0.84 0.88 0.91 RG
+0.5 w
+48 48 m 564 48 l S
+0.39 0.48 0.54 rg
+BT /F1 7 Tf 50 32 Td (SAMPLE TEST DOCUMENT - FICTIONAL CONTENT) Tj ET
+BT /F1 7 Tf 490 32 Td (Page 1) Tj ET
+endstream
+endobj
+xref
+0 7
+0000000000 65535 f 
+0000000020 00000 n 
+0000000069 00000 n 
+0000000126 00000 n 
+0000000262 00000 n 
+0000000332 00000 n 
+0000000407 00000 n 
+trailer
+<< /Size 7 /Root 1 0 R >>
+startxref
+3219
+%%EOF
