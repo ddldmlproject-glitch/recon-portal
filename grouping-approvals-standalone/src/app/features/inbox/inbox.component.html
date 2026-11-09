@@ -7,7 +7,7 @@
     <button type="button" [class.active]="activeView() === 'my-group'" (click)="setView('my-group')">My Group</button>
     <button type="button" [class.active]="activeView() === 'my-request'" (click)="setView('my-request')">My Request</button>
     <button type="button" [class.active]="activeView() === 'all'" (click)="setView('all')">All</button>
-    <span class="inbox-user">Signed in: {{ currentUserId() }}</span>
+    <span class="inbox-user"><span class="inbox-user-dot"></span><span><small>DEMO SIGNED-IN USER</small><strong>{{ currentUserId() }}</strong></span></span>
   </nav>
   <div class="inbox-summary">
     <article><span>Group requests</span><strong>{{ viewRequests().length }}</strong></article>
