@@ -2,14 +2,15 @@ import { ApplicationConfig } from '@angular/core';
 import { provideHttpClient } from '@angular/common/http';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { provideRouter } from '@angular/router';
-import { ModuleRegistry, AllCommunityModule } from 'ag-grid-community';
+import { ModuleRegistry } from '@ag-grid-community/core';
+import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
 import { API_ENVIRONMENT } from './core/api/api-environment.token';
 import { API_ENVIRONMENT_CONFIG } from './core/config/api-environment.config';
 import { routes } from './app.routes';
 import { GROUPING_APPROVALS_REPOSITORY } from './features/grouping-approvals/grouping-approvals.repository';
 import { GroupingApprovalsMockRepository } from './features/grouping-approvals/grouping-approvals.mock.repository';
 
-ModuleRegistry.registerModules([AllCommunityModule]);
+ModuleRegistry.registerModules([ClientSideRowModelModule]);
 
 export const appConfig: ApplicationConfig = {
   providers: [
