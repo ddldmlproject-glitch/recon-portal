@@ -70,7 +70,7 @@
         <button class="ga-close" type="button" (click)="closeDialog()">×</button>
       </header>
       <div class="ga-dialog-body">
-        <app-dynamic-form [fields]="groupFormFields" [initialValue]="initialFormValue()" (submitted)="saveGroupForm($event)" />
+        <app-dynamic-form [fields]="activeGroupFormFields()" [initialValue]="initialFormValue()" (submitted)="saveGroupForm($event)" />
       </div>
       <footer class="ga-dialog-footer">
         <button class="ga-button ga-button--secondary" type="button" (click)="closeDialog()">Cancel</button>
