@@ -15,7 +15,7 @@
     <article><span>Approved / active</span><strong>{{ approvedCount() }}</strong></article>
   </div>
   <div class="inbox-grid">
-    <ag-grid-angular [rowData]="filteredRequests()" [columnDefs]="columns" [gridOptions]="gridOptions" [theme]="theme"></ag-grid-angular>
+    <ag-grid-angular class="ag-theme-alpine" [rowData]="filteredRequests()" [columnDefs]="columns" [gridOptions]="gridOptions"></ag-grid-angular>
   </div>
   <p class="inbox-empty" *ngIf="filteredRequests().length === 0">No group requests match this view or search.</p>
 
