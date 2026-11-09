@@ -157,7 +157,7 @@ export class GroupingApprovalsComponent implements OnInit {
         this.groups.update(rows => [created, ...rows]);
       } else {
         const update: GroupUpdate = {
-          description: data.description, owner: data.owner, approvers: data.approvers,
+          groupName: data.groupName, description: data.description, owner: data.owner, approvers: data.approvers,
           userIds: data.userIds, roles: selected.roles, toolsAndReports: selected.toolsAndReports,
           opsScope: selected.opsScope, opsIds: selected.opsIds,
           allEntities: data.allEntities, status: data.status
