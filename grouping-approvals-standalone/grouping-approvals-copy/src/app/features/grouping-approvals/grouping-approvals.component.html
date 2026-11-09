@@ -1,0 +1,56 @@
+<section class="ga-shell">
+  <header class="ga-header">
+    <div class="ga-brand-block">
+      <div class="ga-eyebrow">REGHUB OPS <span>•</span> GROUPING APPROVALS</div>
+      <h1>Grouping Approvals</h1>
+      <p>Manage entitlement groups, membership, ownership and access scope.</p>
+    </div>
+    <div class="ga-header-actions">
+      <button class="ga-button ga-button--secondary" type="button" (click)="loadGroups()" [disabled]="busy()">↻ Refresh</button>
+      <button class="ga-button ga-button--secondary" type="button" (click)="exportGroups()">Export CSV</button>
+      <button class="ga-button ga-button--primary" type="button" (click)="openCreateGroup()">+ Create Group</button>
+    </div>
+  </header>
+
+  <div class="ga-workspace-context">
+    <span class="ga-context-dot"></span>
+    <span>RegHub</span><span class="ga-context-divider">/</span>
+    <strong>Grouping Approvals</strong>
+    <span class="ga-context-spacer"></span><span class="ga-context-meta">GROUP MANAGEMENT</span>
+  </div>
+
+  <div class="ga-toolbar">
+    <label class="ga-search">
+      <span aria-hidden="true">⌕</span>
+      <input type="search" [value]="searchText()" (input)="searchText.set($any($event.target).value)" placeholder="Search groups, owners, users or roles">
+    </label>
+    <span class="ga-record-count">{{ filteredGroups().length }} groups</span>
+  </div>
+
+  <div class="ga-alert" *ngIf="errorMessage()">{{ errorMessage() }}</div>
+  <div class="ga-loading" *ngIf="busy()">Processing…</div>
+
+  <div class="ga-grid-wrap">
+    <app-dynamic-screen [config]="groupScreen" [rowData]="filteredGroups()" [columnDefs]="groupColumnDefs" [gridOptions]="gridOptions" />
+  </div>
+  <div class="ga-footnote">Create, edit and delete entitlement groups. Use the row actions to update group membership and access.</div>
+
+  <div class="ga-overlay" *ngIf="dialogMode()" (click)="closeDialog()">
+    <section class="ga-dialog" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
+      <header class="ga-dialog-header">
+        <div>
+          <span class="ga-eyebrow">GROUP CONFIGURATION</span>
+          <h2>{{ dialogMode() === 'create' ? 'Create Entitlement Group' : 'Edit Entitlement Group' }}</h2>
+          <p>{{ selectedGroup()?.groupName || 'Define group details and access configuration.' }}</p>
+        </div>
+        <button class="ga-close" type="button" (click)="closeDialog()">×</button>
+      </header>
+      <div class="ga-dialog-body">
+        <app-dynamic-form [fields]="groupFormFields" [initialValue]="initialFormValue()" (submitted)="saveGroupForm($event)" />
+      </div>
+      <footer class="ga-dialog-footer">
+        <button class="ga-button ga-button--secondary" type="button" (click)="closeDialog()">Cancel</button>
+      </footer>
+    </section>
+  </div>
+</section>
