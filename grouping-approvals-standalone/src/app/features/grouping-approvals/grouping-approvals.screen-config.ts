@@ -1,4 +1,4 @@
-import type { ColDef } from 'ag-grid-community';
+import type { ColDef, ValueFormatterParams } from '@ag-grid-community/core';
 import { ScreenConfig } from '../../core/config/screen-config.models';
 import { EntitlementGroup, OpsLoadTrigger, GroupApprovalRequest } from './grouping-approvals.models';
 
@@ -6,7 +6,7 @@ const groupColumns: ColDef<EntitlementGroup>[] = [
   { field: 'groupName', headerName: 'Group Name', minWidth: 190, pinned: 'left' },
   { field: 'description', headerName: 'Description', minWidth: 240, flex: 2 },
   { field: 'owner', headerName: 'Group Owner', minWidth: 130 },
-  { field: 'approvers', headerName: 'Group Approvers', minWidth: 160, valueFormatter: p => p.value?.join(', ') ?? '' },
+  { field: 'approvers', headerName: 'Group Approvers', minWidth: 160, valueFormatter: (p: ValueFormatterParams<EntitlementGroup, string[]>) => p.value?.join(', ') ?? '' },
   { field: 'status', headerName: 'Status', minWidth: 110 },
   { field: 'updatedBy', headerName: 'Updated By', minWidth: 120 },
   { field: 'updatedAt', headerName: 'Updated Date', minWidth: 160 }
@@ -26,7 +26,7 @@ const inboxColumns: ColDef<GroupApprovalRequest>[] = [
   { field: 'groupName', headerName: 'Group Name', minWidth: 190, pinned: 'left' },
   { field: 'owner', headerName: 'Requested By', minWidth: 130 },
   { field: 'description', headerName: 'Description', minWidth: 220, flex: 2 },
-  { field: 'approvers', headerName: 'Approvers', minWidth: 150, valueFormatter: p => p.value?.join(', ') ?? '' },
+  { field: 'approvers', headerName: 'Approvers', minWidth: 150, valueFormatter: (p: ValueFormatterParams<GroupApprovalRequest, string[]>) => p.value?.join(', ') ?? '' },
   { field: 'status', headerName: 'Request Status', minWidth: 130 },
   { field: 'createdAt', headerName: 'Created / Updated', minWidth: 165 }
 ];
