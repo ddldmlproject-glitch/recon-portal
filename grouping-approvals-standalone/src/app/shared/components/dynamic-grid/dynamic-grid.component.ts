@@ -1,7 +1,6 @@
 import { Component, computed, input, output } from '@angular/core';
 import { AgGridAngular } from '@ag-grid-community/angular';
 import type { ColDef, GridOptions } from '@ag-grid-community/core';
-import { themeQuartz } from 'ag-grid-community';
 import { GridConfig } from '../../../core/config/screen-config.models';
 
 @Component({
