@@ -1,0 +1,38 @@
+<section class="approval-inbox">
+  <header class="inbox-heading">
+    <div><span class="inbox-eyebrow">GROUP ACCESS WORKFLOW</span><h2>Group Approval Inbox</h2><p>Every group created in Groups is listed here with its current approval status.</p></div>
+    <label class="inbox-search"><span>⌕</span><input type="search" [value]="searchText()" (input)="searchText.set($any($event.target).value)" placeholder="Search groups, owners, users or roles"></label>
+  </header>
+  <div class="inbox-summary">
+    <article><span>Total group requests</span><strong>{{ requests().length }}</strong></article>
+    <article><span>Awaiting approval</span><strong>{{ pendingCount() }}</strong></article>
+    <article><span>Approved / active</span><strong>{{ approvedCount() }}</strong></article>
+  </div>
+  <div class="inbox-grid">
+    <ag-grid-angular [rowData]="filteredRequests()" [columnDefs]="columns" [gridOptions]="gridOptions" [theme]="theme"></ag-grid-angular>
+  </div>
+  <p class="inbox-empty" *ngIf="filteredRequests().length === 0">No group requests match your search.</p>
+
+  <div class="inbox-backdrop" *ngIf="selectedRequest()" (click)="closeDetails()"></div>
+  <aside class="inbox-drawer" *ngIf="selectedRequest() as request">
+    <header><div><span class="inbox-eyebrow">GROUP REQUEST DETAILS</span><h3>{{ request.groupName }}</h3></div><button type="button" (click)="closeDetails()">×</button></header>
+    <div class="request-status" [class.pending]="request.status === 'Pending'" [class.rejected]="request.status === 'Rejected'">{{ request.status }}</div>
+    <dl>
+      <div><dt>Group ID</dt><dd>{{ request.groupId }}</dd></div>
+      <div><dt>Owner / Requested by</dt><dd>{{ request.owner }}</dd></div>
+      <div><dt>Description</dt><dd>{{ request.description || '—' }}</dd></div>
+      <div><dt>Approvers</dt><dd>{{ request.approvers.join(', ') || '—' }}</dd></div>
+      <div><dt>Assigned users</dt><dd>{{ request.userIds.join(', ') || '—' }}</dd></div>
+      <div><dt>Roles</dt><dd>{{ request.roles.join(', ') || '—' }}</dd></div>
+      <div><dt>Tools and reports</dt><dd>{{ request.toolsAndReports.join(', ') || '—' }}</dd></div>
+      <div><dt>Created / updated</dt><dd>{{ request.createdAt }}</dd></div>
+      <div *ngIf="request.approvedBy"><dt>Actioned by</dt><dd>{{ request.approvedBy }}</dd></div>
+      <div *ngIf="request.approvalComment"><dt>Approval comment</dt><dd>{{ request.approvalComment }}</dd></div>
+    </dl>
+    <label class="inbox-comment" *ngIf="request.status === 'Pending'">Approval comments<textarea rows="3" [value]="comment()" (input)="comment.set($any($event.target).value)" placeholder="Add a decision comment"></textarea></label>
+    <footer *ngIf="request.status === 'Pending'">
+      <button class="reject-button" type="button" (click)="reject()">Reject</button>
+      <button class="approve-button" type="button" (click)="approve()">Approve group</button>
+    </footer>
+  </aside>
+</section>

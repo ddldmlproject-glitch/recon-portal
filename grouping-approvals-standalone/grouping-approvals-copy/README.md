@@ -1,93 +1,104 @@
-# Grouping Approvals — copy-ready Angular feature
+# ReghubOps Admin — ready-to-copy Angular feature
 
-This folder is a self-contained **Grouping Approvals** feature bundle for an existing Angular standalone application.
+This package contains the complete three-screen, config-driven Admin feature for an existing Angular standalone application.
 
-## Included
-- Grouping list with search and CSV export
-- Create and edit entitlement groups
-- Delete groups with confirmation
-- Configurable group form and AG Grid rendering
-- Repository abstraction with demo mock data
-- Supporting screen configuration and reusable dynamic form/grid components
+## Screens
 
-## Not included
-- Create Screen / user-created screen builder
-- Inbox
-- Orchestration
+1. **Groups** — create, edit, delete, search and export entitlement groups.
+2. **Inbox** — every group created in Groups appears as a group approval request. Open a request to review its object data and approve or reject it.
+3. **Orchestration** — view operational load triggers.
 
-## Copy into an existing Angular standalone project
+There is no Create Screen or user-created screen builder.
 
-From this folder, run PowerShell:
+## Structure
 
-```powershell
-.\copy-grouping-approvals.ps1 -TargetProject "C:\path\to\your\angular-project"
+```text
+src/app/
+├── core/
+│   ├── config/screen-config.models.ts
+│   └── engine/
+│       ├── form-engine.service.ts
+│       └── screen-registry.service.ts
+├── features/
+│   ├── grouping-approvals/
+│   │   ├── grouping-approvals.component.ts|html|scss
+│   │   ├── grouping-approvals.models.ts
+│   │   ├── grouping-approvals.repository.ts
+│   │   ├── grouping-approvals.mock.repository.ts
+│   │   ├── grouping-approvals.config.ts
+│   │   └── grouping-approvals.screen-config.ts
+│   └── inbox/
+│       └── inbox.component.ts|html|scss
+└── shared/components/
+    ├── dynamic-form/
+    ├── dynamic-grid/
+    └── dynamic-screen/
 ```
 
-Preview without copying:
+## Copy to an existing Angular standalone app
+
+Preview the copy:
 
 ```powershell
-.\copy-grouping-approvals.ps1 -TargetProject "C:\path\to\your\angular-project" -WhatIf
+.\copy-admin-feature.ps1 -TargetProject "C:\path\to\your\angular-project" -WhatIf
 ```
 
-The script copies only the files under this bundle's `src/app` into the target's `src/app`. Existing files are never overwritten; collisions are reported for manual review.
+Copy the feature files:
+
+```powershell
+.\copy-admin-feature.ps1 -TargetProject "C:\path\to\your\angular-project"
+```
+
+The script skips existing files rather than overwriting them. Merge any reported collisions manually.
 
 ## Route
 
-Add this route to the target's existing route array (keep all existing routes):
+Merge into the existing route array:
 
 ```ts
 import { GroupingApprovalsComponent } from './features/grouping-approvals/grouping-approvals.component';
 
-{ path: 'grouping-approvals', component: GroupingApprovalsComponent }
+{ path: 'admin', component: GroupingApprovalsComponent }
 ```
 
-Adjust the import path if you choose a different destination.
+## Repository provider
 
-## Providers
-
-Merge these into the target's existing providers array:
+Merge into the existing providers array; do not replace the target app.config.ts:
 
 ```ts
-import { provideHttpClient } from '@angular/common/http';
-import { provideAnimations } from '@angular/platform-browser/animations';
-import { ModuleRegistry, AllCommunityModule } from 'ag-grid-community';
 import { GROUPING_APPROVALS_REPOSITORY } from './features/grouping-approvals/grouping-approvals.repository';
 import { GroupingApprovalsMockRepository } from './features/grouping-approvals/grouping-approvals.mock.repository';
 
-ModuleRegistry.registerModules([AllCommunityModule]);
-
-// Add only if the target does not already provide them:
-provideHttpClient(),
-provideAnimations(),
 { provide: GROUPING_APPROVALS_REPOSITORY, useClass: GroupingApprovalsMockRepository }
 ```
 
-Do not duplicate existing HTTP, animation, router or AG Grid registration providers.
+The target app must provide Angular Router and Reactive Forms. Register AG Grid Community modules once:
 
-## Dependencies
-
-The feature expects Angular standalone components, Angular Common/Forms, RxJS, and AG Grid. Check the target versions first:
-
-```bash
-npm ls @angular/core ag-grid-angular ag-grid-community
+```ts
+import { ModuleRegistry, AllCommunityModule } from 'ag-grid-community';
+ModuleRegistry.registerModules([AllCommunityModule]);
 ```
 
-Install AG Grid only if it is missing, using versions compatible with the target Angular version:
+Install AG Grid only if absent, using versions compatible with your Angular version:
 
 ```bash
 npm install ag-grid-angular ag-grid-community
 ```
 
-## Demo data
+## Object-oriented data and config-driven behavior
 
-The included mock repository is in-memory demo data. Changes are not persisted across a page reload. Replace the mock provider with an implementation of `GroupingApprovalsRepository` when connecting a backend.
+Domain classes include `EntitlementGroup`, `GroupApprovalRequest`, `OpsLoadTrigger`, and the generic `ApiResponse<T>` response envelope. The repository interface is the boundary between UI and backend. Keep backend DTO mapping in the repository/API adapter and map incoming JSON into domain objects with the model `fromResponse` factories.
+
+Grid metadata for Groups, Inbox and Orchestration is declared in `grouping-approvals.screen-config.ts`. Form fields are declared in the Grouping component configuration. Shared DynamicForm, DynamicGrid and DynamicScreen components render the metadata.
+
+Creating a group sets its status to Pending. Inbox derives its request list from the same group collection; it does not create a disconnected request record. Approve/reject actions call the repository and update that same group object, so the Groups grid and Inbox stay in sync.
+
+The included mock repository is in-memory demo data. It is not durable across a reload. Replace it with an API-backed repository for shared persistence and production authorization.
 
 ## Verify
 
-From the target project root:
+From the consuming project root:
 
 ```bash
 npx ng build
 ```
-
-This bundle has not been validated against every consuming Angular workspace. Build and test it in the target project before merging.

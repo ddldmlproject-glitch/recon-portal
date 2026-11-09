@@ -2,6 +2,7 @@ import type { ColDef } from 'ag-grid-community';
 
 export type ScreenLayout = 'grid' | 'form' | 'master-detail';
 export type FieldType = 'text' | 'textarea' | 'number' | 'date' | 'select' | 'checkbox' | 'multi-select';
+
 export interface OptionConfig { label: string; value: string | number | boolean; }
 export interface ValidatorConfig { type: 'required' | 'minLength' | 'maxLength' | 'email' | 'pattern'; value?: number | string; message: string; }
 export interface FieldConfig {
@@ -18,9 +19,10 @@ export interface GridConfig<TData = unknown> {
   id: string; rowId: string; columns: ColDef<TData>[]; pageSize?: number;
   selectable?: boolean; quickFilter?: boolean; autoSize?: boolean;
 }
-export interface DataSourceConfig { resource: string; operation: string; }
 export interface ScreenConfig<TData = unknown> {
   id: string; title: string; description?: string; layout: ScreenLayout;
-  dataSource?: DataSourceConfig; grid?: GridConfig<TData>; fields?: FieldConfig[];
-  actions?: ActionConfig[]; tabs?: TabConfig[];
+  fields?: FieldConfig[]; grid?: GridConfig<TData>; tabs?: TabConfig[];
+  actions?: ActionConfig[]; permissions?: string[];
+  dataSource: { resource: string; operation: string };
 }
+export interface FeatureConfig { id: string; label: string; icon?: string; screens: ScreenConfig[]; }

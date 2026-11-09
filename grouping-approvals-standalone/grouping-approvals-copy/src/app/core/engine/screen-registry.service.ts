@@ -3,6 +3,8 @@ import { ScreenConfig } from '../config/screen-config.models';
 
 @Injectable({ providedIn: 'root' })
 export class ScreenRegistryService {
+  // ScreenConfig is generic over row data. The registry stores configurations
+  // for multiple row types, so use any at this heterogeneous registry boundary.
   private readonly screens = new Map<string, ScreenConfig<any>>();
 
   register(config: ScreenConfig<any>): void {
