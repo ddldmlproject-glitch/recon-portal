@@ -6,6 +6,8 @@ import { themeQuartz } from 'ag-grid-community';
 import { ApprovalDecision, EntitlementGroup, GroupApprovalRequest } from '../grouping-approvals/grouping-approvals.models';
 import { GROUPING_APPROVALS_SCREENS } from '../grouping-approvals/grouping-approvals.screen-config';
 
+export type InboxView = 'my-group' | 'my-request' | 'all';
+
 @Component({
   selector: 'app-inbox',
   standalone: true,
@@ -15,22 +17,66 @@ import { GROUPING_APPROVALS_SCREENS } from '../grouping-approvals/grouping-appro
 })
 export class InboxComponent {
   readonly groups = input<EntitlementGroup[]>([]);
+  readonly currentUserId = input('sso0204');
   readonly decision = output<{ groupId: string; decision: ApprovalDecision; comment: string }>();
   readonly searchText = signal('');
+  readonly activeView = signal<InboxView>('all');
   readonly selectedRequest = signal<GroupApprovalRequest | null>(null);
   readonly comment = signal('');
 
   readonly requests = computed(() => this.groups().map(group => GroupApprovalRequest.fromGroup(group)));
+  readonly viewRequests = computed(() => {
+    const userId = this.currentUserId().trim().toLowerCase();
+    return this.requests().filter(request => {
+      if (this.activeView() === 'my-group') return request.approvers.some(id => id.trim().toLowerCase() === userId);
+      if (this.activeView() === 'my-request') return request.owner.trim().toLowerCase() === userId;
+      return true;
+    });
+  });
   readonly filteredRequests = computed(() => {
     const query = this.searchText().trim().toLowerCase();
-    return this.requests().filter(request => !query || [
+    return this.viewRequests().filter(request => !query || [
       request.groupName, request.description, request.owner, request.status,
       ...request.approvers, ...request.userIds, ...request.roles
     ].join(' ').toLowerCase().includes(query));
   });
-  readonly pendingCount = computed(() => this.requests().filter(request => request.status === 'Pending').length);
-  readonly approvedCount = computed(() => this.requests().filter(request => request.status === 'Active').length);
-  readonly columns: ColDef<GroupApprovalRequest>[] = GROUPING_APPROVALS_SCREENS[1].grid!.columns as ColDef<GroupApprovalRequest>[];
+  readonly pendingCount = computed(() => this.viewRequests().filter(request => request.status === 'Pending').length);
+  readonly approvedCount = computed(() => this.viewRequests().filter(request => request.status === 'Active').length);
+  readonly columns: ColDef<GroupApprovalRequest>[] = [
+    ...(GROUPING_APPROVALS_SCREENS[1].grid!.columns as ColDef<GroupApprovalRequest>[]),
+    {
+      headerName: 'Assigned To', colId: 'assignedTo', minWidth: 150,
+      valueGetter: params => params.data?.approvers.join(', ') ?? '—'
+    },
+    {
+      headerName: 'Actions', colId: 'approvalActions', pinned: 'right', minWidth: 170,
+      sortable: false, filter: false, resizable: false,
+      cellRenderer: (params: ICellRendererParams<GroupApprovalRequest>) => {
+        const row = params.data;
+        const wrapper = document.createElement('div');
+        wrapper.className = 'inbox-grid-actions';
+        if (!row || row.status !== 'Pending' || !this.isAssignedApprover(row)) {
+          const label = document.createElement('span');
+          label.className = 'inbox-action-unavailable';
+          label.textContent = row?.status === 'Pending' ? 'Not assigned' : '—';
+          wrapper.append(label);
+          return wrapper;
+        }
+        for (const decision of ['Approved', 'Rejected'] as const) {
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className = decision === 'Approved' ? 'inbox-grid-approve' : 'inbox-grid-reject';
+          button.textContent = decision === 'Approved' ? 'Approve' : 'Reject';
+          button.addEventListener('click', event => {
+            event.stopPropagation();
+            this.decision.emit({ groupId: row.groupId, decision, comment: '' });
+          });
+          wrapper.append(button);
+        }
+        return wrapper;
+      }
+    }
+  ];
   readonly gridOptions: GridOptions<GroupApprovalRequest> = {
     animateRows: true, pagination: true, paginationPageSize: 10,
     paginationPageSizeSelector: [10, 20, 50], rowHeight: 46,
@@ -38,6 +84,11 @@ export class InboxComponent {
   };
   readonly theme = themeQuartz.withParams({ spacing: 7, fontSize: 12, borderRadius: 5, headerFontSize: 11 });
 
+  isAssignedApprover(request: GroupApprovalRequest): boolean {
+    const userId = this.currentUserId().trim().toLowerCase();
+    return !!userId && request.approvers.some(id => id.trim().toLowerCase() === userId);
+  }
+  setView(view: InboxView): void { this.activeView.set(view); }
   openRequest(request: GroupApprovalRequest): void {
     this.selectedRequest.set(request);
     this.comment.set(request.approvalComment ?? '');
@@ -47,7 +98,7 @@ export class InboxComponent {
   reject(): void { this.submitDecision('Rejected'); }
   private submitDecision(decision: ApprovalDecision): void {
     const request = this.selectedRequest();
-    if (!request || request.status !== 'Pending') return;
+    if (!request || request.status !== 'Pending' || !this.isAssignedApprover(request)) return;
     this.decision.emit({ groupId: request.groupId, decision, comment: this.comment().trim() });
     this.selectedRequest.set(null);
   }
