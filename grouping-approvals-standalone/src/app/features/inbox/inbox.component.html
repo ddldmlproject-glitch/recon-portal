@@ -1,112 +1,38 @@
-<section class="enterprise-inbox">
-  <div class="mailbox-layout">
-    <aside class="mailbox-sidebar" aria-label="Mailbox folders">
-      <div class="sidebar-label">MAILBOX</div>
-      <button class="compose-button" type="button" (click)="openCreateRequest()"><span>＋</span> New request</button>
-      <button *ngFor="let item of folders" type="button" class="mailbox-item" [class.active]="activeFolder()===item.name" (click)="setFolder(item.name)">
-        <span class="mailbox-icon">{{ item.icon }}</span><span class="mailbox-name">{{ item.name }}</span>
-        <span class="mailbox-count" *ngIf="item.name==='Inbox' && unreadCount()">{{ unreadCount() }}</span>
-      </button>
-      <div class="sidebar-status"><i></i> Demo environment <span>LOCAL</span></div>
-    </aside>
-
-    <main class="inbox-main">
-      <div class="inbox-top-search">
-        <label><span>⌕</span><input [value]="globalSearch()" (input)="globalSearch.set($any($event.target).value)" placeholder="Search requests, IDs, comments..." aria-label="Search all requests"></label>
-        <div class="top-actions">
-          <label class="demo-user-switcher"><span>Demo user</span><select [value]="currentUserId()" (change)="setDemoUser($any($event.target).value)" aria-label="Select demo user"><option *ngFor="let user of demoUsers" [value]="user.id">{{ user.label }}</option></select></label>
-          <button class="mark-read-button" type="button" (click)="markAllRead()">✓ Mark all read</button>
-          <div class="notification-wrap">
-            <button class="notification-button" type="button" aria-label="Notifications" (click)="openNotifications()"><span>♧</span><i *ngIf="unreadCount()">{{ unreadCount() }}</i></button>
-            <div class="notification-popover" *ngIf="showNotifications()">
-              <strong>Notifications</strong><p>{{ unreadCount() }} unread requests need your attention.</p>
-              <button type="button" (click)="setFolder('Inbox');showNotifications.set(false)">View inbox →</button>
-            </div>
-          </div>
-          <button class="create-button" type="button" (click)="openCreateRequest()">＋ Create request</button>
-        </div>
-      </div>
-
-      <div class="inbox-heading">
-        <div><span class="eyebrow">REQUEST MANAGEMENT</span><h2>{{ activeFolder() }}</h2><p>Review and manage operational requests in one place.</p></div>
-        <span class="workspace-tag"><i></i> SIGNED IN: {{ currentUserId() }}</span>
-      </div>
-
-      <nav class="request-tabs" aria-label="Request categories">
-        <button *ngFor="let tab of requestTabs()" type="button" [class.selected]="selectedRequestTab()===tab.id" (click)="selectRequestTab(tab.id)">
-          {{ tab.label }} <span *ngIf="tab.id==='ALL'">{{ totalCount() }}</span>
-        </button>
-      </nav>
-
-      <section class="summary-strip">
-        <article class="summary-card"><div class="summary-icon blue">▤</div><div><span>Total requests</span><strong>{{ totalCount() }}</strong></div></article>
-        <article class="summary-card"><div class="summary-icon amber">◷</div><div><span>Awaiting approval</span><strong>{{ pendingCount() }}</strong></div></article>
-        <article class="summary-card"><div class="summary-icon green">✓</div><div><span>Unread</span><strong>{{ unreadCount() }}</strong></div></article>
-      </section>
-
-      <section class="table-panel">
-        <div class="filter-toolbar">
-          <div class="scope-row">
-            <div class="scope-group" role="radiogroup" aria-label="Request ownership">
-              <label><input type="radio" name="ownerScope" [checked]="requestOwnerScope()==='MINE'" (change)="setRequestOwnerScope('MINE')"><span>My Requests</span></label>
-              <label><input type="radio" name="ownerScope" [checked]="requestOwnerScope()==='GROUP'" (change)="setRequestOwnerScope('GROUP')"><span>My Group Requests</span></label>
-            </div>
-            <div class="scope-group approval-scope" role="radiogroup" aria-label="Approval status">
-              <label><input type="radio" name="approvalScope" [checked]="requestApprovalScope()==='AWAITING_APPROVAL'" (change)="setRequestApprovalScope('AWAITING_APPROVAL')"><span>Awaiting For Approval</span></label>
-              <label><input type="radio" name="approvalScope" [checked]="requestApprovalScope()==='ALL'" (change)="setRequestApprovalScope('ALL')"><span>All</span></label>
-            </div>
-          </div>
-          <div class="table-tools">
-            <label class="grid-search"><span>⌕</span><input [value]="gridSearch()" (input)="gridSearch.set($any($event.target).value)" placeholder="Filter requests"></label>
-            <button class="refresh-button" type="button" title="Refresh table" (click)="gridSearch.set('')">↻</button>
-          </div>
-        </div>
-        <div class="grid-meta"><span><strong>{{ visibleRows().length }}</strong> requests <span>·</span> Demo workspace data</span><span class="demo-indicator"><i></i> DEMO DATA</span></div>
-        <div class="grid-wrap">
-          <ag-grid-angular [rowData]="visibleRows()" [columnDefs]="columnDefs" [defaultColDef]="defaultColDef" [gridOptions]="gridOptions" [theme]="gridTheme" (rowClicked)="rowClicked($event)"></ag-grid-angular>
-        </div>
-        <div class="empty-state" *ngIf="visibleRows().length===0"><div>⌕</div><strong>No requests found</strong><p>Try changing the mailbox, request filters, or search terms.</p></div>
-        <footer class="panel-footer"><span>Showing <strong>{{ visibleRows().length }}</strong> sample records</span><span>Enterprise request management</span></footer>
-      </section>
-      <footer class="page-footer">© 2026 ReghubOps <span>Inbox module</span><small>MOCK DATA · NO API CONNECTED</small></footer>
-    </main>
+<section class="approval-inbox">
+  <header class="inbox-heading">
+    <div><span class="inbox-eyebrow">GROUP ACCESS WORKFLOW</span><h2>Group Approval Inbox</h2><p>Every group created in Groups is listed here with its current approval status.</p></div>
+    <label class="inbox-search"><span>⌕</span><input type="search" [value]="searchText()" (input)="searchText.set($any($event.target).value)" placeholder="Search groups, owners, users or roles"></label>
+  </header>
+  <div class="inbox-summary">
+    <article><span>Total group requests</span><strong>{{ requests().length }}</strong></article>
+    <article><span>Awaiting approval</span><strong>{{ pendingCount() }}</strong></article>
+    <article><span>Approved / active</span><strong>{{ approvedCount() }}</strong></article>
   </div>
+  <div class="inbox-grid">
+    <ag-grid-angular [rowData]="filteredRequests()" [columnDefs]="columns" [gridOptions]="gridOptions" [theme]="theme"></ag-grid-angular>
+  </div>
+  <p class="inbox-empty" *ngIf="filteredRequests().length === 0">No group requests match your search.</p>
 
-  <div class="drawer-backdrop" *ngIf="selectedRecord()" (click)="closeDetails()"></div>
-  <aside class="detail-drawer" *ngIf="selectedRecord() as record">
-    <header class="drawer-head"><div><span class="eyebrow">REQUEST DETAILS</span><h3>{{ record.id }}</h3></div><button type="button" (click)="closeDetails()">×</button></header>
-    <div class="drawer-status-row"><span class="status-badge" [class.approved]="record.requestStatus==='APPROVED'" [class.rejected]="record.requestStatus==='REJECTED'">{{ record.requestStatus.replaceAll('_',' ') }}</span><span class="unread-badge" *ngIf="record.unread">UNREAD</span></div>
-    <h4>{{ record.actionType }} request</h4><p class="detail-description">{{ record.details }}</p>
-    <div class="detail-list">
-      <div><span>Action Tool</span><strong>{{ record.actionTool }}</strong></div><div><span>Action Type</span><strong>{{ record.actionType }}</strong></div>
-      <div><span>Source Status</span><strong>{{ record.sourceStatus }}</strong></div><div><span>Created By</span><strong>{{ record.createdBy }}</strong></div>
-      <div><span>Created Date</span><strong>{{ record.createdDate }}</strong></div><div><span>Comments</span><strong>{{ record.comments || 'No comments' }}</strong></div>
-      <div><span>Actioned By</span><strong>{{ record.actionedBy }}</strong></div><div><span>Action Comments</span><strong>{{ record.actionComments }}</strong></div>
-    </div>
-    <div class="drawer-actions">
-      <button class="secondary-button" type="button" (click)="toggleStar(record)">{{ record.starred?'★ Starred':'☆ Add star' }}</button>
-      <button class="secondary-button" type="button" (click)="toggleImportant(record)">{{ record.important?'⚑ Important':'⚐ Mark important' }}</button>
-      <ng-container *ngIf="canApprove(record)">
-        <button class="primary-button" type="button" (click)="approve(record)">Approve request</button>
-        <button class="danger-button" type="button" (click)="reject(record)">Reject</button>
-      </ng-container>
-      <p class="approval-hint" *ngIf="record.requestStatus==='PENDING_APPROVAL' && !canApprove(record)">Only a designated approver in your shared group can action this request.</p>
-      <button class="danger-button full" type="button" (click)="moveToTrash(record)">Move to Trash</button>
-      <button class="secondary-button full" type="button" *ngIf="record.folder==='Trash'" (click)="moveToInbox(record)">Restore to Inbox</button>
-    </div>
+  <div class="inbox-backdrop" *ngIf="selectedRequest()" (click)="closeDetails()"></div>
+  <aside class="inbox-drawer" *ngIf="selectedRequest() as request">
+    <header><div><span class="inbox-eyebrow">GROUP REQUEST DETAILS</span><h3>{{ request.groupName }}</h3></div><button type="button" (click)="closeDetails()">×</button></header>
+    <div class="request-status" [class.pending]="request.status === 'Pending'" [class.rejected]="request.status === 'Rejected'">{{ request.status }}</div>
+    <dl>
+      <div><dt>Group ID</dt><dd>{{ request.groupId }}</dd></div>
+      <div><dt>Owner / Requested by</dt><dd>{{ request.owner }}</dd></div>
+      <div><dt>Description</dt><dd>{{ request.description || '—' }}</dd></div>
+      <div><dt>Approvers</dt><dd>{{ request.approvers.join(', ') || '—' }}</dd></div>
+      <div><dt>Assigned users</dt><dd>{{ request.userIds.join(', ') || '—' }}</dd></div>
+      <div><dt>Roles</dt><dd>{{ request.roles.join(', ') || '—' }}</dd></div>
+      <div><dt>Tools and reports</dt><dd>{{ request.toolsAndReports.join(', ') || '—' }}</dd></div>
+      <div><dt>Created / updated</dt><dd>{{ request.createdAt }}</dd></div>
+      <div *ngIf="request.approvedBy"><dt>Actioned by</dt><dd>{{ request.approvedBy }}</dd></div>
+      <div *ngIf="request.approvalComment"><dt>Approval comment</dt><dd>{{ request.approvalComment }}</dd></div>
+    </dl>
+    <label class="inbox-comment" *ngIf="request.status === 'Pending'">Approval comments<textarea rows="3" [value]="comment()" (input)="comment.set($any($event.target).value)" placeholder="Add a decision comment"></textarea></label>
+    <footer *ngIf="request.status === 'Pending'">
+      <button class="reject-button" type="button" (click)="reject()">Reject</button>
+      <button class="approve-button" type="button" (click)="approve()">Approve group</button>
+    </footer>
   </aside>
-
-  <div class="modal-backdrop" *ngIf="createRequestOpen()" (click)="closeCreateRequest()">
-    <section class="create-modal" role="dialog" aria-modal="true" aria-labelledby="create-request-title" (click)="$event.stopPropagation()">
-      <header><div><span class="eyebrow">REQUEST MANAGEMENT</span><h3 id="create-request-title">Create request</h3><p>Enter request details for review and tracking.</p></div><button type="button" (click)="closeCreateRequest()">×</button></header>
-      <form class="request-form" (submit)="submitCreateRequest($event)">
-        <label>Action Type *<select [value]="newActionType()" (change)="newActionType.set($any($event.target).value)"><option>SUBMIT_NET</option><option>EDIT</option><option>DELETE</option><option>HITL_PENDING</option><option>OTHER</option></select></label>
-        <label>Action Tool *<input required [value]="newActionTool()" (input)="newActionTool.set($any($event.target).value)" placeholder="Enter action tool"></label>
-        <label>Created By<input [value]="currentUserId()" readonly aria-readonly="true"></label>
-        <label class="wide">Details *<textarea required rows="3" [value]="newDetails()" (input)="newDetails.set($any($event.target).value)" placeholder="Describe the request"></textarea></label>
-        <label class="wide">Comments<textarea rows="2" [value]="newComments()" (input)="newComments.set($any($event.target).value)" placeholder="Optional comments"></textarea></label>
-        <footer><button type="button" class="secondary-button" (click)="closeCreateRequest()">Cancel</button><button type="submit" class="primary-button">Create request</button></footer>
-      </form>
-    </section>
-  </div>
 </section>
