@@ -18,7 +18,7 @@
     </div>
 
     <section class="repository-panel">
-      <div class="repository-heading"><div><h2>Document repository</h2><p>Records are rendered from typed API/domain objects and screen configuration.</p></div><button class="secondary-button" type="button" (click)="refresh()">↻ Refresh</button></div>
+      <div class="repository-heading"><div><h2>Document repository</h2><p>Use the row actions to edit document metadata or remove a record.</p></div><button class="secondary-button" type="button" (click)="refresh()">↻ Refresh</button></div>
       <div class="toolbar-row">
         <div class="filter-tabs">
           @for (filter of config.filters; track filter.id) {
@@ -28,15 +28,15 @@
         <input class="search-box" type="search" placeholder="Search documents..." [ngModel]="search()" (ngModelChange)="search.set($event)" />
       </div>
       @if (loading()) { <p class="loading">Loading documents...</p> }
-      <ag-grid-angular class="ingestion-grid" [rowData]="filteredDocuments()" [columnDefs]="config.columns" [gridOptions]="gridOptions" [theme]="gridTheme" />
+      <ag-grid-angular class="ingestion-grid" [rowData]="filteredDocuments()" [columnDefs]="columnDefs" [gridOptions]="gridOptions" [theme]="gridTheme" />
       @if (!loading() && filteredDocuments().length === 0) { <p class="empty-state">No documents match this filter.</p> }
     </section>
   </main>
 
   @if (uploadOpen()) {
     <div class="modal-backdrop" (click)="uploadOpen.set(false)">
-      <section class="modal-card" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
-        <h2>Upload document</h2>
+      <section class="modal-card" role="dialog" aria-modal="true" aria-labelledby="upload-title" (click)="$event.stopPropagation()">
+        <h2 id="upload-title">Upload document</h2>
         <label class="field-label">Choose file</label>
         <input type="file" [accept]="'.' + config.upload.extensions.join(',.')" (change)="onFileSelected($event)" />
         <label class="field-label" for="ingestion-category">Category</label>
@@ -51,18 +51,63 @@
   }
 
   @if (selectedDocument(); as document) {
-    <div class="drawer-backdrop" (click)="selectedDocument.set(null)">
-      <aside class="details-drawer" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
-        <button class="close-button" type="button" (click)="selectedDocument.set(null)">×</button>
-        <h2>{{ document.fileName }}</h2>
-        <dl><div><dt>Document ID</dt><dd>{{ document.documentId }}</dd></div><div><dt>Category</dt><dd>{{ document.documentCategory }}</dd></div><div><dt>Uploaded by</dt><dd>{{ document.uploadedBy }}</dd></div><div><dt>Uploaded at</dt><dd>{{ document.uploadedAt | date:'medium' }}</dd></div><div><dt>Status</dt><dd>{{ statusLabel(document.status) }}</dd></div><div><dt>Chunks</dt><dd>{{ document.chunks }}</dd></div><div><dt>Description</dt><dd>{{ document.description }}</dd></div></dl>
-        @if (document.status !== 'REMOVED') {
-          <label class="field-label" for="remove-reason">Removal reason</label>
-          <textarea id="remove-reason" [ngModel]="removeReason()" (ngModelChange)="removeReason.set($event)"></textarea>
-          <button class="danger-button" type="button" [disabled]="busy()" (click)="removeSelected()">Remove from knowledge base</button>
+    <div class="drawer-backdrop" (click)="cancelEdit()">
+      <aside class="details-drawer" role="dialog" aria-modal="true" aria-labelledby="record-title" (click)="$event.stopPropagation()">
+        <button class="close-button" type="button" aria-label="Close record details" (click)="cancelEdit()">×</button>
+        <p class="drawer-eyebrow">{{ editing() ? 'EDIT RECORD' : 'RECORD DETAILS' }}</p>
+        <h2 id="record-title">{{ document.fileName }}</h2>
+
+        @if (editing()) {
+          <div class="edit-form">
+            <p class="form-hint">Update the record metadata. The original uploaded file is not replaced.</p>
+            <label class="field-label" for="edit-document-category">Document category</label>
+            <select id="edit-document-category" [ngModel]="editCategory()" (ngModelChange)="editCategory.set($event)">
+              @if (!config.upload.categories.includes(document.documentCategory)) {
+                <option [value]="document.documentCategory">{{ document.documentCategory }}</option>
+              }
+              @for (item of config.upload.categories; track item) { <option [value]="item">{{ item }}</option> }
+            </select>
+            <label class="field-label" for="edit-document-description">Description</label>
+            <textarea id="edit-document-description" rows="5" [ngModel]="editDescription()" (ngModelChange)="editDescription.set($event)"></textarea>
+            @if (editError()) { <p class="error">{{ editError() }}</p> }
+            <div class="modal-actions">
+              <button class="secondary-button" type="button" [disabled]="saving()" (click)="cancelEdit()">Cancel</button>
+              <button class="primary-button" type="button" [disabled]="saving()" (click)="saveEdit()">{{ saving() ? 'Saving...' : 'Save changes' }}</button>
+            </div>
+          </div>
+        } @else {
+          <dl>
+            <div><dt>Document ID</dt><dd>{{ document.documentId }}</dd></div>
+            <div><dt>Category</dt><dd>{{ document.documentCategory }}</dd></div>
+            <div><dt>Uploaded by</dt><dd>{{ document.uploadedBy }}</dd></div>
+            <div><dt>Uploaded at</dt><dd>{{ document.uploadedAt | date:'medium' }}</dd></div>
+            <div><dt>Status</dt><dd>{{ statusLabel(document.status) }}</dd></div>
+            <div><dt>Chunks</dt><dd>{{ document.chunks }}</dd></div>
+            <div><dt>Description</dt><dd>{{ document.description }}</dd></div>
+          </dl>
+          @if (document.removalReason) { <p class="removed-note">Removal reason: {{ document.removalReason }}</p> }
+          @if (document.status !== 'REMOVED') {
+            <button class="primary-button drawer-edit-button" type="button" (click)="openEdit(document)">Edit record</button>
+            <button class="danger-button" type="button" (click)="openDelete(document)">Delete record</button>
+          }
         }
-        @if (document.removalReason) { <p class="removed-note">Reason: {{ document.removalReason }}</p> }
       </aside>
+    </div>
+  }
+
+  @if (deleteTarget(); as target) {
+    <div class="modal-backdrop" (click)="cancelDelete()">
+      <section class="modal-card delete-confirmation" role="dialog" aria-modal="true" aria-labelledby="delete-title" (click)="$event.stopPropagation()">
+        <h2 id="delete-title">Delete ingestion record?</h2>
+        <p class="confirmation-copy"><strong>{{ target.fileName }}</strong> will be marked as Removed and excluded from active ingestion. Its record will remain visible in the Removed filter for audit history.</p>
+        <label class="field-label" for="delete-reason">Reason</label>
+        <textarea id="delete-reason" rows="3" [ngModel]="removeReason()" (ngModelChange)="removeReason.set($event)"></textarea>
+        @if (deleteError()) { <p class="error">{{ deleteError() }}</p> }
+        <div class="modal-actions">
+          <button class="secondary-button" type="button" [disabled]="busy()" (click)="cancelDelete()">Cancel</button>
+          <button class="danger-button" type="button" [disabled]="busy()" (click)="confirmDelete()">{{ busy() ? 'Deleting...' : 'Confirm delete' }}</button>
+        </div>
+      </section>
     </div>
   }
 

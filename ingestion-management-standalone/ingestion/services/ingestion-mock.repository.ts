@@ -1,6 +1,10 @@
 import { Injectable } from '@angular/core';
 import { INGESTION_MOCK_DATA } from '../data/ingestion-mock-data';
-import type { IngestionDocument, UploadDocumentCommand } from '../models/ingestion-document.model';
+import type {
+  IngestionDocument,
+  UpdateIngestionDocumentCommand,
+  UploadDocumentCommand
+} from '../models/ingestion-document.model';
 import type { IngestionRepository } from './ingestion.repository';
 
 const STORAGE_KEY = 'reghubops.ingestion.documents.v2';
@@ -39,12 +43,34 @@ export class IngestionMockRepository implements IngestionRepository {
     return created;
   }
 
+  async updateDocument(id: string, command: UpdateIngestionDocumentCommand): Promise<IngestionDocument> {
+    await this.delay(200);
+    const rows = this.read();
+    const current = rows.find(row => row.documentId === id);
+    if (!current) throw new Error(`Document ${id} was not found.`);
+    if (current.status === 'REMOVED') throw new Error('Removed records cannot be edited.');
+    const updated: IngestionDocument = {
+      ...current,
+      documentCategory: command.documentCategory.trim(),
+      description: command.description.trim()
+    };
+    this.write(rows.map(row => row.documentId === id ? updated : row));
+    return updated;
+  }
+
   async removeDocument(id: string, reason: string): Promise<IngestionDocument> {
     await this.delay(200);
     const rows = this.read();
     const current = rows.find(row => row.documentId === id);
     if (!current) throw new Error(`Document ${id} was not found.`);
-    const updated = { ...current, status: 'REMOVED' as const, chunks: 0, removalReason: reason, removedAt: new Date().toISOString() };
+    if (current.status === 'REMOVED') return current;
+    const updated = {
+      ...current,
+      status: 'REMOVED' as const,
+      chunks: 0,
+      removalReason: reason,
+      removedAt: new Date().toISOString()
+    };
     this.write(rows.map(row => row.documentId === id ? updated : row));
     return updated;
   }

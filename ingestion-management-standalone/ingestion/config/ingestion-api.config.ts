@@ -3,6 +3,7 @@ import { InjectionToken } from '@angular/core';
 export interface IngestionApiConfig {
   listUrl: string;
   uploadUrl: string;
+  updateUrl: (documentId: string) => string;
   removeUrl: (documentId: string) => string;
 }
 
@@ -10,6 +11,7 @@ export interface IngestionApiConfig {
 export const INGESTION_API_CONFIG: IngestionApiConfig = {
   listUrl: '/api/ingestion/documents',
   uploadUrl: '/api/ingestion/documents',
+  updateUrl: id => `/api/ingestion/documents/${encodeURIComponent(id)}`,
   removeUrl: id => `/api/ingestion/documents/${encodeURIComponent(id)}`
 };
 

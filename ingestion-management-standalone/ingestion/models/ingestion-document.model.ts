@@ -23,6 +23,11 @@ export interface UploadDocumentCommand {
   documentCategory: string;
 }
 
+export interface UpdateIngestionDocumentCommand {
+  documentCategory: string;
+  description: string;
+}
+
 export interface ApiResponse<T> {
   data: T;
   message?: string;

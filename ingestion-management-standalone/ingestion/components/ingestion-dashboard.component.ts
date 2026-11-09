@@ -3,9 +3,15 @@ import { Component, EventEmitter, OnInit, Output, computed, inject, signal } fro
 import { FormsModule } from '@angular/forms';
 import { AgGridAngular } from 'ag-grid-angular';
 import { themeQuartz } from 'ag-grid-community';
-import type { GridOptions } from 'ag-grid-community';
+import type { ColDef, GridOptions } from 'ag-grid-community';
 import { INGESTION_SCREEN_CONFIG } from '../config/ingestion-screen.config';
-import type { IngestionDocument, IngestionFilter, IngestionStatus, UploadDocumentCommand } from '../models/ingestion-document.model';
+import type {
+  IngestionDocument,
+  IngestionFilter,
+  IngestionStatus,
+  UpdateIngestionDocumentCommand,
+  UploadDocumentCommand
+} from '../models/ingestion-document.model';
 import { INGESTION_REPOSITORY } from '../services/ingestion.repository';
 import type { IngestionRepository } from '../services/ingestion.repository';
 import { IngestionMockRepository } from '../services/ingestion-mock.repository';
@@ -33,7 +39,14 @@ export class IngestionDashboardComponent implements OnInit {
   readonly error = signal('');
   readonly busy = signal(false);
   readonly selectedDocument = signal<IngestionDocument | null>(null);
-  readonly removeReason = signal('Uploaded by mistake');
+  readonly editing = signal(false);
+  readonly editCategory = signal('');
+  readonly editDescription = signal('');
+  readonly editError = signal('');
+  readonly saving = signal(false);
+  readonly deleteTarget = signal<IngestionDocument | null>(null);
+  readonly removeReason = signal('Removed by user');
+  readonly deleteError = signal('');
   readonly message = signal('');
 
   readonly metrics = computed(() => this.config.metrics.map(metric => ({
@@ -52,12 +65,55 @@ export class IngestionDashboardComponent implements OnInit {
     });
   });
 
+  readonly columnDefs: ColDef<IngestionDocument>[] = [
+    ...this.config.columns,
+    {
+      headerName: 'Actions',
+      colId: 'actions',
+      pinned: 'right',
+      width: 156,
+      minWidth: 156,
+      maxWidth: 156,
+      sortable: false,
+      filter: false,
+      resizable: false,
+      cellRenderer: params => {
+        if (!params.data || params.data.status === 'REMOVED') {
+          return '<span class="ingestion-grid-action-muted">Removed</span>';
+        }
+        return `
+          <div class="ingestion-grid-actions">
+            <button type="button" class="ingestion-grid-action edit" data-ingestion-action="edit" aria-label="Edit record">Edit</button>
+            <button type="button" class="ingestion-grid-action delete" data-ingestion-action="delete" aria-label="Delete record">Delete</button>
+          </div>
+        `;
+      }
+    }
+  ];
+
   readonly gridOptions: GridOptions<IngestionDocument> = {
-    rowHeight: 58, headerHeight: 42, animateRows: true, pagination: true,
-    paginationPageSize: 10, paginationPageSizeSelector: [10, 20, 50],
+    rowHeight: 58,
+    headerHeight: 42,
+    animateRows: true,
+    pagination: true,
+    paginationPageSize: 10,
+    paginationPageSizeSelector: [10, 20, 50],
     suppressCellFocus: true,
-    onRowDoubleClicked: event => { if (event.data) this.selectedDocument.set(event.data); }
+    onCellClicked: event => {
+      if (event.colDef.colId !== 'actions' || !event.data) return;
+      const target = event.event?.target;
+      if (!(target instanceof HTMLElement)) return;
+      const action = target.closest<HTMLButtonElement>('[data-ingestion-action]')?.dataset['ingestionAction'];
+      if (!action) return;
+      event.event?.stopPropagation();
+      if (action === 'edit') this.openEdit(event.data);
+      if (action === 'delete') this.openDelete(event.data);
+    },
+    onRowDoubleClicked: event => {
+      if (event.data && event.data.status !== 'REMOVED') this.openDetails(event.data);
+    }
   };
+
   readonly gridTheme = themeQuartz.withParams({ spacing: 7, fontSize: 12, borderRadius: 5, headerFontSize: 11 });
 
   async ngOnInit(): Promise<void> { await this.refresh(); }
@@ -118,17 +174,86 @@ export class IngestionDashboardComponent implements OnInit {
     finally { this.busy.set(false); }
   }
 
-  async removeSelected(): Promise<void> {
+  openDetails(document: IngestionDocument): void {
+    this.editing.set(false);
+    this.selectedDocument.set(document);
+  }
+
+  openEdit(document: IngestionDocument): void {
+    if (document.status === 'REMOVED') return;
+    this.selectedDocument.set(document);
+    this.editCategory.set(document.documentCategory);
+    this.editDescription.set(document.description ?? '');
+    this.editError.set('');
+    this.editing.set(true);
+  }
+
+  cancelEdit(): void {
+    this.editing.set(false);
+    this.selectedDocument.set(null);
+    this.editError.set('');
+  }
+
+  async saveEdit(): Promise<void> {
     const selected = this.selectedDocument();
-    if (!selected || selected.status === 'REMOVED') return;
-    this.busy.set(true);
+    const documentCategory = this.editCategory().trim();
+    const description = this.editDescription().trim();
+    if (!selected) return;
+    if (!documentCategory) {
+      this.editError.set('Choose a document category.');
+      return;
+    }
+
+    const command: UpdateIngestionDocumentCommand = { documentCategory, description };
+    this.saving.set(true);
+    this.editError.set('');
     try {
-      const updated = await this.repository.removeDocument(selected.documentId, this.removeReason().trim() || 'Removed by user');
+      const updated = await this.repository.updateDocument(selected.documentId, command);
       this.documents.update(rows => rows.map(row => row.documentId === updated.documentId ? updated : row));
       this.selectedDocument.set(updated);
-      this.notify(`${updated.fileName} marked as removed.`);
-    } catch (error) { this.notify(error instanceof Error ? error.message : 'Remove failed.'); }
-    finally { this.busy.set(false); }
+      this.editing.set(false);
+      this.notify(`${updated.fileName} updated successfully.`);
+    } catch (error) {
+      this.editError.set(error instanceof Error ? error.message : 'Unable to update this record.');
+    } finally {
+      this.saving.set(false);
+    }
+  }
+
+  openDelete(document: IngestionDocument): void {
+    if (document.status === 'REMOVED') return;
+    this.deleteTarget.set(document);
+    this.removeReason.set('Removed by user');
+    this.deleteError.set('');
+  }
+
+  cancelDelete(): void {
+    this.deleteTarget.set(null);
+    this.deleteError.set('');
+  }
+
+  async confirmDelete(): Promise<void> {
+    const target = this.deleteTarget();
+    if (!target) return;
+    this.busy.set(true);
+    this.deleteError.set('');
+    try {
+      const updated = await this.repository.removeDocument(
+        target.documentId,
+        this.removeReason().trim() || 'Removed by user'
+      );
+      this.documents.update(rows => rows.map(row => row.documentId === updated.documentId ? updated : row));
+      this.deleteTarget.set(null);
+      if (this.selectedDocument()?.documentId === updated.documentId) {
+        this.selectedDocument.set(updated);
+        this.editing.set(false);
+      }
+      this.notify(`${updated.fileName} marked as removed. Audit history is retained.`);
+    } catch (error) {
+      this.deleteError.set(error instanceof Error ? error.message : 'Unable to remove this record.');
+    } finally {
+      this.busy.set(false);
+    }
   }
 
   statusLabel(status: IngestionStatus): string {
