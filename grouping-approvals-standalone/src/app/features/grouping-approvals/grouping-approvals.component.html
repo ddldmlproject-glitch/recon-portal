@@ -24,14 +24,24 @@
       <button class="ga-button ga-button--primary" type="button" *ngIf="activeTab() === 'grouping'" (click)="openCreateGroup()">+ Create Group</button>
     </div>
   </header>
+
   <div class="ga-workspace-context">
-    <span class="ga-context-dot"></span>
-    <span>Admin workspace</span><span class="ga-context-divider">/</span>
+    <span class="ga-context-dot"></span><span>Admin workspace</span><span class="ga-context-divider">/</span>
     <strong>{{ activeTab() === 'inbox' ? 'Inbox' : activeTab() === 'orchestration' ? 'Orchestration' : 'Grouping' }}</strong>
     <span class="ga-context-spacer"></span><span class="ga-context-meta">STANDALONE ADMIN CONSOLE</span>
   </div>
+
+  <div class="ga-toolbar" *ngIf="activeTab() !== 'inbox'">
+    <label class="ga-search"><span aria-hidden="true">⌕</span>
+      <input type="search" [value]="searchText()" (input)="searchText.set($any($event.target).value)" [placeholder]="activeTab() === 'grouping' ? 'Search groups, owners, users or roles' : 'Search orchestration triggers'">
+    </label>
+    <span class="ga-record-count" *ngIf="activeTab() === 'grouping'">{{ filteredGroups().length }} groups</span>
+    <span class="ga-record-count" *ngIf="activeTab() === 'orchestration'">{{ filteredTriggers().length }} triggers</span>
+  </div>
+
   <div class="ga-alert" *ngIf="errorMessage()">{{ errorMessage() }}</div>
   <div class="ga-loading" *ngIf="busy()">Processing…</div>
+
   <ng-container *ngIf="activeTab() === 'grouping'">
     <div class="ga-grid-wrap">
       <app-dynamic-screen [config]="groupScreen" [rowData]="filteredGroups()" [columnDefs]="groupColumnDefs" [gridOptions]="gridOptions" />
@@ -45,13 +55,26 @@
     </div>
   </ng-container>
 
-
   <ng-container *ngIf="activeTab() === 'inbox'">
     <app-inbox [groups]="groups()" />
   </ng-container>
 
-  
-
-  
-
-  
+  <div class="ga-overlay" *ngIf="dialogMode()" (click)="closeDialog()">
+    <section class="ga-dialog" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
+      <header class="ga-dialog-header">
+        <div>
+          <span class="ga-eyebrow">CONFIGURATION-DRIVEN FORM</span>
+          <h2>{{ dialogMode() === 'create' ? 'Create Entitlement Group' : 'Edit Entitlement Group' }}</h2>
+          <p>{{ selectedGroup()?.groupName || 'Define group details and access configuration.' }}</p>
+        </div>
+        <button class="ga-close" type="button" (click)="closeDialog()">×</button>
+      </header>
+      <div class="ga-dialog-body">
+        <app-dynamic-form [fields]="groupFormFields" [initialValue]="initialFormValue()" (submitted)="saveGroupForm($event)" />
+      </div>
+      <footer class="ga-dialog-footer">
+        <button class="ga-button ga-button--secondary" type="button" (click)="closeDialog()">Cancel</button>
+      </footer>
+    </section>
+  </div>
+</section>
