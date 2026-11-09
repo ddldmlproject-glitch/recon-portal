@@ -1,4 +1,4 @@
-import type { ColDef } from 'ag-grid-community';
+import type { ColDef } from '@ag-grid-community/core';
 
 export type ScreenLayout = 'grid' | 'form' | 'master-detail';
 export type FieldType = 'text' | 'textarea' | 'number' | 'date' | 'select' | 'checkbox' | 'multi-select';
