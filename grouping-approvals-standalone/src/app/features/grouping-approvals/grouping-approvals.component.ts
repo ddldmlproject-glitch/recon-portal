@@ -53,7 +53,11 @@ export class GroupingApprovalsComponent implements OnInit {
     { key: 'toolsAndReports', label: 'Tools and Reports', type: 'textarea', placeholder: 'ReghubOps Summary, Break Report' }
   ];
 
-  readonly activeGroupFormFields = computed(() => this.dialogMode() === 'edit'\n    ? this.groupFormFields.filter(field => !['opsScope', 'opsIds', 'roles', 'toolsAndReports'].includes(field.key))\n    : this.groupFormFields);\n\n  readonly filteredGroups = computed(() => {
+  readonly activeGroupFormFields = computed(() => this.dialogMode() === 'edit'
+    ? this.groupFormFields.filter(field => !['opsScope', 'opsIds', 'roles', 'toolsAndReports'].includes(field.key))
+    : this.groupFormFields);
+
+  readonly filteredGroups = computed(() => {
     const q = this.searchText().trim().toLowerCase();
     const rows = this.groups();
     return q ? rows.filter(g => [g.groupName, g.description, g.owner, ...g.userIds, ...g.roles, ...g.opsIds].join(' ').toLowerCase().includes(q)) : rows;
