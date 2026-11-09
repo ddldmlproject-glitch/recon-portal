@@ -20,7 +20,6 @@
       </div>
       <button class="ga-button ga-button--secondary" type="button" (click)="loadData()" [disabled]="busy()">↻ Refresh</button>
       <button class="ga-button ga-button--secondary" type="button" *ngIf="activeTab() === 'grouping'" (click)="exportGroups()">Export CSV</button>
-      <button class="ga-button ga-button--primary" type="button" *ngIf="activeTab() === 'grouping'" (click)="openCreateGroup()">+ Create Group</button>
     </div>
   </header>
 
