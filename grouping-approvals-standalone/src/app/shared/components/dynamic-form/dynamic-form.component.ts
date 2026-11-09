@@ -74,10 +74,12 @@ export class DynamicFormComponent {
       const fields = this.fields();
       const initial = this.initialValue();
       const built = this.engine.build(fields, initial);
-      this.form.setControl('metadata-placeholder', built);
-      // Keep the public form controls at the root for straightforward formControlName binding.
+      // Rebuild controls whenever the selected record or visible field set changes.
+      // Reset after rebuilding so edit mode always displays the latest selected row values.
       for (const key of Object.keys(this.form.controls)) this.form.removeControl(key);
       for (const [key, control] of Object.entries(built.controls)) this.form.addControl(key, control);
+      this.form.reset(initial, { emitEvent: false });
+      this.form.updateValueAndValidity({ emitEvent: false });
       const subscription = this.form.valueChanges.subscribe(() => this.formRevision.update(value => value + 1));
       onCleanup(() => subscription.unsubscribe());
     });
