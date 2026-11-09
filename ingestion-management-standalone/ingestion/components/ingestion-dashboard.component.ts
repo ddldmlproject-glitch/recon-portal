@@ -3,7 +3,7 @@ import { Component, EventEmitter, OnInit, Output, computed, inject, signal } fro
 import { FormsModule } from '@angular/forms';
 import { AgGridAngular } from 'ag-grid-angular';
 import { themeQuartz } from 'ag-grid-community';
-import type { ColDef, GridOptions } from 'ag-grid-community';
+import type { ColDef, GridOptions, ICellRendererParams } from 'ag-grid-community';
 import { INGESTION_SCREEN_CONFIG } from '../config/ingestion-screen.config';
 import type {
   IngestionDocument,
@@ -77,7 +77,7 @@ export class IngestionDashboardComponent implements OnInit {
       sortable: false,
       filter: false,
       resizable: false,
-      cellRenderer: params => {
+      cellRenderer: (params: ICellRendererParams<IngestionDocument>) => {
         if (!params.data || params.data.status === 'REMOVED') {
           return '<span class="ingestion-grid-action-muted">Removed</span>';
         }
