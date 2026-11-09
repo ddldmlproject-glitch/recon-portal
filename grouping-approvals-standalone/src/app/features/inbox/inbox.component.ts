@@ -2,7 +2,6 @@ import { CommonModule } from '@angular/common';
 import { Component, computed, input, output, signal } from '@angular/core';
 import { AgGridAngular } from '@ag-grid-community/angular';
 import type { ColDef, GridOptions, ICellRendererParams } from '@ag-grid-community/core';
-import { themeQuartz } from 'ag-grid-community';
 import { ApprovalDecision, EntitlementGroup, GroupApprovalRequest } from '../grouping-approvals/grouping-approvals.models';
 import { GROUPING_APPROVALS_SCREENS } from '../grouping-approvals/grouping-approvals.screen-config';
 
@@ -18,6 +17,7 @@ export type InboxView = 'my-group' | 'my-request' | 'all';
 export class InboxComponent {
   readonly groups = input<EntitlementGroup[]>([]);
   readonly currentUserId = input('sso0204');
+  readonly currentUserLabel = computed(() => this.currentUserId() || 'No SSO identity');
   readonly decision = output<{ groupId: string; decision: ApprovalDecision; comment: string }>();
   readonly searchText = signal('');
   readonly activeView = signal<InboxView>('all');
