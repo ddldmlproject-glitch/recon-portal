@@ -45,16 +45,11 @@ export class GroupingApprovalsComponent implements OnInit {
     { key: 'owner', label: 'Group Owner', type: 'text', required: true, placeholder: 'Enter owner user ID' },
     { key: 'description', label: 'Description', type: 'textarea', placeholder: 'Describe the group purpose' },
     { key: 'approvers', label: 'Group Approvers', type: 'textarea', placeholder: 'Enter IDs separated by commas or new lines' },
-    { key: 'opsScope', label: 'Ops Scope', type: 'select', defaultValue: 'All Ops', options: [{ label: 'All Ops', value: 'All Ops' }, { label: 'Specific Ops IDs', value: 'Ops IDs' }] },
-    { key: 'opsIds', label: 'Ops IDs', type: 'textarea', placeholder: 'R-10021, R-10022' , visibleWhen: { field: 'opsScope', equals: 'Ops IDs' } },
-    { key: 'allEntities', label: 'All Entities', type: 'checkbox', defaultValue: true },
     { key: 'userIds', label: 'Assigned User IDs', type: 'textarea', placeholder: 'One user ID per line or comma separated' },
-    { key: 'roles', label: 'Assigned Roles', type: 'textarea', placeholder: 'ReghubOps1, ReghubOps2, Reviewer' },
-    { key: 'toolsAndReports', label: 'Tools and Reports', type: 'textarea', placeholder: 'ReghubOps Summary, Break Report' }
   ];
 
   readonly activeGroupFormFields = computed(() => this.dialogMode() === 'edit'
-    ? this.groupFormFields.filter(field => !['opsScope', 'opsIds', 'roles', 'toolsAndReports'].includes(field.key))
+    ? this.groupFormFields
     : this.groupFormFields);
 
   readonly filteredGroups = computed(() => {
