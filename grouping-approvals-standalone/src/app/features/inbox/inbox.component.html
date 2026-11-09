@@ -4,8 +4,8 @@
     <label class="inbox-search"><span>⌕</span><input type="search" [value]="searchText()" (input)="searchText.set($any($event.target).value)" placeholder="Search groups, owners, users or roles"></label>
   </header>
   <nav class="inbox-views" aria-label="Inbox request filters">
-    <button type="button" [class.active]="activeView() === 'my-group'" (click)="setView('my-group')">My Group</button>
     <button type="button" [class.active]="activeView() === 'my-request'" (click)="setView('my-request')">My Request</button>
+    <button type="button" [class.active]="activeView() === 'my-group'" (click)="setView('my-group')">My Group</button>
     <button type="button" [class.active]="activeView() === 'all'" (click)="setView('all')">All</button>
     <span class="inbox-user"><span class="inbox-user-dot"></span><span><small>DEMO SIGNED-IN USER</small><strong>{{ currentUserId() }}</strong></span></span>
   </nav>
