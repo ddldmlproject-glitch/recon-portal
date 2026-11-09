@@ -1,6 +1,6 @@
 import type { ColDef } from 'ag-grid-community';
 import { ScreenConfig } from '../../core/config/screen-config.models';
-import { EntitlementGroup, OpsLoadTrigger } from './grouping-approvals.models';
+import { EntitlementGroup, OpsLoadTrigger, GroupApprovalRequest } from './grouping-approvals.models';
 
 const groupColumns: ColDef<EntitlementGroup>[] = [
   { field: 'groupName', headerName: 'Group Name', minWidth: 190, pinned: 'left' },
@@ -22,7 +22,17 @@ const triggerColumns: ColDef<OpsLoadTrigger>[] = [
   { field: 'updatedAt', headerName: 'Updated Date', minWidth: 160 }
 ];
 
+const inboxColumns: ColDef<GroupApprovalRequest>[] = [
+  { field: 'groupName', headerName: 'Group Name', minWidth: 190, pinned: 'left' },
+  { field: 'owner', headerName: 'Requested By', minWidth: 130 },
+  { field: 'description', headerName: 'Description', minWidth: 220, flex: 2 },
+  { field: 'approvers', headerName: 'Approvers', minWidth: 150, valueFormatter: p => p.value?.join(', ') ?? '' },
+  { field: 'status', headerName: 'Request Status', minWidth: 130 },
+  { field: 'createdAt', headerName: 'Created / Updated', minWidth: 165 }
+];
+
 export const GROUPING_APPROVALS_SCREENS: ScreenConfig<any>[] = [
   { id: 'groups', title: 'Grouping', description: 'Manage group membership, ownership and access scope.', layout: 'grid', dataSource: { resource: 'groups', operation: 'groupsList' }, grid: { id: 'groups-grid', rowId: 'id', columns: groupColumns, pageSize: 20, selectable: true, quickFilter: true }, actions: [{ id: 'create-group', label: 'Create Group', kind: 'create' }, { id: 'export-groups', label: 'Export CSV', kind: 'export' }, { id: 'edit-group', label: 'Edit', kind: 'edit' }, { id: 'delete-group', label: 'Delete', kind: 'delete', confirmation: 'Delete this group? This action cannot be undone.' }] },
+  { id: 'inbox', title: 'Inbox', description: 'Review and action group access requests.', layout: 'grid', dataSource: { resource: 'group-approval-requests', operation: 'approvalRequestsList' }, grid: { id: 'group-approval-inbox-grid', rowId: 'id', columns: inboxColumns, pageSize: 10, selectable: false, quickFilter: true }, actions: [{ id: 'approve-group', label: 'Approve', kind: 'custom' }, { id: 'reject-group', label: 'Reject', kind: 'custom' }] },
   { id: 'triggers', title: 'Orchestration', description: 'Review orchestration activity.', layout: 'grid', dataSource: { resource: 'ops-load-triggers', operation: 'triggersList' }, grid: { id: 'triggers-grid', rowId: 'id', columns: triggerColumns, pageSize: 20, selectable: true, quickFilter: true }, actions: [] }
 ];
