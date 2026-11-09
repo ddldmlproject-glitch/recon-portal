@@ -37,19 +37,15 @@ src/app/
 
 ## Copy to an existing Angular standalone app
 
-Preview the copy:
+Copy the `src/app/core`, `src/app/features`, and `src/app/shared` folders into the matching locations in your target project. Review any existing files before merging; do not replace the target app bootstrap or configuration files.
 
-```powershell
-.\copy-admin-feature.ps1 -TargetProject "C:\path\to\your\angular-project" -WhatIf
+**Compatibility target:** Angular 18.2.8 and AG Grid 31.3.0 using the scoped `@ag-grid-community/*` packages. Reuse the host project's installed versions; do not install AG Grid 35/36 packages alongside these packages.
+
+Required AG Grid packages:
+
+```bash
+npm install @ag-grid-community/angular@31.3.0 @ag-grid-community/core@31.3.0 @ag-grid-community/client-side-row-model@31.3.0 @ag-grid-community/styles@31.3.0
 ```
-
-Copy the feature files:
-
-```powershell
-.\copy-admin-feature.ps1 -TargetProject "C:\path\to\your\angular-project"
-```
-
-The script skips existing files rather than overwriting them. Merge any reported collisions manually.
 
 ## Route
 
@@ -75,14 +71,15 @@ import { GroupingApprovalsMockRepository } from './features/grouping-approvals/g
 The target app must provide Angular Router and Reactive Forms. Register AG Grid Community modules once:
 
 ```ts
-import { ModuleRegistry, AllCommunityModule } from 'ag-grid-community';
-ModuleRegistry.registerModules([AllCommunityModule]);
+import { ModuleRegistry } from '@ag-grid-community/core';
+import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
+ModuleRegistry.registerModules([ClientSideRowModelModule]);
 ```
 
 Install AG Grid only if absent, using versions compatible with your Angular version:
 
 ```bash
-npm install ag-grid-angular ag-grid-community
+Use the scoped AG Grid 31.3.0 packages listed above only if they are not already installed.
 ```
 
 ## Object-oriented data and config-driven behavior
