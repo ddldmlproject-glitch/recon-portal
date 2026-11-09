@@ -3,7 +3,6 @@
     <div class="ga-brand-block">
       <div class="ga-eyebrow">REGHUB OPS <span>•</span> ADMINISTRATION</div>
       <h1>{{ activeTab() === 'grouping' ? 'Grouping' : activeTab() === 'inbox' ? 'Inbox' : 'Orchestration' }}</h1>
-      <p>{{ activeTab() === 'grouping' ? 'Manage access groups, membership and entitlements.' : activeTab() === 'inbox' ? 'Review messages and assigned work in one place.' : 'Monitor orchestration activity and execution triggers.' }}</p>
     </div>
     <div class="ga-header-actions">
       <div class="ga-admin-menu-wrap">
@@ -28,7 +27,6 @@
   <div class="ga-workspace-context">
     <span class="ga-context-dot"></span><span>Admin workspace</span><span class="ga-context-divider">/</span>
     <strong>{{ activeTab() === 'inbox' ? 'Inbox' : activeTab() === 'orchestration' ? 'Orchestration' : 'Grouping' }}</strong>
-    <span class="ga-context-spacer"></span><span class="ga-context-meta">STANDALONE ADMIN CONSOLE</span>
   </div>
 
   <div class="ga-toolbar" *ngIf="activeTab() !== 'inbox'">
