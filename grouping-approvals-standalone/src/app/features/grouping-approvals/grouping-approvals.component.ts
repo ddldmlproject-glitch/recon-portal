@@ -86,7 +86,7 @@ export class GroupingApprovalsComponent implements OnInit {
       }
     }
   ];
-  readonly triggerColumnDefs: ColDef<OpsLoadTrigger>[] = this.screens[1].grid!.columns as ColDef<OpsLoadTrigger>[];
+  readonly triggerColumnDefs: ColDef<OpsLoadTrigger>[] = this.screens[2].grid!.columns as ColDef<OpsLoadTrigger>[];
   readonly gridOptions: GridOptions = {
     animateRows: true, pagination: true, paginationPageSize: 20,
     paginationPageSizeSelector: [10, 20, 50, 100],
