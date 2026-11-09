@@ -2,12 +2,11 @@ import { GroupingApprovalsConfig } from './grouping-approvals.models';
 
 export const GROUPING_APPROVALS_CONFIG: GroupingApprovalsConfig = {
   title: 'Admin',
-  subtitle: 'Manage group access, inbox messages, orchestration and configurable screens',
+  subtitle: 'Manage groups, approvals and orchestration',
   tabs: [
     { id: 'grouping', label: 'Grouping' },
     { id: 'inbox', label: 'Inbox' },
-    { id: 'orchestration', label: 'Orchestration' },
-    { id: 'create-screen', label: 'Create Screen' }
+    { id: 'orchestration', label: 'Orchestration' }
   ],
   groupColumns: [
     { key: 'groupName', label: 'Group Name', width: '190px' },
