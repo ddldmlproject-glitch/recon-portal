@@ -49,10 +49,18 @@ export class IngestionMockRepository implements IngestionRepository {
     const current = rows.find(row => row.documentId === id);
     if (!current) throw new Error(`Document ${id} was not found.`);
     if (current.status === 'REMOVED') throw new Error('Removed records cannot be edited.');
+    const replacement = command.file;
+    const replacementType = replacement?.name.split('.').pop()?.toUpperCase();
     const updated: IngestionDocument = {
       ...current,
+      fileName: replacement?.name ?? current.fileName,
+      fileType: replacementType ? replacementType as IngestionDocument['fileType'] : current.fileType,
+      fileSize: replacement?.size ?? current.fileSize,
+      uploadedAt: replacement ? new Date().toISOString() : current.uploadedAt,
       documentCategory: command.documentCategory.trim(),
-      description: command.description.trim()
+      description: command.description.trim(),
+      status: replacement ? 'PROCESSING' : current.status,
+      chunks: replacement ? 0 : current.chunks
     };
     this.write(rows.map(row => row.documentId === id ? updated : row));
     return updated;

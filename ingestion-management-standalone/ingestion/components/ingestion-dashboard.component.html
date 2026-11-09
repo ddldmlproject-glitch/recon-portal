@@ -59,7 +59,23 @@
 
         @if (editing()) {
           <div class="edit-form">
-            <p class="form-hint">Update the record metadata. The original uploaded file is not replaced.</p>
+            <p class="form-hint">Update the metadata or choose a replacement source file. Leave the file picker empty to keep the current file.</p>
+            <div class="current-file-note">
+              <span>Current source file</span>
+              <strong>{{ document.fileName }}</strong>
+            </div>
+            <label class="field-label" for="edit-source-file">Replace source file (optional)</label>
+            <input
+              id="edit-source-file"
+              class="file-input"
+              type="file"
+              [accept]="'.' + config.upload.extensions.join(',.')"
+              (change)="onEditFileSelected($event)" />
+            @if (editFile(); as replacement) {
+              <p class="selected-file-note">Selected replacement: <strong>{{ replacement.name }}</strong> ({{ (replacement.size / 1048576).toFixed(2) }} MB)</p>
+            }
+            @if (editFileError()) { <p class="error">{{ editFileError() }}</p> }
+            <small>Allowed: {{ config.upload.extensions.join(', ').toUpperCase() }} · Max {{ config.upload.maxSizeMb }} MB</small>
             <label class="field-label" for="edit-document-category">Document category</label>
             <select id="edit-document-category" [ngModel]="editCategory()" (ngModelChange)="editCategory.set($event)">
               @if (!config.upload.categories.includes(document.documentCategory)) {
@@ -72,7 +88,7 @@
             @if (editError()) { <p class="error">{{ editError() }}</p> }
             <div class="modal-actions">
               <button class="secondary-button" type="button" [disabled]="saving()" (click)="cancelEdit()">Cancel</button>
-              <button class="primary-button" type="button" [disabled]="saving()" (click)="saveEdit()">{{ saving() ? 'Saving...' : 'Save changes' }}</button>
+              <button class="primary-button" type="button" [disabled]="saving() || !!editFileError()" (click)="saveEdit()">{{ saving() ? 'Saving...' : (editFile() ? 'Replace file & save' : 'Save changes') }}</button>
             </div>
           </div>
         } @else {

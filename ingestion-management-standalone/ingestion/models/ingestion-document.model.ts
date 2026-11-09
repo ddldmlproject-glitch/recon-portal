@@ -26,6 +26,8 @@ export interface UploadDocumentCommand {
 export interface UpdateIngestionDocumentCommand {
   documentCategory: string;
   description: string;
+  /** Optional replacement source file. Omit to update metadata only. */
+  file?: File;
 }
 
 export interface ApiResponse<T> {

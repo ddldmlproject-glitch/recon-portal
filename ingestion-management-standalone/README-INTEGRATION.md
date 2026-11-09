@@ -17,7 +17,7 @@ npm start
 
 Open the local URL printed by Angular CLI (normally `http://localhost:4200`). Select **Open feature** to open Ingestion Management. Use **Back to workspace** to return to the preview landing page.
 
-The preview uses `IngestionMockRepository` and browser localStorage. It demonstrates the UI and mock workflow only; it does not send file contents to a backend, call an LLM, create embeddings, or update a real vector store. The records grid includes Edit and Delete actions. Edit updates document category and description. Delete marks a record as Removed and keeps its audit row in the Removed filter.
+The preview uses `IngestionMockRepository` and browser localStorage. It demonstrates the UI and mock workflow only; it does not send file contents to a backend, call an LLM, create embeddings, or update a real vector store. The records grid includes Edit and Delete actions. Edit updates document category and description and can optionally replace the source PDF/XLS/XLSX file. Replacing a file updates its metadata and restarts the mock Processing workflow. Delete marks a record as Removed and keeps its audit row in the Removed filter.
 
 ## Reusable object-oriented feature structure
 
@@ -79,7 +79,7 @@ providers: [
 ```
 
 3. Set the actual endpoint paths in `INGESTION_API_CONFIG`.
-4. Match the sample adapter to the backend's exact response object contract. The sample update adapter sends PATCH to `updateUrl(documentId)` with `{ documentCategory, description }`; update that URL/method/body if your API contract differs. Delete is implemented as a soft removal through the configured DELETE endpoint and expects the updated document object in the response.
+4. Match the sample adapter to the backend's exact response object contract. The sample update adapter sends PATCH to `updateUrl(documentId)`. Metadata-only edits send JSON `{ documentCategory, description }`; a file replacement sends multipart FormData with `file`, `documentCategory`, and `description`. Update the URL/method/body to match the backend contract. Delete is implemented as a soft removal through the configured DELETE endpoint and expects the updated document object in the response.
 5. Ensure the host project has compatible `ag-grid-angular` and `ag-grid-community` dependencies and module registration.
 
 The sample adapter accepts a GET response of either `IngestionDocument[]` or `{ data: IngestionDocument[] }`; upload/update/remove accept either an `IngestionDocument` or `{ data: IngestionDocument }`.

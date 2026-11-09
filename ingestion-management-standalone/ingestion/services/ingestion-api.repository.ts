@@ -31,8 +31,16 @@ export class IngestionApiRepository implements IngestionRepository {
   }
 
   async updateDocument(id: string, command: UpdateIngestionDocumentCommand): Promise<IngestionDocument> {
+    let body: UpdateIngestionDocumentCommand | FormData = command;
+    if (command.file) {
+      const formData = new FormData();
+      formData.append('file', command.file);
+      formData.append('documentCategory', command.documentCategory);
+      formData.append('description', command.description);
+      body = formData;
+    }
     const result = await firstValueFrom(
-      this.http.patch<ApiResponse<IngestionDocument> | IngestionDocument>(this.api.updateUrl(id), command)
+      this.http.patch<ApiResponse<IngestionDocument> | IngestionDocument>(this.api.updateUrl(id), body)
     );
     return 'data' in result ? result.data : result;
   }

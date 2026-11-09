@@ -42,6 +42,8 @@ export class IngestionDashboardComponent implements OnInit {
   readonly editing = signal(false);
   readonly editCategory = signal('');
   readonly editDescription = signal('');
+  readonly editFile = signal<File | null>(null);
+  readonly editFileError = signal('');
   readonly editError = signal('');
   readonly saving = signal(false);
   readonly deleteTarget = signal<IngestionDocument | null>(null);
@@ -184,13 +186,38 @@ export class IngestionDashboardComponent implements OnInit {
     this.selectedDocument.set(document);
     this.editCategory.set(document.documentCategory);
     this.editDescription.set(document.description ?? '');
+    this.editFile.set(null);
+    this.editFileError.set('');
     this.editError.set('');
     this.editing.set(true);
+  }
+
+  onEditFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0] ?? null;
+    this.editFileError.set('');
+    this.editFile.set(null);
+    if (!file) return;
+
+    const extension = file.name.split('.').pop()?.toLowerCase() ?? '';
+    if (!this.config.upload.extensions.includes(extension)) {
+      this.editFileError.set(`Allowed file types: ${this.config.upload.extensions.join(', ').toUpperCase()}.`);
+      input.value = '';
+      return;
+    }
+    if (file.size > this.config.upload.maxSizeMb * 1024 * 1024) {
+      this.editFileError.set(`Maximum file size is ${this.config.upload.maxSizeMb} MB.`);
+      input.value = '';
+      return;
+    }
+    this.editFile.set(file);
   }
 
   cancelEdit(): void {
     this.editing.set(false);
     this.selectedDocument.set(null);
+    this.editFile.set(null);
+    this.editFileError.set('');
     this.editError.set('');
   }
 
@@ -204,7 +231,12 @@ export class IngestionDashboardComponent implements OnInit {
       return;
     }
 
-    const command: UpdateIngestionDocumentCommand = { documentCategory, description };
+    const replacementFile = this.editFile();
+    const command: UpdateIngestionDocumentCommand = {
+      documentCategory,
+      description,
+      ...(replacementFile ? { file: replacementFile } : {})
+    };
     this.saving.set(true);
     this.editError.set('');
     try {
@@ -212,7 +244,12 @@ export class IngestionDashboardComponent implements OnInit {
       this.documents.update(rows => rows.map(row => row.documentId === updated.documentId ? updated : row));
       this.selectedDocument.set(updated);
       this.editing.set(false);
+      this.editFile.set(null);
+      this.editFileError.set('');
       this.notify(`${updated.fileName} updated successfully.`);
+      if (replacementFile && this.repository instanceof IngestionMockRepository) {
+        void this.repository.completeProcessing(updated.documentId).then(() => this.refresh());
+      }
     } catch (error) {
       this.editError.set(error instanceof Error ? error.message : 'Unable to update this record.');
     } finally {
