@@ -59,17 +59,17 @@ export class DqCodeManagementComponent implements OnInit, OnDestroy {
         filter: config.kind === 'act' || config.kind === 'review-action' ? false : true
       };
       if (config.kind === 'act') {
-        col.cellRenderer = (p) => p.data?.mappingStatus === 'UNMAPPED'
+        col.cellRenderer = (p: ICellRendererParams<DqCodeRecord>) => p.data?.mappingStatus === 'UNMAPPED'
           ? '<button class="dq-act-button" type="button">ACT</button>' : '';
         col.pinned = 'right';
       }
       if (config.kind === 'review-action') {
-        col.cellRenderer = (p) => p.data?.mappingStatus === 'GENAI'
+        col.cellRenderer = (p: ICellRendererParams<DqCodeRecord>) => p.data?.mappingStatus === 'GENAI'
           ? '<div class="dq-review-actions"><button class="dq-approve" type="button" data-decision="APPROVED">Approve</button><button class="dq-reject" type="button" data-decision="REJECTED">Reject</button></div>' : '';
         col.pinned = 'right';
       }
       if (config.field === 'mappingStatus') {
-        col.cellRenderer = p => {
+        col.cellRenderer = (p: ICellRendererParams<DqCodeRecord>) => {
           const value = String(p.value ?? '');
           return `<span class="dq-status dq-status--${value.toLowerCase()}">${value}</span>`;
         };
