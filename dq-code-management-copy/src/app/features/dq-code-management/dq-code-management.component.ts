@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AgGridAngular } from 'ag-grid-angular';
-import type { ColDef, GridApi, GridReadyEvent, IDatasource, IGetRowsParams, RowClickedEvent, CellClickedEvent } from 'ag-grid-community';
+import type { ColDef, GridApi, GridReadyEvent, IDatasource, IGetRowsParams, RowClickedEvent, CellClickedEvent, ICellRendererParams } from 'ag-grid-community';
 import { DQ_CODE_DEFAULT_COL_DEF, DQ_CODE_GRID_COLUMNS, DQ_CODE_PAGE_CONFIG } from './config/dq-code-management.config';
 import { DqCodeManagementMockService } from './services/dq-code-management-mock.service';
 import type { DqCodeFilter, DqCodeRecord, DqReviewRequest } from './models/dq-code-management.model';
