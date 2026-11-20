@@ -1,10 +1,22 @@
 <section class="dq-page">
   <header class="dq-page__header">
-    <div><h1>{{ pageConfig.title }}</h1><p>{{ pageConfig.description }}</p></div>
-    <div class="dq-total"><span class="dq-total__dot"></span> Data Quality Codes</div>
+    <div class="dq-heading-copy">
+      <span class="dq-eyebrow">DATA GOVERNANCE / MAPPING WORKSPACE</span>
+      <h1>{{ pageConfig.title }}</h1>
+      <p>{{ pageConfig.description }}</p>
+    </div>
+    <div class="dq-header-meta">
+      <span class="dq-live-indicator"></span>
+      <span>DEMO WORKSPACE</span>
+      <span class="dq-header-divider"></span>
+      <strong>240</strong>
+      <small>sample records</small>
+    </div>
   </header>
 
-  <section class="dq-filter-bar" aria-label="Grid filters">
+  <section class="dq-filter-section">
+    <div class="dq-section-label"><span class="dq-section-icon">⌕</span><div><strong>Refine records</strong><small>Filter by regulation, mapping status and data type</small></div></div>
+    <div class="dq-filter-bar" aria-label="Grid filters">
     <label><span>Regulation</span><select [(ngModel)]="regulation" (ngModelChange)="onFilterChange()">
       <option *ngFor="let option of pageConfig.filters[0].options" [value]="option">{{ option }}</option>
     </select></label>
@@ -14,15 +26,19 @@
     <label><span>Data Type</span><select [(ngModel)]="dataType" (ngModelChange)="onFilterChange()">
       <option *ngFor="let option of pageConfig.filters[2].options" [value]="option">{{ option }}</option>
     </select></label>
-    <button class="dq-reset" type="button" (click)="resetFilters()">Reset All</button>
+    <button class="dq-reset" type="button" (click)="resetFilters()">↺ <span>Reset filters</span></button>
+    </div>
   </section>
 
   <div class="dq-notice" *ngIf="notice" role="status">{{ notice }}</div>
 
   <section class="dq-grid-card">
     <div class="dq-grid-card__heading">
-      <div><h2>Reg DQ Code Details</h2><span>Infinite scroll · {{ mappingStatus }} records</span></div>
-      <div class="dq-grid-card__tools"><button type="button" (click)="gridApi?.exportDataAsCsv({ fileName: 'dq-code-management.csv' })">Export CSV</button></div>
+      <div class="dq-grid-title"><span class="dq-grid-title__mark">DQ</span><div><h2>Reg DQ Code Details</h2><span>Review, map and manage regulatory data quality codes</span></div></div>
+      <div class="dq-grid-card__tools">
+        <span class="dq-grid-mode"><i></i> {{ mappingStatus }} view</span>
+        <button type="button" (click)="gridApi?.exportDataAsCsv({ fileName: 'dq-code-management.csv' })"><span>↓</span> Export CSV</button>
+      </div>
     </div>
     <ag-grid-angular class="ag-theme-quartz dq-grid" [columnDefs]="columnDefs" [defaultColDef]="defaultColDef"
       [gridOptions]="gridOptions" (gridReady)="onGridReady($event)">
