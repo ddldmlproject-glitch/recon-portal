@@ -1,0 +1,167 @@
+{
+  "gridId": "dq-code-management-grid",
+  "rowId": "id",
+  "rowModelType": "infinite",
+  "cacheBlockSize": 50,
+  "maxBlocksInCache": 3,
+  "defaultColumn": {
+    "sortable": true,
+    "filter": true,
+    "resizable": true,
+    "minWidth": 120
+  },
+  "defaultColumns": [
+    "regulation",
+    "dqType",
+    "regCode",
+    "desc",
+    "dataType",
+    "mappingStatus",
+    "globalCode",
+    "globalDqDescription",
+    "primaryFieldName"
+  ],
+  "columns": [
+    {
+      "field": "regulation",
+      "headerName": "Regulation",
+      "minWidth": 110
+    },
+    {
+      "field": "dqType",
+      "headerName": "DQ Type",
+      "minWidth": 120
+    },
+    {
+      "field": "regCode",
+      "headerName": "Reg Code",
+      "minWidth": 180
+    },
+    {
+      "field": "desc",
+      "headerName": "Reg Code Description",
+      "minWidth": 230
+    },
+    {
+      "field": "dataType",
+      "headerName": "Data Type",
+      "minWidth": 110
+    },
+    {
+      "field": "mappingStatus",
+      "headerName": "Mapping Status",
+      "minWidth": 130
+    },
+    {
+      "field": "globalCode",
+      "headerName": "Global Code",
+      "minWidth": 170
+    },
+    {
+      "field": "globalDqDescription",
+      "headerName": "Global DQ Description",
+      "minWidth": 230
+    },
+    {
+      "field": "primaryFieldName",
+      "headerName": "Primary Field",
+      "minWidth": 160
+    },
+    {
+      "field": "confidenceScore",
+      "headerName": "Confidence Score",
+      "minWidth": 140,
+      "visible": false
+    },
+    {
+      "field": "satisfactionScore",
+      "headerName": "Satisfaction Score",
+      "minWidth": 150,
+      "visibleWhen": "mappingStatus=GENAI"
+    },
+    {
+      "field": "act",
+      "headerName": "ACT",
+      "type": "action",
+      "actionId": "generateGenAi",
+      "visibleWhen": "mappingStatus=UNMAPPED"
+    },
+    {
+      "field": "reviewAction",
+      "headerName": "Action",
+      "type": "review-action",
+      "actionId": "reviewGenAi",
+      "visibleWhen": "mappingStatus=GENAI"
+    },
+    {
+      "field": "comments",
+      "headerName": "Comments",
+      "minWidth": 220,
+      "visible": false
+    },
+    {
+      "field": "createdBy",
+      "headerName": "Created By",
+      "minWidth": 130,
+      "visible": false
+    },
+    {
+      "field": "createTs",
+      "headerName": "Created TS",
+      "minWidth": 170,
+      "visible": false
+    },
+    {
+      "field": "activeFlag",
+      "headerName": "Active Flag",
+      "minWidth": 110,
+      "visible": false
+    },
+    {
+      "field": "id",
+      "headerName": "ID",
+      "minWidth": 180,
+      "visible": false
+    },
+    {
+      "field": "lastUpdatedBy",
+      "headerName": "Last Updated By",
+      "minWidth": 140,
+      "visible": false
+    },
+    {
+      "field": "lastUpdateTs",
+      "headerName": "Last Updated TS",
+      "minWidth": 170,
+      "visible": false
+    },
+    {
+      "field": "olympusRegulation",
+      "headerName": "Olympus Regulation",
+      "minWidth": 160,
+      "visible": false
+    },
+    {
+      "field": "primaryField",
+      "headerName": "Primary Field",
+      "minWidth": 150,
+      "visible": false
+    },
+    {
+      "field": "secondaryFieldNames",
+      "headerName": "Secondary Field Names",
+      "minWidth": 200,
+      "visible": false
+    },
+    {
+      "field": "stream",
+      "headerName": "Stream",
+      "minWidth": 120,
+      "visible": false
+    }
+  ],
+  "rowClick": {
+    "enabled": true,
+    "handler": "openRecordDetails"
+  }
+}
