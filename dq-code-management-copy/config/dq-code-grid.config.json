@@ -25,37 +25,44 @@
     {
       "field": "regulation",
       "headerName": "Regulation",
-      "minWidth": 110
+      "minWidth": 110,
+      "metadataField": "field_dq_inbox_regulation"
     },
     {
       "field": "dqType",
       "headerName": "DQ Type",
-      "minWidth": 120
+      "minWidth": 120,
+      "metadataField": "field_dq_inbox_dqType"
     },
     {
       "field": "regCode",
       "headerName": "Reg Code",
-      "minWidth": 180
+      "minWidth": 180,
+      "metadataField": "field_dq_inbox_regCode"
     },
     {
       "field": "desc",
       "headerName": "Reg Code Description",
-      "minWidth": 230
+      "minWidth": 230,
+      "metadataField": "field_dq_inbox_desc"
     },
     {
       "field": "dataType",
       "headerName": "Data Type",
-      "minWidth": 110
+      "minWidth": 110,
+      "metadataField": "field_dq_inbox_dataType"
     },
     {
       "field": "mappingStatus",
       "headerName": "Mapping Status",
-      "minWidth": 130
+      "minWidth": 130,
+      "metadataField": "field_dq_inbox_status"
     },
     {
       "field": "globalCode",
       "headerName": "Global Code",
-      "minWidth": 170
+      "minWidth": 170,
+      "metadataField": "field_dq_inbox_globalCode"
     },
     {
       "field": "globalDqDescription",
@@ -65,13 +72,15 @@
     {
       "field": "primaryFieldName",
       "headerName": "Primary Field",
-      "minWidth": 160
+      "minWidth": 160,
+      "metadataField": "field_dq_inbox_primaryFieldName"
     },
     {
       "field": "confidenceScore",
       "headerName": "Confidence Score",
       "minWidth": 140,
-      "visible": false
+      "visible": false,
+      "metadataField": "field_dq_inbox_confidenceScore"
     },
     {
       "field": "satisfactionScore",
@@ -97,67 +106,78 @@
       "field": "comments",
       "headerName": "Comments",
       "minWidth": 220,
-      "visible": false
+      "visible": false,
+      "metadataField": "field_dq_inbox_comments"
     },
     {
       "field": "createdBy",
       "headerName": "Created By",
       "minWidth": 130,
-      "visible": false
+      "visible": false,
+      "metadataField": "field_dq_inbox_createdBy"
     },
     {
       "field": "createTs",
       "headerName": "Created TS",
       "minWidth": 170,
-      "visible": false
+      "visible": false,
+      "metadataField": "field_dq_inbox_createTs"
     },
     {
       "field": "activeFlag",
       "headerName": "Active Flag",
       "minWidth": 110,
-      "visible": false
+      "visible": false,
+      "metadataField": "field_dq_inbox_activeFlag"
     },
     {
       "field": "id",
       "headerName": "ID",
       "minWidth": 180,
-      "visible": false
+      "visible": false,
+      "metadataField": "field_dq_inbox_id"
     },
     {
       "field": "lastUpdatedBy",
       "headerName": "Last Updated By",
       "minWidth": 140,
-      "visible": false
+      "visible": false,
+      "metadataField": "field_dq_inbox_lastUpdatedBy"
     },
     {
       "field": "lastUpdateTs",
       "headerName": "Last Updated TS",
       "minWidth": 170,
-      "visible": false
+      "visible": false,
+      "metadataField": "field_dq_inbox_lastUpdateTs"
     },
     {
       "field": "olympusRegulation",
       "headerName": "Olympus Regulation",
       "minWidth": 160,
-      "visible": false
+      "visible": false,
+      "metadataField": "field_dq_inbox_olympusRegulation"
     },
     {
       "field": "primaryField",
       "headerName": "Primary Field",
       "minWidth": 150,
-      "visible": false
+      "visible": false,
+      "metadataField": "field_dq_inbox_primaryField"
     },
     {
       "field": "secondaryFieldNames",
       "headerName": "Secondary Field Names",
       "minWidth": 200,
-      "visible": false
+      "visible": false,
+      "metadataField": "field_dq_inbox_secondaryFieldNames"
     },
     {
       "field": "stream",
       "headerName": "Stream",
       "minWidth": 120,
-      "visible": false
+      "visible": false,
+      "metadataField": "field_dq_inbox_stream"
     }
   ],
   "rowClick": {
