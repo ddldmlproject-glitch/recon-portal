@@ -288,3 +288,49 @@
   .dq-act-button, .dq-approve, .dq-reject { min-height: 32px; padding: 0 10px; }
   .dq-review-actions { gap: 5px; }
 }
+
+
+/* AG Grid Quartz checkbox states (header, row selection and tool panels) */
+.dq-grid {
+  --ag-active-color: #087eae;
+  --ag-checkbox-background-color: #ffffff;
+  --ag-checkbox-checked-color: #087eae;
+  --ag-checkbox-unchecked-color: #526b7d;
+  --ag-checkbox-indeterminate-color: #087eae;
+  --ag-checkbox-border-radius: 4px;
+}
+
+.dq-grid ::ng-deep .ag-checkbox-input-wrapper {
+  width: 17px;
+  height: 17px;
+  border-radius: 4px;
+  background-color: #fff;
+  box-shadow: inset 0 0 0 1px #8197a7;
+  opacity: 1;
+  transition: background-color .14s ease, box-shadow .14s ease;
+}
+
+.dq-grid ::ng-deep .ag-checkbox-input-wrapper:hover {
+  box-shadow: inset 0 0 0 1.5px #087eae, 0 0 0 3px rgba(8, 126, 174, .09);
+}
+
+.dq-grid ::ng-deep .ag-checkbox-input-wrapper.ag-checked,
+.dq-grid ::ng-deep .ag-checkbox-input-wrapper.ag-indeterminate {
+  background-color: #087eae;
+  box-shadow: inset 0 0 0 1px #087eae;
+}
+
+.dq-grid ::ng-deep .ag-checkbox-input-wrapper.ag-checked::after,
+.dq-grid ::ng-deep .ag-checkbox-input-wrapper.ag-indeterminate::after {
+  color: #fff;
+  font-weight: 800;
+}
+
+.dq-grid ::ng-deep .ag-checkbox-input-wrapper:focus-within {
+  box-shadow: inset 0 0 0 1.5px #087eae, 0 0 0 3px rgba(8, 126, 174, .16);
+}
+
+.dq-grid ::ng-deep .ag-checkbox-input-wrapper.ag-disabled {
+  opacity: .45;
+  cursor: not-allowed;
+}
