@@ -1,0 +1,49 @@
+<section class="dq-page">
+  <header class="dq-page__header">
+    <div><h1>{{ pageConfig.title }}</h1><p>{{ pageConfig.description }}</p></div>
+    <div class="dq-total"><span class="dq-total__dot"></span> Data Quality Codes</div>
+  </header>
+
+  <section class="dq-filter-bar" aria-label="Grid filters">
+    <label><span>Regulation</span><select [(ngModel)]="regulation" (ngModelChange)="onFilterChange()">
+      <option *ngFor="let option of pageConfig.filters[0].options" [value]="option">{{ option }}</option>
+    </select></label>
+    <label><span>Mapping Status</span><select [(ngModel)]="mappingStatus" (ngModelChange)="onFilterChange()">
+      <option *ngFor="let option of pageConfig.filters[1].options" [value]="option">{{ option }}</option>
+    </select></label>
+    <label><span>Data Type</span><select [(ngModel)]="dataType" (ngModelChange)="onFilterChange()">
+      <option *ngFor="let option of pageConfig.filters[2].options" [value]="option">{{ option }}</option>
+    </select></label>
+    <button class="dq-reset" type="button" (click)="resetFilters()">Reset All</button>
+  </section>
+
+  <div class="dq-notice" *ngIf="notice" role="status">{{ notice }}</div>
+
+  <section class="dq-grid-card">
+    <div class="dq-grid-card__heading">
+      <div><h2>Reg DQ Code Details</h2><span>Infinite scroll · {{ mappingStatus }} records</span></div>
+      <div class="dq-grid-card__tools"><button type="button" (click)="gridApi?.exportDataAsCsv({ fileName: 'dq-code-management.csv' })">Export CSV</button></div>
+    </div>
+    <ag-grid-angular class="ag-theme-quartz dq-grid" [columnDefs]="columnDefs" [defaultColDef]="defaultColDef"
+      [gridOptions]="gridOptions" (gridReady)="onGridReady($event)">
+    </ag-grid-angular>
+  </section>
+
+  <aside class="dq-details" *ngIf="selectedRecord && !reviewRecord">
+    <div class="dq-panel-heading"><div><span>Selected record</span><h2>{{ selectedRecord.regCode }}</h2></div><button type="button" aria-label="Close details" (click)="closeDetails()">×</button></div>
+    <dl><dt>Regulation</dt><dd>{{ selectedRecord.regulation }}</dd><dt>Description</dt><dd>{{ selectedRecord.desc }}</dd>
+      <dt>Mapping Status</dt><dd>{{ selectedRecord.mappingStatus }}</dd><dt>Global Code</dt><dd>{{ selectedRecord.globalCode || '—' }}</dd>
+      <dt>Global DQ Description</dt><dd>{{ selectedRecord.globalDqDescription || '—' }}</dd><dt>Comments</dt><dd>{{ selectedRecord.comments || '—' }}</dd></dl>
+  </aside>
+
+  <div class="dq-modal-backdrop" *ngIf="reviewRecord" (click)="closeReview()">
+    <section class="dq-review-modal" role="dialog" aria-modal="true" aria-labelledby="dq-review-title" (click)="$event.stopPropagation()">
+      <div class="dq-panel-heading"><div><span>{{ reviewDecision === 'APPROVED' ? 'Approve generated mapping' : 'Reject generated mapping' }}</span><h2 id="dq-review-title">{{ reviewRecord.regCode }}</h2></div><button type="button" aria-label="Close dialog" (click)="closeReview()">×</button></div>
+      <p class="dq-review-summary">Please add a comment before submitting your decision.</p>
+      <label class="dq-comment-label" for="dq-review-comment">Comments <span>*</span></label>
+      <textarea id="dq-review-comment" rows="5" [(ngModel)]="reviewComment" maxlength="1000" placeholder="Enter your review comments..."></textarea>
+      <div class="dq-modal-actions"><button type="button" class="dq-cancel" (click)="closeReview()">Cancel</button>
+        <button type="button" [class.dq-submit--reject]="reviewDecision === 'REJECTED'" class="dq-submit" [disabled]="!reviewComment.trim()" (click)="sendReviewComment()">Send Comment</button></div>
+    </section>
+  </div>
+</section>
