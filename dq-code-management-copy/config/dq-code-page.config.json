@@ -1,0 +1,59 @@
+{
+  "pageId": "dq-code-management",
+  "title": "Data Quality Code Management",
+  "description": "Review and map Data Quality codes",
+  "layout": "grid",
+  "filters": [
+    {
+      "key": "regulation",
+      "label": "Regulation",
+      "type": "select",
+      "options": [
+        "All",
+        "swxtr",
+        "m2tr",
+        "rhoo"
+      ]
+    },
+    {
+      "key": "mappingStatus",
+      "label": "Mapping Status",
+      "type": "select",
+      "options": [
+        "Mapped",
+        "Unmapped",
+        "GenAI"
+      ]
+    },
+    {
+      "key": "dataType",
+      "label": "Data Type",
+      "type": "select",
+      "options": [
+        "All",
+        "Exception",
+        "String",
+        "Number"
+      ]
+    }
+  ],
+  "defaultFilterValues": {
+    "mappingStatus": "Unmapped",
+    "regulation": "All",
+    "dataType": "All"
+  },
+  "gridConfigId": "dq-code-management-grid",
+  "dataSource": {
+    "resource": "dq-code-inbox",
+    "operation": "listPaged"
+  },
+  "rowClick": {
+    "enabled": true,
+    "handler": "openRecordDetails"
+  },
+  "scroll": {
+    "mode": "infinite",
+    "blockSize": 50,
+    "cacheBlockCount": 3
+  }
+}
