@@ -64,12 +64,6 @@ export class DqCodeManagementComponent implements OnInit, OnDestroy {
         }
       ]
     },
-    statusBar: {
-      statusPanels: [
-        { statusPanel: 'agTotalAndFilteredRowCountComponent', align: 'left' },
-        { statusPanel: 'agSelectedRowCountComponent', align: 'center' }
-      ]
-    },
     getRowId: (params: { data: DqCodeRecord }) => params.data.id,
     onRowClicked: (event: RowClickedEvent<DqCodeRecord>) => this.onRowClicked(event),
     onCellClicked: (event: CellClickedEvent<DqCodeRecord>) => this.onCellClicked(event),
