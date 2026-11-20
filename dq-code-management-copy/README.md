@@ -55,20 +55,23 @@ npm run build
 ## Test the screen
 
 1. Confirm the grid loads sample rows with the default **Unmapped** filter.
-2. Change Mapping Status to **Mapped**, **Unmapped**, and **GenAI**.
-3. On an Unmapped row, click **ACT**. The demo changes its status to **GENAI** and fills suggested mapping values and Satisfaction Score.
-4. Select **GenAI** and confirm the Satisfaction Score and Approve / Reject actions appear.
-5. Click a row to open the record details panel.
-6. Click **Approve**, enter a comment, and select **Send Comment**.
-7. Repeat using **Reject** and a comment.
-8. Scroll down to test the infinite-row-model paging behavior.
-9. Refresh the browser. Mock changes reset because the data is held in memory only.
+2. Change Mapping Status to **Mapped**, **Unmapped**, and **GenAI**. The sample dataset now includes pending GenAI records from initial load; select **GenAI** to see them.
+3. Use the right-side **Columns** panel to show/hide and reorder columns; switch to **Filters** to manage column filters. Use floating filters below column headers as well.
+4. On an Unmapped row, click **ACT**. The demo changes its status to **GENAI** and fills suggested mapping values and Satisfaction Score.
+5. Select **GenAI** and confirm the Satisfaction Score and Approve / Reject actions appear.
+6. Click a row to open the record details panel.
+7. Click **Approve**, enter a comment, and select **Send Comment**.
+8. Repeat using **Reject** and a comment.
+9. Scroll down to test the infinite-row-model paging behavior.
+10. Refresh the browser. Mock changes reset because the data is held in memory only.
 
 ## Feature behavior
 
 - Configuration-driven page filters and AG Grid columns.
 - Mapped / Unmapped / GenAI status filtering.
 - Infinite scrolling over a mock in-memory dataset.
+- Right-side AG Grid Columns and Filters tool panels, with the Columns panel open by default. Users can show/hide and reorder columns, and use the Filters panel to manage column filters.
+- Sortable, resizable columns, floating filters, column-level filtering, and CSV export.
 - ACT generates deterministic sample GenAI mapping values and changes the status to GENAI.
 - GENAI rows show Satisfaction Score and Approve / Reject actions.
 - Approve / Reject opens a comment dialog and stores the decision/comment in memory.
