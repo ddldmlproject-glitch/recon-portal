@@ -1,11 +1,16 @@
 import { ModuleRegistry, AllCommunityModule } from 'ag-grid-community';
+import { ColumnsToolPanelModule, FiltersToolPanelModule, SideBarModule } from 'ag-grid-enterprise';
 import { bootstrapApplication } from '@angular/platform-browser';
 import { provideRouter } from '@angular/router';
 import { AppComponent } from './app/app.component';
 import { routes } from './app/app.routes';
 
-// AllCommunityModule includes the Infinite Row Model used by this demo.
-ModuleRegistry.registerModules([AllCommunityModule]);
+ModuleRegistry.registerModules([
+  AllCommunityModule,
+  SideBarModule,
+  ColumnsToolPanelModule,
+  FiltersToolPanelModule
+]);
 
 bootstrapApplication(AppComponent, {
   providers: [provideRouter(routes)]
