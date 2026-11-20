@@ -1,5 +1,5 @@
-import { ModuleRegistry, AllCommunityModule } from 'ag-grid-community';
-import { ColumnsToolPanelModule, FiltersToolPanelModule, SideBarModule } from 'ag-grid-enterprise';
+import { ModuleRegistry, AllCommunityModule, SideBarModule } from 'ag-grid-community';
+import { ColumnsToolPanelModule, FiltersToolPanelModule } from 'ag-grid-enterprise';
 import { bootstrapApplication } from '@angular/platform-browser';
 import { provideRouter } from '@angular/router';
 import { AppComponent } from './app/app.component';
