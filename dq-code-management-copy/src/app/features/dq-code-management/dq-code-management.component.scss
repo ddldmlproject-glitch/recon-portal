@@ -334,3 +334,87 @@
   opacity: .45;
   cursor: not-allowed;
 }
+
+
+/* Prime-style action buttons inside AG Grid cell renderers.
+   High-specificity selectors override AG Grid/theme button defaults. */
+.dq-grid ::ng-deep .ag-cell .dq-act-button,
+.dq-grid ::ng-deep .ag-cell .dq-review-actions .dq-approve,
+.dq-grid ::ng-deep .ag-cell .dq-review-actions .dq-reject {
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  height: 32px !important;
+  min-height: 32px !important;
+  padding: 0 14px !important;
+  margin: 0 !important;
+  border-width: 1px !important;
+  border-style: solid !important;
+  border-radius: 6px !important;
+  font-family: Inter, "Segoe UI", Arial, sans-serif !important;
+  font-size: 11px !important;
+  font-weight: 650 !important;
+  letter-spacing: .1px !important;
+  line-height: 1 !important;
+  text-transform: none !important;
+  text-decoration: none !important;
+  white-space: nowrap !important;
+  cursor: pointer !important;
+  opacity: 1 !important;
+  box-shadow: none !important;
+  outline: none;
+  transition: background-color .15s ease, border-color .15s ease, color .15s ease, box-shadow .15s ease, transform .15s ease !important;
+}
+
+.dq-grid ::ng-deep .ag-cell .dq-act-button {
+  min-width: 76px !important;
+  border-color: #0d89c7 !important;
+  background: #0d89c7 !important;
+  color: #fff !important;
+}
+.dq-grid ::ng-deep .ag-cell .dq-act-button:hover {
+  border-color: #0875ad !important;
+  background: #0875ad !important;
+  box-shadow: 0 2px 5px rgba(13, 137, 199, .22) !important;
+}
+.dq-grid ::ng-deep .ag-cell .dq-review-actions {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 8px !important;
+  width: 100%;
+}
+.dq-grid ::ng-deep .ag-cell .dq-review-actions .dq-approve {
+  min-width: 76px !important;
+  border-color: #16a36a !important;
+  background: #16a36a !important;
+  color: #fff !important;
+}
+.dq-grid ::ng-deep .ag-cell .dq-review-actions .dq-approve:hover {
+  border-color: #128653 !important;
+  background: #128653 !important;
+  box-shadow: 0 2px 5px rgba(22, 163, 106, .2) !important;
+}
+.dq-grid ::ng-deep .ag-cell .dq-review-actions .dq-reject {
+  min-width: 70px !important;
+  border-color: #d84b57 !important;
+  background: #fff !important;
+  color: #c83e4b !important;
+}
+.dq-grid ::ng-deep .ag-cell .dq-review-actions .dq-reject:hover {
+  border-color: #c83e4b !important;
+  background: #fff1f2 !important;
+  color: #ad2937 !important;
+  box-shadow: 0 2px 5px rgba(200, 62, 75, .12) !important;
+}
+.dq-grid ::ng-deep .ag-cell .dq-act-button:focus-visible,
+.dq-grid ::ng-deep .ag-cell .dq-review-actions button:focus-visible {
+  outline: 2px solid rgba(13, 137, 199, .35) !important;
+  outline-offset: 2px !important;
+}
+.dq-grid ::ng-deep .ag-cell .dq-act-button:active,
+.dq-grid ::ng-deep .ag-cell .dq-review-actions button:active {
+  transform: translateY(1px) !important;
+}
