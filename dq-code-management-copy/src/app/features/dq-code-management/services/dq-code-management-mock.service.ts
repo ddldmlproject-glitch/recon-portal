@@ -12,7 +12,7 @@ export class DqCodeManagementMockService {
         ? row.mappingStatus === 'MAPPED' || row.mappingStatus === 'APPROVED'
         : filter.mappingStatus === 'Unmapped'
           ? row.mappingStatus === 'UNMAPPED'
-          : row.mappingStatus === 'GENAI' || row.mappingStatus === 'REJECTED';
+          : row.mappingStatus === 'GENAI';
       return statusMatches
         && (filter.regulation === 'All' || row.regulation === filter.regulation)
         && (filter.dataType === 'All' || row.dataType === filter.dataType);
@@ -57,9 +57,10 @@ export class DqCodeManagementMockService {
   }
 
   private makeRecord(index: number): DqCodeRecord {
-    const mapped = index % 3 === 0;
+    const genAi = index % 10 === 2 || index % 10 === 7;
+    const mapped = !genAi && index % 3 === 0;
     const regulation = ['swxtr', 'm2tr', 'rhoo'][index % 3];
-    const status = mapped ? 'MAPPED' : 'UNMAPPED';
+    const status = genAi ? 'GENAI' : mapped ? 'MAPPED' : 'UNMAPPED';
     return {
       id: `DQ-${String(index + 1).padStart(5, '0')}`,
       regulation, olympusRegulation: regulation.toUpperCase(), stream: 'inboxagentic',
@@ -68,12 +69,12 @@ export class DqCodeManagementMockService {
       desc: ['Strike Price Type is missing', 'UTOTV Value is invalid', 'Underlying value is not mapped', 'Primary Swiss field is required'][index % 4],
       dataType: index % 2 ? 'String' : 'Exception',
       mappingStatus: status,
-      globalCode: mapped ? `dq_is_utotv_${String(index % 8 + 1).padStart(3, '0')}` : '',
-      globalDqDescription: mapped ? 'Global DQ validation mapping' : '',
-      primaryField: 'strikePrice', primaryFieldName: mapped ? 'Strike Price' : '',
+      globalCode: mapped || genAi ? `dq_${genAi ? 'ai' : 'is'}_utotv_${String(index % 8 + 1).padStart(3, '0')}` : '',
+      globalDqDescription: mapped ? 'Global DQ validation mapping' : genAi ? 'AI suggested mapping awaiting reviewer approval' : '',
+      primaryField: 'strikePrice', primaryFieldName: mapped || genAi ? 'Strike Price' : '',
       secondaryFieldNames: ['tradeDate', 'instrumentId'],
-      confidenceScore: mapped ? 0.98 : null, satisfactionScore: null,
-      activeFlag: 'Y', comments: '', createdBy: 'DQ_DEMO', createTs: new Date(Date.now() - index * 3600000).toISOString(),
+      confidenceScore: mapped ? 0.98 : genAi ? 0.91 : null, satisfactionScore: genAi ? 88 + (index % 12) : null,
+      activeFlag: 'Y', comments: genAi ? 'GenAI suggestion generated. Awaiting reviewer decision.' : '', createdBy: 'DQ_DEMO', createTs: new Date(Date.now() - index * 3600000).toISOString(),
       lastUpdatedBy: 'DQ_DEMO', lastUpdateTs: new Date(Date.now() - index * 1800000).toISOString()
     };
   }
