@@ -36,6 +36,40 @@ export class DqCodeManagementComponent implements OnInit, OnDestroy {
     rowSelection: { mode: 'singleRow' as const, enableClickSelection: true },
     animateRows: true,
     suppressCellFocus: false,
+    sideBar: {
+      position: 'right' as const,
+      defaultToolPanel: 'columns',
+      toolPanels: [
+        {
+          id: 'columns',
+          labelDefault: 'Columns',
+          labelKey: 'columns',
+          iconKey: 'columns',
+          toolPanel: 'agColumnsToolPanel',
+          toolPanelParams: {
+            suppressRowGroups: true,
+            suppressValues: true,
+            suppressPivots: true,
+            suppressPivotMode: true,
+            suppressColumnFilter: false,
+            suppressColumnExpandAll: false
+          }
+        },
+        {
+          id: 'filters',
+          labelDefault: 'Filters',
+          labelKey: 'filters',
+          iconKey: 'filter',
+          toolPanel: 'agFiltersToolPanel'
+        }
+      ]
+    },
+    statusBar: {
+      statusPanels: [
+        { statusPanel: 'agTotalAndFilteredRowCountComponent', align: 'left' },
+        { statusPanel: 'agSelectedRowCountComponent', align: 'center' }
+      ]
+    },
     getRowId: (params: { data: DqCodeRecord }) => params.data.id,
     onRowClicked: (event: RowClickedEvent<DqCodeRecord>) => this.onRowClicked(event),
     onCellClicked: (event: CellClickedEvent<DqCodeRecord>) => this.onCellClicked(event),
@@ -56,7 +90,11 @@ export class DqCodeManagementComponent implements OnInit, OnDestroy {
         minWidth: config.minWidth,
         hide: !!config.hidden,
         sortable: config.kind === 'act' || config.kind === 'review-action' ? false : true,
-        filter: config.kind === 'act' || config.kind === 'review-action' ? false : true
+        filter: config.kind === 'act' || config.kind === 'review-action' ? false : 'agTextColumnFilter',
+        floatingFilter: config.kind !== 'act' && config.kind !== 'review-action',
+        enableRowGroup: config.kind !== 'act' && config.kind !== 'review-action',
+        enablePivot: config.kind !== 'act' && config.kind !== 'review-action',
+        enableValue: config.kind !== 'act' && config.kind !== 'review-action'
       };
       if (config.kind === 'act') {
         col.cellRenderer = (p: ICellRendererParams<DqCodeRecord>) => p.data?.mappingStatus === 'UNMAPPED'
