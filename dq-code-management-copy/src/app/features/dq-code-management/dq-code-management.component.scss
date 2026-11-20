@@ -210,3 +210,81 @@
   .dq-grid-card__tools { width: 100%; justify-content: space-between; }
   .dq-grid { height: 560px; }
 }
+
+
+/* Consistent action-button system */
+.dq-page button {
+  font-family: inherit;
+  -webkit-tap-highlight-color: transparent;
+}
+.dq-page button:focus-visible {
+  outline: 3px solid rgba(22, 134, 184, .28);
+  outline-offset: 2px;
+}
+.dq-page button:active:not(:disabled) { transform: translateY(0); }
+
+.dq-act-button,
+.dq-approve,
+.dq-reject {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 76px;
+  min-height: 30px;
+  padding: 0 13px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 750;
+  letter-spacing: .35px;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background .16s ease, border-color .16s ease, color .16s ease, box-shadow .16s ease, transform .16s ease;
+}
+.dq-act-button {
+  border-color: #087eae;
+  background: linear-gradient(135deg, #0b83b5, #09668f);
+  color: #fff;
+  box-shadow: 0 2px 5px rgba(8, 126, 174, .16);
+}
+.dq-act-button:hover {
+  border-color: #075d83;
+  background: linear-gradient(135deg, #0875a4, #075879);
+  box-shadow: 0 4px 10px rgba(8, 126, 174, .22);
+  transform: translateY(-1px);
+}
+.dq-review-actions { display: inline-flex; align-items: center; gap: 7px; }
+.dq-approve {
+  min-width: 72px;
+  border-color: #b9dfd0;
+  background: #edf8f3;
+  color: #16724f;
+}
+.dq-approve:hover {
+  border-color: #72bea0;
+  background: #dff3e9;
+  box-shadow: 0 2px 7px rgba(22, 114, 79, .12);
+  transform: translateY(-1px);
+}
+.dq-reject {
+  min-width: 66px;
+  border-color: #eccaca;
+  background: #fff3f2;
+  color: #b23b3b;
+}
+.dq-reject:hover {
+  border-color: #d99a9a;
+  background: #fde7e5;
+  box-shadow: 0 2px 7px rgba(178, 59, 59, .1);
+  transform: translateY(-1px);
+}
+.dq-reset:hover,
+.dq-grid-card__tools button:hover,
+.dq-cancel:hover { box-shadow: 0 2px 7px rgba(21, 76, 105, .08); }
+.dq-submit:disabled { box-shadow: none; }
+
+@media (max-width: 760px) {
+  .dq-act-button, .dq-approve, .dq-reject { min-height: 32px; padding: 0 10px; }
+  .dq-review-actions { gap: 5px; }
+}
