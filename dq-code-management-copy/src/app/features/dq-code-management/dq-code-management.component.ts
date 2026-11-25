@@ -6,11 +6,11 @@ import { AgGridAngular } from 'ag-grid-angular';
 import type { ColDef, GridApi, GridReadyEvent, RowClickedEvent, CellClickedEvent, ICellRendererParams } from 'ag-grid-community';
 import { finalize } from 'rxjs/operators';
 import pageConfig from './config/dq-code-management-page-config.json';
+import { DqCodeManagementMockService } from './services/dq-code-management-mock.service';
 
 const DQ_CODE_PAGE_CONFIG = pageConfig;
 const DQ_CODE_GRID_COLUMNS = pageConfig.columns;
 const DQ_CODE_DEFAULT_COL_DEF: ColDef = pageConfig.defaultColDef;
-import { DqCodeManagementMockService } from './services/dq-code-management-mock.service';
 
 @Component({
   selector: 'app-dq-code-management',
