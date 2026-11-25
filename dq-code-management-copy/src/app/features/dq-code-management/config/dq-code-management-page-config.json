@@ -1,0 +1,65 @@
+{
+  "pageId": "dq-code-management",
+  "title": "Data Quality Code Management",
+  "description": "Review and manage regulatory data quality codes",
+  "defaultRegulation": "wla",
+  "defaultMappingStatus": "All",
+  "filters": [
+    {
+      "key": "regulation",
+      "label": "Regulation",
+      "options": ["All", "wla", "swxtr", "m2tr", "rhoo"]
+    },
+    {
+      "key": "mappingStatus",
+      "label": "Mapping Status",
+      "options": ["All", "Mapped", "Unmapped", "GenAI"]
+    }
+  ],
+  "factsApi": {
+    "method": "POST",
+    "url": "/wiz/ods-fact-service/facts",
+    "request": {
+      "header": {
+        "regulation": "wla",
+        "stream": "inboxagentic"
+      },
+      "max_records": 10
+    }
+  },
+  "reviewSave": {
+    "mode": "mock"
+  },
+  "gridConfigId": "dq-code-management-grid",
+  "blockSize": 50,
+  "cacheBlockCount": 3,
+  "defaultColDef": {
+    "sortable": true,
+    "filter": true,
+    "resizable": true,
+    "minWidth": 110,
+    "wrapHeaderText": true,
+    "autoHeaderHeight": true
+  },
+  "columns": [
+    { "field": "lastUpdateTs", "headerName": "Last Updated", "minWidth": 170 },
+    { "field": "comments", "headerName": "Comments", "minWidth": 220 },
+    { "field": "confidenceScore", "headerName": "Confidence Score", "minWidth": 140 },
+    { "field": "createdBy", "headerName": "Created By", "minWidth": 130 },
+    { "field": "createTs", "headerName": "Created Date", "minWidth": 170 },
+    { "field": "dqType", "headerName": "DQ Type", "minWidth": 120 },
+    { "field": "desc", "headerName": "Description", "minWidth": 230 },
+    { "field": "dataType", "headerName": "Data Type", "minWidth": 110 },
+    { "field": "primaryField", "headerName": "Primary Field", "minWidth": 150 },
+    { "field": "regCode", "headerName": "Regulation Code", "minWidth": 180 },
+    { "field": "primaryFieldName", "headerName": "Primary Field Name", "minWidth": 160 },
+    { "field": "regulation", "headerName": "Regulation", "minWidth": 110 },
+    { "field": "olympusRegulation", "headerName": "Olympus Regulation", "minWidth": 160 },
+    { "field": "status", "headerName": "Status", "minWidth": 130 },
+    { "field": "id", "headerName": "ID", "minWidth": 220 },
+    { "field": "lastUpdatedBy", "headerName": "Last Updated By", "minWidth": 140 },
+    { "field": "stream", "headerName": "Stream", "minWidth": 120 },
+    { "field": "secondaryFieldNames", "headerName": "Secondary Field Names", "minWidth": 200 },
+    { "field": "globalCode", "headerName": "Global Code", "minWidth": 170 }
+  ]
+}
