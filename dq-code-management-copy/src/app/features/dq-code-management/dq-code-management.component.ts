@@ -18,20 +18,21 @@ import { DqCodeManagementMockService } from './services/dq-code-management-mock.
 export class DqCodeManagementComponent implements OnDestroy {
   readonly pageConfig = DQ_CODE_PAGE_CONFIG;
   readonly defaultColDef = DQ_CODE_DEFAULT_COL_DEF;
-  mappingStatus: 'All' | 'Mapped' | 'Unmapped' | 'GenAI' = DQ_CODE_PAGE_CONFIG.defaultstring;
+
   regulation = DQ_CODE_PAGE_CONFIG.defaultRegulation;
+  mappingStatus: 'All' | 'Mapped' | 'Unmapped' | 'GenAI' = DQ_CODE_PAGE_CONFIG.defaultMappingStatus;
   allRows: any[] = [];
   visibleRows: any[] = [];
   totalRecords = 0;
   loading = false;
   savingReview = false;
   errorMessage = '';
+  notice = '';
   gridApi?: GridApi<any>;
-  selectedRecord?: DqCodeRecord;
-  reviewRecord?: DqCodeRecord;
+  selectedRecord?: any;
+  reviewRecord?: any;
   reviewDecision: 'APPROVED' | 'REJECTED' = 'APPROVED';
   reviewComment = '';
-  notice = '';
 
   readonly gridOptions = {
     animateRows: true,
@@ -39,119 +40,199 @@ export class DqCodeManagementComponent implements OnDestroy {
     pagination: true,
     paginationPageSize: 50,
     paginationPageSizeSelector: [25, 50, 100],
-    getRowId: (params: { data: DqCodeRecord }) => params.data.id,
-    onRowClicked: (event: RowClickedEvent<any>) => this.onRowClicked(event),
+    getRowId: (params: any) => params.data.id,
+    onRowClicked: (event: RowClickedEvent<any>) => this.selectedRecord = event.data,
     onCellClicked: (event: CellClickedEvent<any>) => this.onCellClicked(event),
     overlayNoRowsTemplate: '<span class="dq-empty">No records match the selected filters.</span>'
   };
 
-  constructor(private readonly http: HttpClient, private readonly reviewMock: DqCodeManagementMockService) {
+  constructor(private http: HttpClient, private reviewService: DqCodeManagementMockService) {
     this.loadFacts();
   }
 
-  ngOnDestroy(): void { this.gridApi?.destroy(); }
+  ngOnDestroy(): void {
+    this.gridApi?.destroy();
+  }
 
   get columnDefs(): ColDef<any>[] {
-    return DQ_CODE_GRID_COLUMNS.map(config => {
-      const col: ColDef<DqCodeRecord> = {
-        field: config.field as keyof DqCodeRecord, colId: String(config.field),
-        headerName: config.headerName, minWidth: config.minWidth, hide: !!config.hidden,
-        sortable: !config.kind, filter: config.kind ? false : 'agTextColumnFilter',
-        floatingFilter: !config.kind, enableRowGroup: !config.kind, enablePivot: !config.kind, enableValue: !config.kind
+    return DQ_CODE_GRID_COLUMNS.map(column => {
+      const definition: ColDef<any> = {
+        field: column.field,
+        colId: column.field,
+        headerName: column.headerName,
+        minWidth: column.minWidth,
+        hide: !!column.hidden,
+        sortable: !column.kind,
+        filter: column.kind ? false : 'agTextColumnFilter',
+        floatingFilter: !column.kind
       };
-      if (config.kind === 'act') {
-        col.cellRenderer = (p: ICellRendererParams<any>) => p.data?.mappingStatus === 'UNMAPPED' ? '<button class="dq-act-button" type="button">ACT</button>' : '';
-        col.pinned = 'right';
+
+      if (column.kind === 'act') {
+        definition.pinned = 'right';
+        definition.cellRenderer = (params: ICellRendererParams<any>) =>
+          params.data?.mappingStatus === 'UNMAPPED'
+            ? '<button class="dq-act-button" type="button">ACT</button>' : '';
       }
-      if (config.kind === 'review-action') {
-        col.cellRenderer = (p: ICellRendererParams<DqCodeRecord>) => p.data?.mappingStatus === 'GENAI'
-          ? '<div class="dq-review-actions"><button class="dq-approve" type="button" data-decision="APPROVED">Approve</button><button class="dq-reject" type="button" data-decision="REJECTED">Reject</button></div>' : '';
-        col.pinned = 'right';
+
+      if (column.kind === 'review-action') {
+        definition.pinned = 'right';
+        definition.cellRenderer = (params: ICellRendererParams<any>) =>
+          params.data?.mappingStatus === 'GENAI'
+            ? '<div class="dq-review-actions"><button class="dq-approve" data-decision="APPROVED">Approve</button><button class="dq-reject" data-decision="REJECTED">Reject</button></div>' : '';
       }
-      if (config.field === 'mappingStatus') col.cellRenderer = p => {
-        const value = String(p.value ?? '');
-        return `<span class="dq-status dq-status--${value.toLowerCase()}">${value}</span>`;
-      };
-      if (config.field === 'satisfactionScore') col.valueFormatter = p => p.value == null ? '' : `${p.value}%`;
-      if (config.field === 'secondaryFieldNames') col.valueFormatter = p => Array.isArray(p.value) ? p.value.join(', ') : '';
-      return col;
+
+      if (column.field === 'mappingStatus') {
+        definition.cellRenderer = params => {
+          const status = String(params.value || '');
+          return `<span class="dq-status dq-status--${status.toLowerCase()}">${status}</span>`;
+        };
+      }
+      if (column.field === 'satisfactionScore') {
+        definition.valueFormatter = params => params.value == null ? '' : `${params.value}%`;
+      }
+      return definition;
     });
   }
 
-    onGridReady(event: GridReadyEvent<any>): void { this.gridApi = event.api; this.applyFilters(); }
+  onGridReady(event: GridReadyEvent<any>): void {
+    this.gridApi = event.api;
+    this.applyFilters();
+  }
 
   loadFacts(): void {
-    this.loading = true; this.errorMessage = ''; this.notice = '';
+    this.loading = true;
+    this.errorMessage = '';
     const request = {
       ...DQ_CODE_PAGE_CONFIG.factsApi.request,
-      header: { ...DQ_CODE_PAGE_CONFIG.factsApi.request.header, regulation: this.regulation === 'All' ? DQ_CODE_PAGE_CONFIG.defaultRegulation : this.regulation }
+      header: {
+        ...DQ_CODE_PAGE_CONFIG.factsApi.request.header,
+        regulation: this.regulation
+      }
     };
-    this.http.post<any>(DQ_CODE_PAGE_CONFIG.factsApi.url, request).pipe(finalize(() => this.loading = false))
+
+    this.http.post<any>(DQ_CODE_PAGE_CONFIG.factsApi.url, request)
+      .pipe(finalize(() => this.loading = false))
       .subscribe({
         next: response => {
           const containers = Array.isArray(response?.factContainers) ? response.factContainers : [];
-          this.allRows = containers.map((container, index) => this.mapFact(container.dqInbox ?? container, index));
+          this.allRows = containers.map((item: any, index: number) =>
+            this.mapFact(item?.dqInbox || item, index));
           this.totalRecords = Number(response?.totalRecords ?? this.allRows.length);
           this.applyFilters();
-          if (!this.allRows.length) this.errorMessage = 'The Facts API returned no factContainers. Verify the configured request/response contract.';
+          if (!this.allRows.length) {
+            this.errorMessage = 'No factContainers were returned. Check the Facts API response.';
+          }
         },
-        error: error => { this.allRows = []; this.visibleRows = []; this.totalRecords = 0; this.applyFilters(); this.errorMessage = error?.message || 'Unable to load DQ records from the Facts API.'; }
+        error: error => {
+          this.allRows = [];
+          this.totalRecords = 0;
+          this.applyFilters();
+          this.errorMessage = error?.message || 'Unable to load Facts records.';
+        }
       });
   }
 
-  private mapFact(raw: Record<string, unknown>, index: number): DqCodeRecord {
-    const get = (...keys: string[]): any => { for (const key of keys) if (raw[key] !== undefined && raw[key] !== null) return raw[key]; return ''; };
-    const rawStatus = String(get('status', 'mappingStatus')).toUpperCase();
-    const status: MappingStatus = rawStatus === 'MAPPED' || rawStatus === 'APPROVED' || rawStatus === 'REJECTED' || rawStatus === 'GENAI' ? rawStatus : 'UNMAPPED';
-    const primary = String(get('primaryFieldName', 'primaryField'));
-    const confidence = Number(get('confidenceScore'));
+  private mapFact(raw: any, index: number): any {
+    const value = (...keys: string[]) => {
+      for (const key of keys) {
+        if (raw?.[key] !== undefined && raw[key] !== null) return raw[key];
+      }
+      return '';
+    };
+
+    const status = String(value('status', 'mappingStatus')).toUpperCase();
     return {
-      id: String(get('id') || `FACT-${index + 1}`), regulation: String(get('regulation') || this.regulation),
-      olympusRegulation: String(get('olympusRegulation') || get('regulation')), stream: String(get('stream') || 'inboxagentic'),
-      dqType: String(get('dqType') || 'Exception'), regCode: String(get('regCode')), desc: String(get('desc', 'description')),
-      dataType: String(get('dataType')), mappingStatus: status, globalCode: String(get('globalCode')),
-      globalDqDescription: String(get('globalDqDescription', 'globalDqDesc')), primaryField: String(get('primaryField')),
-      primaryFieldName: primary, secondaryFieldNames: Array.isArray(get('secondaryFieldNames')) ? get('secondaryFieldNames') as string[] : [],
-      confidenceScore: Number.isFinite(confidence) ? confidence : null, satisfactionScore: Number.isFinite(Number(get('satisfactionScore'))) ? Number(get('satisfactionScore')) : null,
-      activeFlag: String(get('activeFlag') || ''), comments: String(get('comments')), createdBy: String(get('createdBy')),
-      createTs: String(get('createTs')), lastUpdatedBy: String(get('lastUpdatedBy')), lastUpdateTs: String(get('lastUpdateTs'))
+      id: String(value('id') || `FACT-${index + 1}`),
+      regulation: String(value('regulation') || this.regulation),
+      olympusRegulation: String(value('olympusRegulation')),
+      stream: String(value('stream') || 'inboxagentic'),
+      dqType: String(value('dqType') || 'Exception'),
+      regCode: String(value('regCode')),
+      desc: String(value('desc', 'description')),
+      dataType: String(value('dataType')),
+      mappingStatus: ['MAPPED', 'APPROVED', 'REJECTED', 'GENAI'].includes(status) ? status : 'UNMAPPED',
+      globalCode: String(value('globalCode')),
+      globalDqDescription: String(value('globalDqDescription', 'globalDqDesc')),
+      primaryField: String(value('primaryField')),
+      primaryFieldName: String(value('primaryFieldName', 'primaryField')),
+      secondaryFieldNames: Array.isArray(value('secondaryFieldNames')) ? value('secondaryFieldNames') : [],
+      confidenceScore: Number(value('confidenceScore')) || null,
+      satisfactionScore: Number(value('satisfactionScore')) || null,
+      activeFlag: String(value('activeFlag')),
+      comments: String(value('comments')),
+      createdBy: String(value('createdBy')),
+      createTs: String(value('createTs')),
+      lastUpdatedBy: String(value('lastUpdatedBy')),
+      lastUpdateTs: String(value('lastUpdateTs'))
     };
   }
 
-  onRegulationChange(): void { this.selectedRecord = undefined; this.gridApi?.deselectAll(); this.loadFacts(); }\n  onFilterChange(): void { this.selectedRecord = undefined; this.gridApi?.deselectAll(); this.applyFilters(); }
-  resetFilters(): void { this.mappingStatus = 'All'; this.regulation = DQ_CODE_PAGE_CONFIG.defaultRegulation; this.onFilterChange(); }
+  onRegulationChange(): void {
+    this.selectedRecord = undefined;
+    this.gridApi?.deselectAll();
+    this.loadFacts();
+  }
+
+  onFilterChange(): void {
+    this.selectedRecord = undefined;
+    this.gridApi?.deselectAll();
+    this.applyFilters();
+  }
+
+  resetFilters(): void {
+    this.regulation = DQ_CODE_PAGE_CONFIG.defaultRegulation;
+    this.mappingStatus = DQ_CODE_PAGE_CONFIG.defaultMappingStatus;
+    this.loadFacts();
+  }
+
   private applyFilters(): void {
-    this.visibleRows = this.allRows.filter(row =>
-      (this.regulation === 'All' || row.regulation.toLowerCase() === this.regulation.toLowerCase()) &&
-      (this.mappingStatus === 'All' ||
-        (this.mappingStatus === 'Mapped' && (row.mappingStatus === 'MAPPED' || row.mappingStatus === 'APPROVED')) ||
-        (this.mappingStatus === 'Unmapped' && row.mappingStatus === 'UNMAPPED') ||
-        (this.mappingStatus === 'GenAI' && row.mappingStatus === 'GENAI'))
-    ).map(row => this.reviewMock.getReviewedRecord(row.id) ?? row);
-    if (this.gridApi) this.gridApi.setGridOption('rowData', this.visibleRows);
+    this.visibleRows = this.allRows.filter(row => {
+      if (this.mappingStatus === 'Mapped') return ['MAPPED', 'APPROVED'].includes(row.mappingStatus);
+      if (this.mappingStatus === 'Unmapped') return row.mappingStatus === 'UNMAPPED';
+      if (this.mappingStatus === 'GenAI') return row.mappingStatus === 'GENAI';
+      return true;
+    }).map(row => this.reviewService.getReviewedRecord(row.id) || row);
+
+    this.gridApi?.setGridOption('rowData', this.visibleRows);
   }
-  private onRowClicked(event: RowClickedEvent<DqCodeRecord>): void { this.selectedRecord = event.data ? { ...event.data } : undefined; }
-  private onCellClicked(event: CellClickedEvent<DqCodeRecord>): void {
+
+  private onCellClicked(event: CellClickedEvent<any>): void {
     if (!event.data) return;
-    if (event.column.getColId() === 'act' && event.data.mappingStatus === 'UNMAPPED') {
-      this.notice = 'ACT is a local placeholder. No API is called for unmapped records.';
+
+    if (event.column.getColId() === 'act') {
+      this.notice = 'ACT is a placeholder. No API is called for unmapped records.';
+      return;
     }
-    if (event.column.getColId() === 'reviewAction' && event.data.mappingStatus === 'GENAI') {
-      const target = (event.event?.target as HTMLElement | null)?.closest('button[data-decision]') as HTMLButtonElement | null;
-      if (target?.dataset['decision']) {
-        this.reviewDecision = target.dataset['decision'] as 'APPROVED' | 'REJECTED';
-        this.reviewRecord = { ...event.data }; this.reviewComment = '';
-      }
+
+    if (event.column.getColId() === 'reviewAction') {
+      const button = (event.event?.target as HTMLElement)?.closest('button[data-decision]') as HTMLButtonElement | null;
+      if (!button) return;
+      this.reviewDecision = button.dataset['decision'] as 'APPROVED' | 'REJECTED';
+      this.reviewRecord = event.data;
+      this.reviewComment = '';
     }
   }
+
   sendReviewComment(): void {
     if (!this.reviewRecord || !this.reviewComment.trim() || this.savingReview) return;
+
     this.savingReview = true;
-    this.reviewMock.saveReview(this.reviewRecord, this.reviewDecision, this.reviewComment).pipe(finalize(() => this.savingReview = false)).subscribe({
-      next: updated => { this.reviewRecord = undefined; this.selectedRecord = { ...updated }; this.notice = `${updated.id} was ${this.reviewDecision.toLowerCase()} with reviewer comments (demo only; not persisted to MongoDB).`; this.applyFilters(); },
-      error: () => this.notice = 'Unable to submit the review.'
-    });
+    this.reviewService.saveReview(this.reviewRecord, this.reviewDecision, this.reviewComment)
+      .pipe(finalize(() => this.savingReview = false))
+      .subscribe(updated => {
+        this.reviewRecord = undefined;
+        this.selectedRecord = updated;
+        this.notice = 'Review saved in demo memory only. MongoDB integration is pending.';
+        this.applyFilters();
+      });
   }
-  closeReview(): void { this.reviewRecord = undefined; this.reviewComment = ''; }
-  closeDetails(): void { this.selectedRecord = undefined; }
+
+  closeReview(): void {
+    this.reviewRecord = undefined;
+    this.reviewComment = '';
+  }
+
+  closeDetails(): void {
+    this.selectedRecord = undefined;
+  }
 }
