@@ -1,5 +1,4 @@
 import type { ColDef } from 'ag-grid-community';
-import type { DqCodeRecord } from '../models/dq-code-management.model';
 
 export interface DqPageFilterConfig {
   key: 'regulation' | 'mappingStatus';
@@ -8,7 +7,7 @@ export interface DqPageFilterConfig {
 }
 
 export interface DqGridColumnConfig {
-  field: keyof DqCodeRecord | 'act' | 'reviewAction';
+  field: string;
   headerName: string;
   minWidth?: number;
   hidden?: boolean;
@@ -63,7 +62,7 @@ export const DQ_CODE_GRID_COLUMNS: DqGridColumnConfig[] = [
   { field: 'stream', headerName: 'Stream', minWidth: 120, hidden: true }
 ];
 
-export const DQ_CODE_DEFAULT_COL_DEF: ColDef<DqCodeRecord> = {
+export const DQ_CODE_DEFAULT_COL_DEF: ColDef = {
   sortable: true, filter: true, resizable: true, minWidth: 110,
   wrapHeaderText: true, autoHeaderHeight: true
 };
