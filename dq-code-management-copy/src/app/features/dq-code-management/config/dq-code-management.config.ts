@@ -28,7 +28,7 @@ export const DQ_CODE_PAGE_CONFIG = {
   factsApi: {
     method: 'POST' as const,
     url: '/wiz/ods-fact-service/facts',
-    request: { header: { regulation: 'wla', stream: 'inboxagentic' }, max_records: 1000 }
+    request: { header: { regulation: 'wla', stream: 'inboxagentic' }, max_records: 10 }
   },
   reviewSave: { mode: 'mock' as const },
   gridConfigId: 'dq-code-management-grid',
