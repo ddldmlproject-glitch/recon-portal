@@ -121,7 +121,7 @@ export class DqCodeManagementComponent implements OnDestroy {
     };
   }
 
-  onFilterChange(): void { this.selectedRecord = undefined; this.gridApi?.deselectAll(); this.applyFilters(); }
+  onRegulationChange(): void { this.selectedRecord = undefined; this.gridApi?.deselectAll(); this.loadFacts(); }\n  onFilterChange(): void { this.selectedRecord = undefined; this.gridApi?.deselectAll(); this.applyFilters(); }
   resetFilters(): void { this.mappingStatus = 'All'; this.regulation = DQ_CODE_PAGE_CONFIG.defaultRegulation; this.onFilterChange(); }
   private applyFilters(): void {
     this.visibleRows = this.allRows.filter(row =>
