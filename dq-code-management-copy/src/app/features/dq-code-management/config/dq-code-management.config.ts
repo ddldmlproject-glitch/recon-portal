@@ -11,7 +11,7 @@ export interface DqGridColumnConfig {
   headerName: string;
   minWidth?: number;
   hidden?: boolean;
-  kind?: 'act' | 'review-action';
+  kind?: 'review-action';
 }
 
 export const DQ_CODE_PAGE_CONFIG = {
@@ -47,7 +47,6 @@ export const DQ_CODE_GRID_COLUMNS: DqGridColumnConfig[] = [
   { field: 'primaryFieldName', headerName: 'Primary Field', minWidth: 160 },
   { field: 'confidenceScore', headerName: 'Confidence Score', minWidth: 140, hidden: true },
   { field: 'satisfactionScore', headerName: 'Satisfaction Score', minWidth: 150 },
-  { field: 'act', headerName: 'Action', minWidth: 105, kind: 'act' },
   { field: 'reviewAction', headerName: 'Action', minWidth: 190, kind: 'review-action' },
   { field: 'comments', headerName: 'Comments', minWidth: 220, hidden: true },
   { field: 'createdBy', headerName: 'Created By', minWidth: 130, hidden: true },
