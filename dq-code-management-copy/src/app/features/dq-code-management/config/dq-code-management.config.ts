@@ -2,7 +2,7 @@ import type { ColDef } from 'ag-grid-community';
 import type { DqCodeRecord } from '../models/dq-code-management.model';
 
 export interface DqPageFilterConfig {
-  key: 'regulation' | 'mappingStatus' | 'dataType';
+  key: 'regulation' | 'mappingStatus';
   label: string;
   options: string[];
 }
@@ -13,19 +13,24 @@ export interface DqGridColumnConfig {
   minWidth?: number;
   hidden?: boolean;
   kind?: 'act' | 'review-action';
-  visibleFor?: 'UNMAPPED' | 'GENAI';
 }
 
 export const DQ_CODE_PAGE_CONFIG = {
   pageId: 'dq-code-management',
   title: 'Data Quality Code Management',
-  description: 'Review and map Data Quality codes',
-  defaultMappingStatus: 'Unmapped' as const,
+  description: 'Review and manage regulatory data quality codes',
+  defaultRegulation: 'wla',
+  defaultMappingStatus: 'All' as const,
   filters: [
-    { key: 'regulation', label: 'Regulation', options: ['All', 'swxtr', 'm2tr', 'rhoo'] },
-    { key: 'mappingStatus', label: 'Mapping Status', options: ['Mapped', 'Unmapped', 'GenAI'] },
-    { key: 'dataType', label: 'Data Type', options: ['All', 'Exception', 'String', 'Number'] }
+    { key: 'regulation', label: 'Regulation', options: ['All', 'wla', 'swxtr', 'm2tr', 'rhoo'] },
+    { key: 'mappingStatus', label: 'Mapping Status', options: ['All', 'Mapped', 'Unmapped', 'GenAI'] }
   ] satisfies DqPageFilterConfig[],
+  factsApi: {
+    method: 'POST' as const,
+    url: '/wiz/ods-fact-service/facts',
+    request: { header: { regulation: 'wla', stream: 'inboxagentic' }, max_records: 1000 }
+  },
+  reviewSave: { mode: 'mock' as const },
   gridConfigId: 'dq-code-management-grid',
   blockSize: 50,
   cacheBlockCount: 3
@@ -42,9 +47,9 @@ export const DQ_CODE_GRID_COLUMNS: DqGridColumnConfig[] = [
   { field: 'globalDqDescription', headerName: 'Global DQ Description', minWidth: 230 },
   { field: 'primaryFieldName', headerName: 'Primary Field', minWidth: 160 },
   { field: 'confidenceScore', headerName: 'Confidence Score', minWidth: 140, hidden: true },
-  { field: 'satisfactionScore', headerName: 'Satisfaction Score', minWidth: 150, visibleFor: 'GENAI' },
-  { field: 'act', headerName: 'ACT', minWidth: 105, kind: 'act', visibleFor: 'UNMAPPED' },
-  { field: 'reviewAction', headerName: 'Action', minWidth: 190, kind: 'review-action', visibleFor: 'GENAI' },
+  { field: 'satisfactionScore', headerName: 'Satisfaction Score', minWidth: 150 },
+  { field: 'act', headerName: 'Action', minWidth: 105, kind: 'act' },
+  { field: 'reviewAction', headerName: 'Action', minWidth: 190, kind: 'review-action' },
   { field: 'comments', headerName: 'Comments', minWidth: 220, hidden: true },
   { field: 'createdBy', headerName: 'Created By', minWidth: 130, hidden: true },
   { field: 'createTs', headerName: 'Created TS', minWidth: 170, hidden: true },
