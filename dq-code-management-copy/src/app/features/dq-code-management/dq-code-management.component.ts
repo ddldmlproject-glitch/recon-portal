@@ -67,13 +67,6 @@ export class DqCodeManagementComponent implements OnDestroy {
         floatingFilter: !column.kind
       };
 
-      if (column.kind === 'act') {
-        definition.pinned = 'right';
-        definition.cellRenderer = (params: ICellRendererParams<any>) =>
-          params.data?.mappingStatus === 'UNMAPPED'
-            ? '<button class="dq-act-button" type="button">ACT</button>' : '';
-      }
-
       if (column.kind === 'review-action') {
         definition.pinned = 'right';
         definition.cellRenderer = (params: ICellRendererParams<any>) =>
@@ -196,13 +189,13 @@ export class DqCodeManagementComponent implements OnDestroy {
     this.gridApi?.setGridOption('rowData', this.visibleRows);
   }
 
+  get selectedRecordEntries(): { key: string; value: any }[] {
+    if (!this.selectedRecord) return [];
+    return Object.entries(this.selectedRecord).map(([key, value]) => ({ key, value }));
+  }
+
   private onCellClicked(event: CellClickedEvent<any>): void {
     if (!event.data) return;
-
-    if (event.column.getColId() === 'act') {
-      this.notice = 'ACT is a placeholder. No API is called for unmapped records.';
-      return;
-    }
 
     if (event.column.getColId() === 'reviewAction') {
       const button = (event.event?.target as HTMLElement)?.closest('button[data-decision]') as HTMLButtonElement | null;
