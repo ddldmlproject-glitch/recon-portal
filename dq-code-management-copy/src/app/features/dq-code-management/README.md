@@ -1,40 +1,20 @@
-# DQ Code Management feature
+# DQ Code Management
 
-This folder is designed to be copied into an existing standalone Angular Citi MFE.
+A small, configuration-driven Angular feature intended to be copied into the Citi MFE.
+
+## Files
+- `config/dq-code-management.config.ts`: default filters, API request, and grid columns.
+- `services/dq-code-management-mock.service.ts`: temporary in-memory review save.
+- `dq-code-management.component.ts`: Facts loading, response mapping, filtering, and review actions.
+- HTML and SCSS: screen layout and styling.
 
 ## Integration
-
-1. Copy the `dq-code-management` folder into your MFE feature directory.
-2. Import `DqCodeManagementComponent` in the route where the DQ Code page should appear.
-3. Ensure the host MFE provides its normal HTTP interceptors, gateway/proxy routing and authentication. The feature uses Angular `HttpClient` and a relative API path.
-4. Ensure the MFE has compatible Angular and AG Grid dependencies. This feature was developed against the versions in the parent `dq-code-management-copy/package.json`; do not replace the host MFE package.json.
+Copy this folder into the Citi MFE, add `DqCodeManagementComponent` to the required route, and use the host MFE's existing HttpClient interceptors, authentication, and gateway routing. Keep the host package.json unchanged.
 
 ## Configuration
+Update `DQ_CODE_PAGE_CONFIG` for default regulation/status, filter choices, Facts URL, and request body. Update `DQ_CODE_GRID_COLUMNS` to change grid columns. Facts loads automatically when the page opens; changing Regulation reloads it; Mapping Status filters the loaded rows.
 
-Edit `config/dq-code-management.config.ts`:
+## Behavior
+Unmapped rows show ACT as a local placeholder and do not call an API. GENAI rows show Approve/Reject and require a comment. Review currently saves to browser memory only; replace the mock service with the Mongo save endpoint when its contract is available.
 
-- `defaultRegulation`: regulation selected when the page opens.
-- `defaultMappingStatus`: initial mapping status filter.
-- `filters`: filter labels and options.
-- `factsApi.url`: relative Facts API path.
-- `factsApi.request`: request body, including header regulation, stream and max_records.
-- `DQ_CODE_GRID_COLUMNS`: visible/hidden grid columns and action renderers.
-
-The component automatically calls the configured Facts API on initialization. Changing Regulation calls Facts again with the selected regulation. Mapping Status filters the retrieved records locally.
-
-## Facts response mapping
-
-The adapter currently reads `factContainers[].dqInbox` (or the container itself) and maps fields including `id`, `regulation`, `stream`, `dqType`, `regCode`, `desc`, `dataType`, `status`, `globalCode`, `primaryField`, `confidenceScore`, timestamps and comments.
-
-If the service response wraps these fields differently, update only `mapFact()` in `dq-code-management.component.ts`.
-
-## Review behavior
-
-- Unmapped rows display ACT as a local placeholder. It does not call an API.
-- Rows with status `GENAI` display Approve and Reject.
-- Both actions require a comment.
-- Review submissions currently use `DqCodeManagementMockService` and are held in browser memory only. They are not persisted to MongoDB. Replace this service with the final save endpoint when its request/response contract is available.
-
-## Notes
-
-The Facts endpoint is configured as `POST /wiz/ods-fact-service/facts` based on the supplied SoapUI reference. The host MFE must route this relative path to the appropriate environment gateway.
+The response adapter currently reads `factContainers[].dqInbox` or the container itself. Adjust `mapFact()` if the response shape differs.
