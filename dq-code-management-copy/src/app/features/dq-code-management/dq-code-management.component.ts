@@ -11,6 +11,9 @@ import { DqCodeManagementMockService } from './services/dq-code-management-mock.
 type MappingStatusFilter = 'All' | 'Mapped' | 'Unmapped' | 'GenAI';
 type DqColumnConfig = { field: string; headerName: string; minWidth?: number; hidden?: boolean; kind?: string };
 const DQ_CODE_PAGE_CONFIG = pageConfig as {
+  title: string;
+  description: string;
+  filters: { key: string; label: string; options: string[] }[];
   defaultRegulation: string;
   defaultMappingStatus: MappingStatusFilter;
   factsApi: { url: string; request: { header: Record<string, string>; [key: string]: any } };
