@@ -5,7 +5,11 @@ import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { AgGridAngular } from 'ag-grid-angular';
 import type { ColDef, GridApi, GridReadyEvent, RowClickedEvent, CellClickedEvent, ICellRendererParams } from 'ag-grid-community';
 import { finalize } from 'rxjs/operators';
-import { DQ_CODE_DEFAULT_COL_DEF, DQ_CODE_GRID_COLUMNS, DQ_CODE_PAGE_CONFIG } from './config/dq-code-management.config';
+import pageConfig from './config/dq-code-management-page-config.json';
+
+const DQ_CODE_PAGE_CONFIG = pageConfig;
+const DQ_CODE_GRID_COLUMNS = pageConfig.columns;
+const DQ_CODE_DEFAULT_COL_DEF: ColDef = pageConfig.defaultColDef;
 import { DqCodeManagementMockService } from './services/dq-code-management-mock.service';
 
 @Component({
@@ -74,7 +78,7 @@ export class DqCodeManagementComponent implements OnDestroy {
             ? '<div class="dq-review-actions"><button class="dq-approve" data-decision="APPROVED">Approve</button><button class="dq-reject" data-decision="REJECTED">Reject</button></div>' : '';
       }
 
-      if (column.field === 'mappingStatus') {
+      if (column.field === 'status') {
         definition.cellRenderer = params => {
           const status = String(params.value || '');
           return `<span class="dq-status dq-status--${status.toLowerCase()}">${status}</span>`;
@@ -155,7 +159,9 @@ export class DqCodeManagementComponent implements OnDestroy {
       regCode: String(value('regCode')),
       desc: String(value('desc', 'description')),
       dataType: String(value('dataType')),
-      sourceStatus,\n      mappingStatus,
+      sourceStatus,
+      mappingStatus,
+      status: String(value('status')) || sourceStatus,
       globalCode: String(value('globalCode')),
       globalDqDescription: String(value('globalDqDescription', 'globalDqDesc')),
       primaryField: String(value('primaryField')),
