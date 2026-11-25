@@ -133,7 +133,19 @@ export class DqCodeManagementComponent implements OnDestroy {
       return '';
     };
 
-    const status = String(value('status', 'mappingStatus')).toUpperCase();
+    // The Facts API identifies an AI-generated mapping with the exact status
+    // value "ai_mapped". Normalize it for the existing GenAI UI/filter behavior.
+    const sourceStatus = String(value('status', 'mappingStatus')).trim().toLowerCase();
+    const mappingStatus = sourceStatus === 'ai_mapped'
+      ? 'GENAI'
+      : sourceStatus === 'mapped'
+        ? 'MAPPED'
+        : sourceStatus === 'approved'
+          ? 'APPROVED'
+          : sourceStatus === 'rejected'
+            ? 'REJECTED'
+            : 'UNMAPPED';
+
     return {
       id: String(value('id') || `FACT-${index + 1}`),
       regulation: String(value('regulation') || this.regulation),
@@ -143,7 +155,7 @@ export class DqCodeManagementComponent implements OnDestroy {
       regCode: String(value('regCode')),
       desc: String(value('desc', 'description')),
       dataType: String(value('dataType')),
-      mappingStatus: ['MAPPED', 'APPROVED', 'REJECTED', 'GENAI'].includes(status) ? status : 'UNMAPPED',
+      sourceStatus,\n      mappingStatus,
       globalCode: String(value('globalCode')),
       globalDqDescription: String(value('globalDqDescription', 'globalDqDesc')),
       primaryField: String(value('primaryField')),
