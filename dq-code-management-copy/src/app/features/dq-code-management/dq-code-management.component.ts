@@ -8,9 +8,17 @@ import { finalize } from 'rxjs/operators';
 import pageConfig from './config/dq-code-management-page-config.json';
 import { DqCodeManagementMockService } from './services/dq-code-management-mock.service';
 
-const DQ_CODE_PAGE_CONFIG = pageConfig;
-const DQ_CODE_GRID_COLUMNS = pageConfig.columns;
-const DQ_CODE_DEFAULT_COL_DEF: ColDef = pageConfig.defaultColDef;
+type MappingStatusFilter = 'All' | 'Mapped' | 'Unmapped' | 'GenAI';
+type DqColumnConfig = { field: string; headerName: string; minWidth?: number; hidden?: boolean; kind?: string };
+const DQ_CODE_PAGE_CONFIG = pageConfig as {
+  defaultRegulation: string;
+  defaultMappingStatus: MappingStatusFilter;
+  factsApi: { url: string; request: { header: Record<string, string>; [key: string]: any } };
+  columns: DqColumnConfig[];
+  defaultColDef: ColDef;
+};
+const DQ_CODE_GRID_COLUMNS: DqColumnConfig[] = DQ_CODE_PAGE_CONFIG.columns;
+const DQ_CODE_DEFAULT_COL_DEF: ColDef = DQ_CODE_PAGE_CONFIG.defaultColDef;
 
 @Component({
   selector: 'app-dq-code-management',
@@ -24,7 +32,7 @@ export class DqCodeManagementComponent implements OnDestroy {
   readonly defaultColDef = DQ_CODE_DEFAULT_COL_DEF;
 
   regulation = DQ_CODE_PAGE_CONFIG.defaultRegulation;
-  mappingStatus: 'All' | 'Mapped' | 'Unmapped' | 'GenAI' = DQ_CODE_PAGE_CONFIG.defaultMappingStatus;
+  mappingStatus: MappingStatusFilter = DQ_CODE_PAGE_CONFIG.defaultMappingStatus;
   allRows: any[] = [];
   visibleRows: any[] = [];
   totalRecords = 0;
@@ -79,7 +87,7 @@ export class DqCodeManagementComponent implements OnDestroy {
       }
 
       if (column.field === 'status') {
-        definition.cellRenderer = params => {
+        definition.cellRenderer = (params: ICellRendererParams<any>) => {
           const status = String(params.value || '');
           return `<span class="dq-status dq-status--${status.toLowerCase()}">${status}</span>`;
         };
