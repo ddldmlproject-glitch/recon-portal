@@ -1,5 +1,5 @@
 export type MappingStatus = 'MAPPED' | 'UNMAPPED' | 'GENAI' | 'APPROVED' | 'REJECTED';
-export type MappingFilter = 'Mapped' | 'Unmapped' | 'GenAI';
+export type MappingFilter = 'All' | 'Mapped' | 'Unmapped' | 'GenAI';
 
 export interface DqCodeRecord {
   id: string;
@@ -28,19 +28,12 @@ export interface DqCodeRecord {
   reviewerComment?: string;
 }
 
-export interface DqPagedResult {
-  rows: DqCodeRecord[];
-  lastRow: number;
-}
-
-export interface DqCodeFilter {
-  mappingStatus: MappingFilter;
-  regulation: string;
-  dataType: string;
-}
-
-export interface DqReviewRequest {
-  recordId: string;
-  decision: 'APPROVED' | 'REJECTED';
-  comment: string;
+export interface DqPagedResult { rows: DqCodeRecord[]; lastRow: number; }
+export interface DqCodeFilter { mappingStatus: MappingFilter; regulation: string; }
+export interface DqReviewRequest { recordId: string; decision: 'APPROVED' | 'REJECTED'; comment: string; }
+export interface DqFactsResponse {
+  totalRecords?: number;
+  responseTs?: string;
+  factContainers?: Array<{ dqInbox?: Record<string, unknown>; [key: string]: unknown }>;
+  [key: string]: unknown;
 }
