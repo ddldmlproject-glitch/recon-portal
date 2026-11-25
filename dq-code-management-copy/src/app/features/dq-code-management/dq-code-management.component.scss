@@ -432,3 +432,26 @@
 .dq-grid ::ng-deep .ag-header-cell { padding-left: 8px; padding-right: 8px; }
 .dq-grid ::ng-deep .ag-cell-wrapper { min-height: 30px; }
 .dq-grid ::ng-deep .ag-paging-panel { min-height: 38px; padding-top: 4px; padding-bottom: 4px; }
+
+.dq-error {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 11px 14px;
+  margin: 0 0 14px;
+  border: 1px solid #efc4c4;
+  border-radius: 8px;
+  background: #fff5f4;
+  color: #a53232;
+  font-size: 12px;
+}
+.dq-error button {
+  padding: 6px 12px;
+  border: 1px solid #d99a9a;
+  border-radius: 6px;
+  background: #fff;
+  color: #a53232;
+  font-weight: 700;
+  cursor: pointer;
+}
