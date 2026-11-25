@@ -7,7 +7,6 @@ import type { ColDef, GridApi, GridReadyEvent, RowClickedEvent, CellClickedEvent
 import { finalize } from 'rxjs/operators';
 import { DQ_CODE_DEFAULT_COL_DEF, DQ_CODE_GRID_COLUMNS, DQ_CODE_PAGE_CONFIG } from './config/dq-code-management.config';
 import { DqCodeManagementMockService } from './services/dq-code-management-mock.service';
-import type { DqCodeFilter, DqCodeRecord, DqFactsResponse, DqReviewRequest, MappingStatus } from './models/dq-code-management.model';
 
 @Component({
   selector: 'app-dq-code-management',
@@ -19,15 +18,15 @@ import type { DqCodeFilter, DqCodeRecord, DqFactsResponse, DqReviewRequest, Mapp
 export class DqCodeManagementComponent implements OnDestroy {
   readonly pageConfig = DQ_CODE_PAGE_CONFIG;
   readonly defaultColDef = DQ_CODE_DEFAULT_COL_DEF;
-  mappingStatus: DqCodeFilter['mappingStatus'] = DQ_CODE_PAGE_CONFIG.defaultMappingStatus;
+  mappingStatus: 'All' | 'Mapped' | 'Unmapped' | 'GenAI' = DQ_CODE_PAGE_CONFIG.defaultstring;
   regulation = DQ_CODE_PAGE_CONFIG.defaultRegulation;
-  allRows: DqCodeRecord[] = [];
-  visibleRows: DqCodeRecord[] = [];
+  allRows: any[] = [];
+  visibleRows: any[] = [];
   totalRecords = 0;
   loading = false;
   savingReview = false;
   errorMessage = '';
-  gridApi?: GridApi<DqCodeRecord>;
+  gridApi?: GridApi<any>;
   selectedRecord?: DqCodeRecord;
   reviewRecord?: DqCodeRecord;
   reviewDecision: 'APPROVED' | 'REJECTED' = 'APPROVED';
@@ -41,8 +40,8 @@ export class DqCodeManagementComponent implements OnDestroy {
     paginationPageSize: 50,
     paginationPageSizeSelector: [25, 50, 100],
     getRowId: (params: { data: DqCodeRecord }) => params.data.id,
-    onRowClicked: (event: RowClickedEvent<DqCodeRecord>) => this.onRowClicked(event),
-    onCellClicked: (event: CellClickedEvent<DqCodeRecord>) => this.onCellClicked(event),
+    onRowClicked: (event: RowClickedEvent<any>) => this.onRowClicked(event),
+    onCellClicked: (event: CellClickedEvent<any>) => this.onCellClicked(event),
     overlayNoRowsTemplate: '<span class="dq-empty">No records match the selected filters.</span>'
   };
 
@@ -52,7 +51,7 @@ export class DqCodeManagementComponent implements OnDestroy {
 
   ngOnDestroy(): void { this.gridApi?.destroy(); }
 
-  get columnDefs(): ColDef<DqCodeRecord>[] {
+  get columnDefs(): ColDef<any>[] {
     return DQ_CODE_GRID_COLUMNS.map(config => {
       const col: ColDef<DqCodeRecord> = {
         field: config.field as keyof DqCodeRecord, colId: String(config.field),
@@ -61,7 +60,7 @@ export class DqCodeManagementComponent implements OnDestroy {
         floatingFilter: !config.kind, enableRowGroup: !config.kind, enablePivot: !config.kind, enableValue: !config.kind
       };
       if (config.kind === 'act') {
-        col.cellRenderer = (p: ICellRendererParams<DqCodeRecord>) => p.data?.mappingStatus === 'UNMAPPED' ? '<button class="dq-act-button" type="button">ACT</button>' : '';
+        col.cellRenderer = (p: ICellRendererParams<any>) => p.data?.mappingStatus === 'UNMAPPED' ? '<button class="dq-act-button" type="button">ACT</button>' : '';
         col.pinned = 'right';
       }
       if (config.kind === 'review-action') {
@@ -79,9 +78,7 @@ export class DqCodeManagementComponent implements OnDestroy {
     });
   }
 
-  get filters(): DqCodeFilter { return { mappingStatus: this.mappingStatus, regulation: this.regulation }; }
-
-  onGridReady(event: GridReadyEvent<DqCodeRecord>): void { this.gridApi = event.api; this.applyFilters(); }
+    onGridReady(event: GridReadyEvent<any>): void { this.gridApi = event.api; this.applyFilters(); }
 
   loadFacts(): void {
     this.loading = true; this.errorMessage = ''; this.notice = '';
@@ -89,7 +86,7 @@ export class DqCodeManagementComponent implements OnDestroy {
       ...DQ_CODE_PAGE_CONFIG.factsApi.request,
       header: { ...DQ_CODE_PAGE_CONFIG.factsApi.request.header, regulation: this.regulation === 'All' ? DQ_CODE_PAGE_CONFIG.defaultRegulation : this.regulation }
     };
-    this.http.post<DqFactsResponse>(DQ_CODE_PAGE_CONFIG.factsApi.url, request).pipe(finalize(() => this.loading = false))
+    this.http.post<any>(DQ_CODE_PAGE_CONFIG.factsApi.url, request).pipe(finalize(() => this.loading = false))
       .subscribe({
         next: response => {
           const containers = Array.isArray(response?.factContainers) ? response.factContainers : [];
@@ -103,7 +100,7 @@ export class DqCodeManagementComponent implements OnDestroy {
   }
 
   private mapFact(raw: Record<string, unknown>, index: number): DqCodeRecord {
-    const get = (...keys: string[]): unknown => { for (const key of keys) if (raw[key] !== undefined && raw[key] !== null) return raw[key]; return ''; };
+    const get = (...keys: string[]): any => { for (const key of keys) if (raw[key] !== undefined && raw[key] !== null) return raw[key]; return ''; };
     const rawStatus = String(get('status', 'mappingStatus')).toUpperCase();
     const status: MappingStatus = rawStatus === 'MAPPED' || rawStatus === 'APPROVED' || rawStatus === 'REJECTED' || rawStatus === 'GENAI' ? rawStatus : 'UNMAPPED';
     const primary = String(get('primaryFieldName', 'primaryField'));
@@ -150,9 +147,8 @@ export class DqCodeManagementComponent implements OnDestroy {
   sendReviewComment(): void {
     if (!this.reviewRecord || !this.reviewComment.trim() || this.savingReview) return;
     this.savingReview = true;
-    const request: DqReviewRequest = { recordId: this.reviewRecord.id, decision: this.reviewDecision, comment: this.reviewComment.trim() };
-    this.reviewMock.submitReview(this.reviewRecord, request).pipe(finalize(() => this.savingReview = false)).subscribe({
-      next: updated => { this.reviewRecord = undefined; this.selectedRecord = { ...updated }; this.notice = `${updated.id} was ${request.decision.toLowerCase()} with reviewer comments (demo only; not persisted to MongoDB).`; this.applyFilters(); },
+    this.reviewMock.saveReview(this.reviewRecord, this.reviewDecision, this.reviewComment).pipe(finalize(() => this.savingReview = false)).subscribe({
+      next: updated => { this.reviewRecord = undefined; this.selectedRecord = { ...updated }; this.notice = `${updated.id} was ${this.reviewDecision.toLowerCase()} with reviewer comments (demo only; not persisted to MongoDB).`; this.applyFilters(); },
       error: () => this.notice = 'Unable to submit the review.'
     });
   }
